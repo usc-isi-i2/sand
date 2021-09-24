@@ -1,9 +1,15 @@
 [tool.poetry]
-name = "smc"
+name = "sem-desc-curator"
 version = "0.1.0"
-description = "UI for browsing/editing semantic models"
+description = "UI for browsing/editing semantic descriptions"
 authors = ["Binh Vu <binh@toan2.com>"]
 license = "MIT"
+packages = [
+    { include = "smc" }
+]
+
+[tool.poetry.scripts]
+smc = 'smc.cli:cli'
 
 [tool.poetry.dependencies]
 python = "^3.8"

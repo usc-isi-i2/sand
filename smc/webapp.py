@@ -18,8 +18,8 @@ if os.environ.get("FLASK_ENV", "") == "development":
 
 app = Flask(
     __name__,
-    template_folder=os.path.join(PACKAGE_DIR, "www/build"),
-    static_folder=os.path.join(PACKAGE_DIR, "www/build/static"),
+    template_folder=os.path.join(PACKAGE_DIR, "www"),
+    static_folder=os.path.join(PACKAGE_DIR, "www/static"),
     static_url_path="/static",
 )
 app.config["JSON_SORT_KEYS"] = False
@@ -42,35 +42,3 @@ for m in pkgutil.iter_modules(controllers.__path__):
 
 for bp in blueprints:
     app.register_blueprint(bp, url_prefix="/api")
-
-
-if __name__ == "__main__":
-    import click
-    from tornado.wsgi import WSGIContainer
-    from tornado.httpserver import HTTPServer
-    from tornado.ioloop import IOLoop
-
-    @click.command()
-    @click.option(
-        "--no_wsgi", type=bool, default=False, help="Whether to use non-wsgi server"
-    )
-    @click.option(
-        "--certfile", default=None, help="Path to the certificate signing request"
-    )
-    @click.option("--keyfile", default=None, help="Path to the key file")
-    def main(no_wsgi: bool, certfile: str, keyfile: str):
-        if certfile is None or keyfile is None:
-            ssl_options = None
-        else:
-            ssl_options = {"certfile": certfile, "keyfile": keyfile}
-            assert no_wsgi
-
-        if no_wsgi:
-            logger.info("Start server in non-wsgi mode")
-            http_server = HTTPServer(WSGIContainer(app), ssl_options=ssl_options)
-            http_server.listen(5524)
-            IOLoop.instance().start()
-        else:
-            app.run(host="0.0.0.0", port=5524)
-
-    main()

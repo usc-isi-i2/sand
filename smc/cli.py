@@ -3,20 +3,63 @@ import os
 from pathlib import Path
 
 import click
+from loguru import logger
 
 from sm.prelude import I, O, M
-from smc.models.base import db
-from smc.models.entity import Value, ValueType
-from smc.models.project import Project
-from smc.models.semantic_model import SemanticModel
-from smc.models.table import Table, TableRow, Link, ContextPage
+from tornado.wsgi import WSGIContainer
+from tornado.httpserver import HTTPServer
+from tornado.ioloop import IOLoop
 
 
 @click.command()
 def init():
     """Init database"""
+    from smc.models import db, Project, Table, TableRow, SemanticModel
     db.create_tables([Project, Table, TableRow, SemanticModel])
     Project(name="default", description="The default project").save()
+
+
+@click.command()
+@click.option(
+    "-d", "--dbfile", default="", help="smc database file"
+)
+@click.option(
+    "--externaldb", default="", help="Folder contains external databases containing entities & ontologies"
+)
+@click.option(
+    "--wsgi", is_flag=True, help="Whether to use wsgi server"
+)
+@click.option(
+    "-p", "--port", default=5524, help="Listening port"
+)
+@click.option(
+    "--certfile", default=None, help="Path to the certificate signing request"
+)
+@click.option("--keyfile", default=None, help="Path to the key file")
+def start(dbfile: str, externaldb: str, wsgi: bool, port: int, certfile: str, keyfile: str):
+    if dbfile.strip() != "" and 'DBFILE' not in os.environ:
+        os.environ['DBFILE'] = dbfile.strip()
+    
+    if externaldb.strip() != "":
+        from smc.config import DAO_SETTINGS
+        for cfg in DAO_SETTINGS.values():
+            cfg['args']['dbfile'] = os.path.join(externaldb, Path(cfg['args']['dbfile']).name)
+
+    from smc.webapp import app
+
+    if certfile is None or keyfile is None:
+        ssl_options = None
+    else:
+        ssl_options = {"certfile": certfile, "keyfile": keyfile}
+        assert not wsgi
+
+    if wsgi:
+        app.run(host="0.0.0.0", port=port)
+    else:
+        logger.info("Start server in non-wsgi mode")
+        http_server = HTTPServer(WSGIContainer(app), ssl_options=ssl_options)
+        http_server.listen(port)
+        IOLoop.instance().start()
 
 
 @click.command()
@@ -24,6 +67,7 @@ def init():
 @click.argument("name")
 def create(description: str, name: str):
     """Create project if not exist"""
+    from smc.models import Project
     Project(name=name, description=description).save()
 
 
@@ -35,6 +79,8 @@ def create(description: str, name: str):
 )
 def load(project: str, tables: str, descriptions: str):
     """Load data into the project"""
+    from smc.models import Project, Value, ValueType, Link, Table, ContextPage, TableRow, SemanticModel
+    
     project = Project.get(name=project)
     table_files = [Path(x) for x in glob.glob(tables)]
     if descriptions == "":
@@ -128,6 +174,7 @@ def cli():
 
 
 cli.add_command(init)
+cli.add_command(start)
 cli.add_command(create)
 cli.add_command(load)
 

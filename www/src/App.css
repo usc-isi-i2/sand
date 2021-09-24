@@ -1,0 +1,20 @@
+@import "~antd/dist/antd.css";
+@import "@ant-design/pro-table/dist/table.css";
+
+.app-body {
+  margin-left: 8px;
+  margin-right: 8px;
+}
+
+.site-page-header {
+  margin-left: -8px;
+  margin-right: -8px;
+}
+
+.ml-2 {
+  margin-left: 8px;
+}
+
+.mr-2 {
+  margin-right: 8px;
+}

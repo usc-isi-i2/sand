@@ -1,0 +1,77 @@
+import { StoreGraphProps, StoreProps, GraphNode, GraphEdge } from "../../IAppProp";
+import Hierarchy from "@antv/hierarchy";
+export interface G6Tree {
+  id: string;
+  children: G6Tree[]
+}
+
+export interface G6Node extends GraphNode {
+  x?: number;
+  y?: number;
+  type?: string;
+  labelCfg?: object;
+  inDegree?: number;
+  outDegree?: number;
+  style?: any;
+  size?: number | number[];
+  outEdges?: GraphEdge[];
+}
+
+export class GraphTreeLayout {
+  private tree: G6Tree;
+
+  constructor(nodeIdMap: { [id: string]: G6Node }, nodes: G6Node[], edges: GraphEdge[]) {
+    // determine the root
+    let roots = [];
+    for (let n of nodes) {
+      if (n.inDegree === 0) {
+        roots.push(n);
+      }
+    }
+    if (roots.length == 0) {
+      // pick on root
+      let root = nodes[0];
+      for (let n of nodes) {
+        if (n.inDegree! < root.inDegree!) {
+          root = n;
+        }
+      }
+      roots.push(root);
+    }
+
+    let buildTree = (node: G6Node): G6Tree => {
+      return {
+        id: node.id,
+        children: node.outEdges!.map(e => buildTree(nodeIdMap[e.target]))
+      }
+    };
+
+    let tree = roots.length > 1 ? { id: "pseudo-root", children: roots.map(buildTree) } : buildTree(roots[0]);
+    if (nodeIdMap['pseudo-root'] !== undefined) {
+      console.error('[BUG] Reserved id: `pseudo-root` is used.');
+    }
+    this.tree = tree;
+  }
+
+  dendrogramLayout = (
+    data: { nodeIdMap: { [id: string]: G6Node }; subNodes: G6Node[]; nodes: G6Node[]; }
+  ) => {
+    let updatePosition = (tree: any, treeLayout: any) => {
+      if (tree.id !== 'pseudo-root') {
+        data.nodeIdMap[tree.id].x = treeLayout.x;
+        data.nodeIdMap[tree.id].y = treeLayout.y;
+      }
+
+      for (let i = 0; i < tree.children.length; i++) {
+        updatePosition(tree.children[i], treeLayout.children[i]);
+      }
+    }
+    let treeLayout = Hierarchy.dendrogram(this.tree, {
+      type: "dendrogram",
+      direction: "TB", // H / V / LR / RL / TB / BT
+      nodeSep: 100,
+      rankSep: 70,
+    });
+    updatePosition(this.tree, treeLayout);
+  }
+}

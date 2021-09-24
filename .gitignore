@@ -116,6 +116,8 @@ ENV/
 env.bak/
 venv.bak/
 
+smc/www/node_modules
+
 # Spyder project settings
 .spyderproject
 .spyproject
