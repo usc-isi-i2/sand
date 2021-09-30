@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sem-desc-curator"
-version = "0.1.0"
+version = "1.1.0"
 description = "UI for browsing/editing semantic descriptions"
 authors = ["Binh Vu <binh@toan2.com>"]
 license = "MIT"
@@ -14,7 +14,7 @@ smc = 'smc.cli:cli'
 [tool.poetry.dependencies]
 python = "^3.8"
 kgdata = "^1.2.3"
-sem-desc = "^0.1.15"
+sem-desc = "^1.2.0"
 peewee = "^3.14.4"
 Flask = "^2.0.1"
 python-dotenv = "^0.19.0"
