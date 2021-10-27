@@ -1,6 +1,11 @@
 import { makeObservable, observable } from "mobx";
 import { SERVER } from "../env";
-import { Record, DraftUpdateRecord, DraftCreateRecord, CRUDStore } from "./base";
+import {
+  Record,
+  DraftUpdateRecord,
+  DraftCreateRecord,
+  CRUDStore,
+} from "rma-baseapp";
 
 export class Project implements Record<number> {
   id: number;
@@ -9,11 +14,7 @@ export class Project implements Record<number> {
   // project's description
   description: string;
 
-  public constructor(
-    id: number,
-    name: string,
-    description: string,
-  ) {
+  public constructor(id: number, name: string, description: string) {
     this.id = id;
     this.name = name;
     this.description = description;
@@ -21,22 +22,24 @@ export class Project implements Record<number> {
     makeObservable(this, {
       id: observable,
       name: observable,
-      description: observable
-    })
+      description: observable,
+    });
   }
 }
 
-export class DraftUpdateProject extends Project
-  implements DraftUpdateRecord<number, Project> {
+export class DraftUpdateProject
+  extends Project
+  implements DraftUpdateRecord<number, Project>
+{
   static fromProject(project: Project) {
     return new DraftUpdateProject(
       project.id,
       project.name,
-      project.description,
+      project.description
     );
   }
 
-  markSaved() { }
+  markSaved() {}
 
   toModel(): Project | undefined {
     return new Project(this.id, this.name, this.description);
@@ -52,8 +55,12 @@ export class DraftCreateProject extends Project implements DraftCreateRecord {
   }
 }
 
-
-export class ProjectStore extends CRUDStore<number, DraftCreateProject, DraftUpdateProject, Project> {
+export class ProjectStore extends CRUDStore<
+  number,
+  DraftCreateProject,
+  DraftUpdateProject,
+  Project
+> {
   constructor() {
     super(`${SERVER}/api/project`);
   }
@@ -63,7 +70,11 @@ export class ProjectStore extends CRUDStore<number, DraftCreateProject, DraftUpd
   }
 
   public serializeUpdateDraft(record: DraftUpdateProject): object {
-    return { id: record.name, name: record.name, description: record.description };
+    return {
+      id: record.name,
+      name: record.name,
+      description: record.description,
+    };
   }
 
   public serializeCreateDraft(record: DraftCreateProject): object {

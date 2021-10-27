@@ -1,7 +1,6 @@
 import { observable, toJS, action, makeObservable } from "mobx";
 import { Resource } from "../Entity";
 
-
 export interface GraphClassNode {
   id: string;
   uri: string;
@@ -36,7 +35,10 @@ export interface GraphLiteralNode {
   readonly isInContext: boolean;
 }
 
-export interface GraphNode extends GraphClassNode, GraphDataNode, GraphLiteralNode {
+export interface GraphNode
+  extends GraphClassNode,
+    GraphDataNode,
+    GraphLiteralNode {
   // whether this is a class node; this is useful to distinguish between a literal values
   readonly isClassNode: boolean;
   // whether this is a data node
@@ -59,7 +61,7 @@ export class URICount {
   private id2num: { [id: string]: number } = {};
 
   constructor(nodes?: GraphNode[]) {
-    for (let node of (nodes || [])) {
+    for (let node of nodes || []) {
       if (node.isDataNode) continue;
 
       if (this.counter[node.uri] === undefined) {
@@ -72,15 +74,15 @@ export class URICount {
 
   label = (node: GraphNode) => {
     return `${node.label} ${this.id2num[node.id]}`;
-  }
+  };
 
   nextLabel = (uri: string, label: string) => {
     return `${label} ${this.counter[uri] || 1}`;
-  }
+  };
 
   unlabel = (label: string) => {
     return label.substring(0, label.lastIndexOf(" "));
-  }
+  };
 
   add = (node: GraphClassNode) => {
     if (this.counter[node.uri] === undefined) {
@@ -88,7 +90,7 @@ export class URICount {
     }
     this.id2num[node.id] = this.counter[node.uri];
     this.counter[node.uri] += 1;
-  }
+  };
 }
 
 export class Graph {
@@ -97,7 +99,6 @@ export class Graph {
   public nodes: GraphNode[];
   public edges: GraphEdge[];
   public stale: boolean; // if it is stale
-  public dataNodePositions?: { left: number; centerLeft: number }[];
   public nodeId2Index: { [id: string]: number } = {};
   public column2nodeIndex: { [columnIndex: number]: number } = {};
   public uriCount: URICount;
@@ -117,7 +118,6 @@ export class Graph {
       nodes: observable,
       edges: observable,
       stale: observable,
-      dataNodePositions: observable,
       nodeId2Index: observable,
       column2nodeIndex: observable,
       uriCount: observable,
@@ -130,23 +130,28 @@ export class Graph {
       updateNode: action,
       addEdge: action,
       removeEdge: action,
-      updateEdge: action
-    })
+      updateEdge: action,
+    });
   }
 
   onSave = () => {
     this.stale = false;
-  }
+  };
 
   node = (id: string) => this.nodes[this.nodeId2Index[id]];
   hasNode = (id: string) => this.nodeId2Index[id] !== undefined;
-  nodesByURI = (uri: string) => this.nodes.filter(node => node.uri === uri);
+  nodesByURI = (uri: string) => this.nodes.filter((node) => node.uri === uri);
   nodeByColumnIndex = (id: number) => this.nodes[this.column2nodeIndex[id]];
 
-  edge = (source: string, target: string) => this.edges.filter(e => e.source === source && e.target === target)[0];
-  hasEdge = (source: string, target: string) => this.edges.filter(e => e.source === source && e.target === target).length > 0;
-  incomingEdges = (target: string) => this.edges.filter(e => e.target === target);
-  outgoingEdges = (source: string) => this.edges.filter(e => e.source === source);
+  edge = (source: string, target: string) =>
+    this.edges.filter((e) => e.source === source && e.target === target)[0];
+  hasEdge = (source: string, target: string) =>
+    this.edges.filter((e) => e.source === source && e.target === target)
+      .length > 0;
+  incomingEdges = (target: string) =>
+    this.edges.filter((e) => e.target === target);
+  outgoingEdges = (source: string) =>
+    this.edges.filter((e) => e.source === source);
 
   nextNodeId = () => {
     for (let i = 0; i < this.nodes.length * 100; i++) {
@@ -156,18 +161,21 @@ export class Graph {
       }
     }
     throw new Error("Cannot find new id for a node");
-  }
+  };
 
   public toJS() {
     return {
       nodes: toJS(this.nodes),
       edges: toJS(this.edges),
-      nodeId2Index: toJS(this.nodeId2Index)
-    }
+      nodeId2Index: toJS(this.nodeId2Index),
+    };
   }
 
   /** Find all paths (max 2 hops) that connect two nodes */
-  findPathMax2hops = (sourceId: string, targetId: string): [GraphEdge, GraphEdge?][] => {
+  findPathMax2hops = (
+    sourceId: string,
+    targetId: string
+  ): [GraphEdge, GraphEdge?][] => {
     let matchPaths: [GraphEdge, GraphEdge?][] = [];
     let outedges = this.outgoingEdges(sourceId);
     for (let outedge of outedges) {
@@ -184,31 +192,33 @@ export class Graph {
     }
 
     return matchPaths;
-  }
+  };
 
   /**
    * Get the class node of an entity column. Undefined if the column is not an entity node
    * @param columnIndex
-   * @returns 
+   * @returns
    */
   getClassIdOfColumnIndex = (columnIndex: number): string | undefined => {
     let inedges = this.incomingEdges(this.nodeByColumnIndex(columnIndex).id);
     for (let inedge of inedges) {
       if (inedge.uri === "http://www.w3.org/2000/01/rdf-schema#label") {
         if (inedges.length > 1) {
-          throw new Error("Invalid semantic model. An entity column has two incoming edges");
+          throw new Error(
+            "Invalid semantic model. An entity column has two incoming edges"
+          );
         }
         return inedge.source;
       }
     }
     return undefined;
-  }
+  };
 
   getOutgoingProperties = (id: string): [GraphEdge, GraphEdge?][] => {
     let outprops: [GraphEdge, GraphEdge?][] = [];
     for (let outedge of this.outgoingEdges(id)) {
       let target = this.node(outedge.target);
-      if (target.uri === 'http://wikiba.se/ontology#Statement') {
+      if (target.uri === "http://wikiba.se/ontology#Statement") {
         for (let coutedge of this.outgoingEdges(outedge.target)) {
           outprops.push([outedge, coutedge]);
         }
@@ -217,23 +227,27 @@ export class Graph {
       }
     }
     return outprops;
-  }
+  };
 
   /******************************************************************
    * Below is a list of operators that modify the graph. The index is rebuilt/modify
    * inside @action function
    ******************************************************************
-  */
+   */
 
   /**
    * Add a link between two columns
-   * 
+   *
    * @deprecated
    * @param sourceColumnIndex
    * @param targetColumnIndex
    * @param edgeData
    */
-  public addColumnRelationship(sourceColumnIndex: number, targetColumnIndex: number, edgeData: Omit<GraphEdge, "source" | "target">) {
+  public addColumnRelationship(
+    sourceColumnIndex: number,
+    targetColumnIndex: number,
+    edgeData: Omit<GraphEdge, "source" | "target">
+  ) {
     let source = this.nodeByColumnIndex(sourceColumnIndex);
     let target = this.nodeByColumnIndex(targetColumnIndex);
 
@@ -242,21 +256,28 @@ export class Graph {
       throw new Error("Cannot add link from a data node to another node");
     }
     if (sourceIncomingEdges.length !== 1) {
-      throw new Error("The source column connects to multiple class nodes! Don't know the exact class node to choose");
+      throw new Error(
+        "The source column connects to multiple class nodes! Don't know the exact class node to choose"
+      );
     }
 
     let targetIncomingEdges = this.incomingEdges(target.id);
     if (targetIncomingEdges.length > 1) {
-      throw new Error("The target column connects to multiple class nodes! Don't know the exact class node to choose");
+      throw new Error(
+        "The target column connects to multiple class nodes! Don't know the exact class node to choose"
+      );
     }
 
     let realSource = sourceIncomingEdges[0].source;
-    let realTarget = targetIncomingEdges.length === 0 ? target.id : targetIncomingEdges[0].source;
+    let realTarget =
+      targetIncomingEdges.length === 0
+        ? target.id
+        : targetIncomingEdges[0].source;
 
     this.addEdge({
       ...edgeData,
       source: realSource,
-      target: realTarget
+      target: realTarget,
     });
   }
 
@@ -267,12 +288,17 @@ export class Graph {
    * @param columnIndex
    * @param source
    */
-  public upsertColumnType(columnIndex: number, source: Omit<GraphClassNode, "id">) {
+  public upsertColumnType(
+    columnIndex: number,
+    source: Omit<GraphClassNode, "id">
+  ) {
     let target = this.nodeByColumnIndex(columnIndex);
     let targetIncomingEdges = this.incomingEdges(target.id);
 
     if (targetIncomingEdges.length > 1) {
-      throw new Error("The column connects to multiple class nodes! Don't know the exact class node to choose");
+      throw new Error(
+        "The column connects to multiple class nodes! Don't know the exact class node to choose"
+      );
     }
 
     if (targetIncomingEdges.length === 0) {
@@ -297,7 +323,7 @@ export class Graph {
         this.updateEdge(edge.source, edge.target, {
           uri: "http://www.w3.org/2000/01/rdf-schema#label",
           label: "rdfs:label",
-          approximation: edge.approximation
+          approximation: edge.approximation,
         });
       }
     }
@@ -305,17 +331,22 @@ export class Graph {
 
   /**
    * Upsert the relationship between two nodes: replace the type if exist otherwise create id.
-   * 
+   *
    * This is a special function as it tight the system to Wikidata with special node of
    * wikibase:Statement & property/qualifier. Assuming that the source node and target node
    * always exist.
-   * 
-   * @param sourceId 
-   * @param targetId 
+   *
+   * @param sourceId
+   * @param targetId
    * @param pred1
    * @param pred2
    */
-  public upsertRelationship(sourceId: string, targetId: string, pred1: Resource, pred2: Resource) {
+  public upsertRelationship(
+    sourceId: string,
+    targetId: string,
+    pred1: Resource,
+    pred2: Resource
+  ) {
     let source = this.node(sourceId);
     let target = this.node(targetId);
 
@@ -330,14 +361,14 @@ export class Graph {
           target: targetId,
           uri: pred1.uri,
           label: pred1.label,
-          approximation: false
+          approximation: false,
         });
       } else {
         let tempid = this.nextNodeId();
         this.addClassNode({
           id: tempid,
-          uri: 'http://wikiba.se/ontology#Statement',
-          label: 'wikibase:Statement',
+          uri: "http://wikiba.se/ontology#Statement",
+          label: "wikibase:Statement",
           approximation: false,
         });
         this.addEdge({
@@ -345,35 +376,37 @@ export class Graph {
           target: tempid,
           uri: pred1.uri,
           label: pred1.label,
-          approximation: false
+          approximation: false,
         });
         this.addEdge({
           source: tempid,
           target: targetId,
           uri: pred2.uri,
           label: pred2.label,
-          approximation: false
+          approximation: false,
         });
       }
       return;
     }
 
     if (matchPaths.length > 1) {
-      throw new Error("There are more one path between two nodes. Don't know which path to update it");
+      throw new Error(
+        "There are more one path between two nodes. Don't know which path to update it"
+      );
     }
 
     let [edge1, edge2] = matchPaths[0];
     this.updateEdge(edge1.source, edge1.target, {
       uri: pred1.uri,
       label: pred1.label,
-      approximation: false
+      approximation: false,
     });
     if (edge2 !== undefined) {
       // non direct property, we need to update it as well
       this.updateEdge(edge2.source, edge2.target, {
         uri: pred2.uri,
         label: pred2.label,
-        approximation: false
+        approximation: false,
       });
     }
   }
@@ -422,7 +455,7 @@ export class Graph {
 
   public removeNode(nodeId: string) {
     this._removeNode(nodeId);
-    this.nodes = this.nodes.filter(n => n !== undefined);
+    this.nodes = this.nodes.filter((n) => n !== undefined);
     this.buildIndex();
     this.version += 1;
     this.stale = true;
@@ -441,7 +474,11 @@ export class Graph {
   }
 
   public addEdge(edge: GraphEdge) {
-    if (this.edges.filter(e => e.source === edge.source && e.target === edge.target).length > 0) {
+    if (
+      this.edges.filter(
+        (e) => e.source === edge.source && e.target === edge.target
+      ).length > 0
+    ) {
       throw new Error("Cannot have more than one edge between two classes");
     }
 
@@ -453,7 +490,7 @@ export class Graph {
   public removeEdge(sourceId: string, targetId: string) {
     let size = this.nodes.length;
     this._removeEdge(sourceId, targetId);
-    this.nodes = this.nodes.filter(n => n !== undefined);
+    this.nodes = this.nodes.filter((n) => n !== undefined);
 
     if (this.nodes.length !== size) {
       this.buildIndex();
@@ -480,7 +517,10 @@ export class Graph {
    * A post process step is needed to filter out all undefined items in the list
    */
   private _removeNode = (nodeId: string) => {
-    if (this.nodeId2Index[nodeId] === undefined || this.nodes[this.nodeId2Index[nodeId]] === undefined) {
+    if (
+      this.nodeId2Index[nodeId] === undefined ||
+      this.nodes[this.nodeId2Index[nodeId]] === undefined
+    ) {
       return;
     }
 
@@ -494,11 +534,13 @@ export class Graph {
     (this.nodes[nodeIndex] as any) = undefined;
 
     // we need to remove other edges connected to this node
-    let edges = this.edges.filter(edge => edge.source === nodeId || edge.target === nodeId);
+    let edges = this.edges.filter(
+      (edge) => edge.source === nodeId || edge.target === nodeId
+    );
     for (let edge of edges) {
       this._removeEdge(edge.source, edge.target);
     }
-  }
+  };
 
   /**
    * Cascading remove edges in the graph
@@ -536,7 +578,7 @@ export class Graph {
     if (targetDegree === 1) {
       this._removeNode(targetId);
     }
-  }
+  };
 
   private buildIndex = () => {
     this.nodeId2Index = {};
@@ -549,5 +591,5 @@ export class Graph {
         this.column2nodeIndex[n.columnIndex] = i;
       }
     }
-  }
+  };
 }

@@ -30,7 +30,7 @@ DAO_SETTINGS = {
     "entity": {
         "constructor": "smc.plugins.wikidata.get_qnode_db",
         "args": {
-            "dbfile": "/tmp/qnode.db",
+            "dbfile": "/tmp/qnodes.db",
             "proxy": True,
         }
     },

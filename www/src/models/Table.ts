@@ -1,6 +1,10 @@
 import { SERVER } from "../env";
-import { Record, RStore } from "./base";
-import { PairKeysUniqueIndex, SingleKeyIndex } from "./base/StoreIndex";
+import {
+  PairKeysUniqueIndex,
+  SingleKeyIndex,
+  Record,
+  RStore,
+} from "rma-baseapp";
 
 export interface Table extends Record<number> {
   name: string;
@@ -36,9 +40,11 @@ export class TableStore extends RStore<number, Table> {
   }
 
   findByProject = (projectId: number, start?: number, no?: number): Table[] => {
-    return (this.projectIndex.index.get(projectId) || []).map(
-      (id) => this.records.get(id)!
-    );
+    const lst = [];
+    for (let id of this.projectIndex.index.get(projectId) || []) {
+      lst.push(this.records.get(id)!);
+    }
+    return lst;
   };
 
   public deserialize(record: any): Table {
@@ -48,7 +54,7 @@ export class TableStore extends RStore<number, Table> {
   }
 
   protected index(record: Table) {
-    this.projectIndex.index_record(record);
+    this.projectIndex.add(record);
   }
 }
 
@@ -76,7 +82,7 @@ export class TableRowStore extends RStore<number, TableRow> {
   };
 
   protected index(record: TableRow) {
-    this.tableIndex.index_record(record);
+    this.tableIndex.add(record);
   }
 
   public deserialize(record: any): TableRow {

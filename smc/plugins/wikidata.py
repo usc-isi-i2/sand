@@ -44,7 +44,7 @@ def get_qnode_db(dbfile: str, proxy: bool):
 
 def get_ontclass_db(dbfile: str, proxy: bool):
     return StoreWrapper(
-        db.get_wdclass_db(dbfile, proxy=proxy, read_only=not proxy, compression=True),
+        db.get_wdclass_db(dbfile, proxy=proxy, read_only=not proxy, compression=False),
         key_deser=uri2id,
         val_deser=ont_class_deser,
     )
@@ -52,7 +52,7 @@ def get_ontclass_db(dbfile: str, proxy: bool):
 
 def get_ontprop_db(dbfile: str, proxy: bool):
     return StoreWrapper(
-        db.get_wdclass_db(dbfile, proxy=proxy, read_only=not proxy, compression=True),
+        db.get_wdprop_db(dbfile, proxy=proxy, read_only=not proxy, compression=False),
         key_deser=uri2id,
         val_deser=ont_prop_deser,
     )

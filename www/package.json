@@ -1,7 +1,13 @@
 {
-  "name": "www",
-  "version": "0.1.0",
+  "name": "smc",
+  "version": "1.0.0",
   "private": true,
+  "main": "./lib/library.js",
+  "module": "./lib/library.js",
+  "types": "./lib/library.d.ts",
+  "files": [
+    "/lib"
+  ],
   "dependencies": {
     "@ant-design/pro-table": "^2.53.1",
     "@antv/g6": "^4.3.7",
@@ -27,14 +33,19 @@
     "react-hotkeys-hook": "^3.4.0",
     "react-router-dom": "^5.3.0",
     "react-scripts": "4.0.3",
+    "rma-baseapp": "^1.1.11",
     "typescript": "^4.1.2",
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "BROWSER=none react-scripts start",
     "build": "BUILD_PATH='../smc/www' react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "build:lib": "yarn compile && yarn compile:post",
+    "compile": "tsc --outDir lib --declaration true --noEmit false",
+    "compile:watch": "tsc --outDir lib --declaration true --noEmit false -w",
+    "compile:post": "cp src/*.css lib/ && cp src/*.png lib/"
   },
   "eslintConfig": {
     "extends": [
@@ -42,7 +53,7 @@
       "react-app/jest"
     ]
   },
-  "proxy": "http://localhost:5000",
+  "proxy": "http://localhost:5524",
   "browserslist": {
     "production": [
       ">0.2%",

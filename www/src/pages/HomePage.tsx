@@ -1,30 +1,29 @@
-import { Avatar, Col, List, Row } from "antd";
+import { Avatar, Col, List, Row, Typography } from "antd";
 import { toJS } from "mobx";
 import { inject, observer } from "mobx-react";
 import React, { useEffect } from "react";
-import { HomeNavBar } from "../components/NavBar";
 import { useStores } from "../models";
-import { InternalLink, RouteConf } from "../routing";
+import { routes } from "../routes";
+import { InternalLink } from "rma-baseapp";
 
-const HomePage = observer(() => {
-  const { ProjectStore: projects } = useStores();
+export const HomePage = observer(() => {
+  const { projectStore } = useStores();
 
   useEffect(() => {
-    projects.fetchSome({ limit: 100, offset: 0 });
+    projectStore.fetchSome({ limit: 100, offset: 0 });
   }, []);
 
   return (
     <React.Fragment>
-      <HomeNavBar />
       <Row gutter={16}>
         <Col className="gutter-row" span={24}>
-          <h2>Projects</h2>
+          <Typography.Title level={3}>Projects</Typography.Title>
           <List
             size="small"
             bordered={true}
             itemLayout="horizontal"
-            dataSource={projects.list}
-            renderItem={(project) => (
+            dataSource={projectStore.list}
+            renderItem={(project, i) => (
               <List.Item>
                 <List.Item.Meta
                   avatar={
@@ -36,19 +35,19 @@ const HomePage = observer(() => {
                         backgroundColor: [
                           "#f56a00",
                           "#7265e6",
-                          "#ffbf00",
+                          "#1890ff",
                           "#00a2ae",
-                        ][0],
+                        ][project.name.charCodeAt(0) % 4],
                       }}
                     >
-                      D
+                      {project.name[0].toUpperCase()}
                     </Avatar>
                   }
                   title={
                     <InternalLink
-                      path={RouteConf.project}
-                      urlArgs={{ projectId: project.id.toString() }}
-                      queryArgs={null}
+                      path={routes.project}
+                      urlArgs={{ projectId: project.id }}
+                      queryArgs={{}}
                     >
                       {project.name}
                     </InternalLink>
@@ -63,5 +62,3 @@ const HomePage = observer(() => {
     </React.Fragment>
   );
 });
-
-export default HomePage;

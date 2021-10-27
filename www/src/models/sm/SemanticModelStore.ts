@@ -5,8 +5,8 @@ import {
   RStore,
   DraftUpdateRecord,
   DraftCreateRecord,
-} from "../base";
-import { SingleKeyIndex } from "../base/StoreIndex";
+  SingleKeyIndex,
+} from "rma-baseapp";
 import { Graph } from "./Graph";
 
 // id of a semantic model is actually the combination of table & name
@@ -93,9 +93,11 @@ export class SemanticModelStore extends CRUDStore<
   }
 
   public findByTable(tableId: number): SemanticModel[] {
-    return (this.tableIndex.index.get(tableId) || []).map(
-      (id) => this.records.get(id)!
-    );
+    const lst = [];
+    for (const id of this.tableIndex.index.get(tableId) || []) {
+      lst.push(this.records.get(id)!);
+    }
+    return lst;
   }
 
   public deserialize(record: any): SemanticModel {
@@ -120,6 +122,6 @@ export class SemanticModelStore extends CRUDStore<
   }
 
   protected index(record: SemanticModel): void {
-    this.tableIndex.index_record(record);
+    this.tableIndex.add(record);
   }
 }

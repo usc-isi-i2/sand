@@ -1,36 +1,43 @@
 import { useEffect, useState } from "react";
 import { observer } from "mobx-react";
-import { Project, Table, useStores } from "../models";
+import { Table, useStores } from "../models";
 import { useParams } from "react-router-dom";
-import { InternalLink, RouteConf, RouteURLArgs_project } from "../routing";
+import { routes } from "../routes";
+import { InternalLink } from "rma-baseapp";
 import React from "react";
-import { ProjectNavBar } from "../components/NavBar";
-import NotFound404 from "./NotFound404";
-import LoadingPage from "./LoadingPage";
+import _ from "lodash";
+import { LoadingPage, NotFoundPage } from "rma-baseapp";
 import ProTable from "@ant-design/pro-table";
 import { withStyles, WithStyles } from "@material-ui/styles";
+import { Typography } from "antd";
 
 const styles = {
   table: {
-    marginTop: 8,
     "& div.ant-table-container": {
       border: "1px solid #bbb",
       borderRadius: 4,
       borderLeft: "1px solid #bbb !important",
     },
+    "& div.ant-card-body": {
+      paddingLeft: 0,
+      paddingRight: 0,
+    },
+    "& th": {
+      fontWeight: 600,
+    },
   },
 };
 
-const ProjectPage = withStyles(styles)(
+export const ProjectPage = withStyles(styles)(
   observer(({ classes }: WithStyles<typeof styles>) => {
-    const projectId = parseInt(useParams<RouteURLArgs_project>().projectId);
+    const projectId = routes.project.useURLParams()!.projectId;
 
-    const { ProjectStore, TableStore } = useStores();
+    const { projectStore, tableStore } = useStores();
     const [invalidID, setInvalidID] = useState(false);
 
     useEffect(() => {
-      if (ProjectStore.get(projectId) === undefined) {
-        ProjectStore.fetch(projectId).then((project) => {
+      if (projectStore.get(projectId) === undefined) {
+        projectStore.fetch(projectId).then((project) => {
           if (project === undefined) {
             setInvalidID(true);
             return;
@@ -39,9 +46,9 @@ const ProjectPage = withStyles(styles)(
       }
     }, [projectId]);
 
-    const project = ProjectStore.get(projectId);
+    const project = projectStore.get(projectId);
     if (project === undefined) {
-      if (invalidID) return <NotFound404 />;
+      if (invalidID) return <NotFoundPage />;
       return <LoadingPage />;
     }
 
@@ -53,10 +60,10 @@ const ProjectPage = withStyles(styles)(
         renderText: (text: string, tbl: ReturnType<typeof table2row>) => {
           return (
             <InternalLink
-              path={RouteConf.table}
-              urlArgs={{ tableId: tbl.id.toString() }}
+              path={routes.table}
+              urlArgs={{ tableId: tbl.id }}
               queryArgs={{
-                query: ProjectStore.encodeWhereQuery({ project: projectId }),
+                query: tableStore.encodeWhereQuery({ project: projectId }),
               }}
             >
               {tbl.name}
@@ -69,13 +76,15 @@ const ProjectPage = withStyles(styles)(
 
     return (
       <React.Fragment>
-        <ProjectNavBar project={ProjectStore.get(projectId)} />
+        <Typography.Title level={3}>
+          Project: {_.upperFirst(project.name)}
+        </Typography.Title>
         <ProTable<ReturnType<typeof table2row>>
           className={classes.table}
-          size="small"
+          defaultSize="small"
           bordered={true}
           request={async (params, sort, filter) => {
-            let result = await TableStore.fetchSome({
+            let result = await tableStore.fetchSome({
               limit: params.pageSize!,
               offset: (params.current! - 1) * params.pageSize!,
               conditions: { project: projectId },
@@ -89,7 +98,7 @@ const ProjectPage = withStyles(styles)(
           options={{
             search: true,
           }}
-          headerTitle={<h2>Tables</h2>}
+          headerTitle={<Typography.Title level={4}>Tables</Typography.Title>}
           // toolBarRender={false}
           search={false}
           pagination={{
@@ -103,8 +112,6 @@ const ProjectPage = withStyles(styles)(
     );
   })
 );
-
-export default ProjectPage;
 
 function table2row(tbl: Table) {
   return {

@@ -50,7 +50,7 @@ def deser_tbl_context_tree(value):
 
 
 def deser_tbl_context_page(value):
-    return ContextPage(*value) if value != b"null" else None
+    return ContextPage(*orjson.loads(value)) if value != b"null" else None
 
 
 def deser_tbl_links(value):

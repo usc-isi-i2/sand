@@ -1,12 +1,13 @@
-import React from "react";
 import ReactDOM from "react-dom";
-import App from "./App";
+import "./index.css";
+import { App } from "rma-baseapp";
 import reportWebVitals from "./reportWebVitals";
 import { stores, StoreContext } from "./models";
+import { routes } from "./routes";
 
 ReactDOM.render(
   <StoreContext.Provider value={stores}>
-    <App />
+    <App enUSLocale={true} routes={routes} />
   </StoreContext.Provider>,
   document.getElementById("root")
 );
