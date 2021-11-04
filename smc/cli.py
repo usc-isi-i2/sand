@@ -137,10 +137,10 @@ def load(project: str, tables: str, descriptions: str):
 
                 tbl = LinkedTable.from_dict(M.deserialize_json(file["table"]))
 
-                if tbl.context.page_entity is None:
+                if tbl.context.page_entity_id is None:
                     context_values = []
                 else:
-                    context_values = [Value(ValueType.URI, tbl.context.page_entity)]
+                    context_values = [Value(ValueType.URI, tbl.context.page_entity_id)]
 
                 links = {}
                 for ri, rlink in enumerate(tbl.links):
