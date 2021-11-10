@@ -109,7 +109,7 @@ def load(project: str, tables: str, descriptions: str):
 
     with db:
         project = Project.get(name=project)
-        table_files = [Path(x) for x in glob.glob(tables)]
+        table_files = [Path(x) for x in sorted(glob.glob(tables))]
         if descriptions == "":
             sm_files = []
         else:
