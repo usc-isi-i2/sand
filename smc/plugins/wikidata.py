@@ -126,8 +126,8 @@ def ont_prop_deser(item: WDProperty):
 
 
 def wd_value_deser(val: DataValue):
-    if val.is_qnode():
-        ent_id = val.as_qnode_id()
+    if val.is_entity_id():
+        ent_id = val.as_entity_id()
         if ent_id.startswith("Q"):
             uri = f"http://www.wikidata.org/entity/{ent_id}"
         elif ent_id.startswith("P"):
