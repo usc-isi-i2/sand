@@ -101,8 +101,8 @@ class TableRow(BaseModel):
             newlinks = []
             for link in links:
                 link = link._asdict()
-                link['candidate_entities'] = [
-                    cent._asdict() for cent in link['candidate_entities']
+                link["candidate_entities"] = [
+                    cent._asdict() for cent in link["candidate_entities"]
                 ]
                 newlinks.append(link)
             dlinks[ci] = newlinks

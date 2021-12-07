@@ -27,3 +27,7 @@ Install from pip: `pip install -U sem-desc-curator`
 
 1. Start the webserver: `smc start -d <dbfile> --externaldb <folder_of_ent_and_ont_db>`
 2. Open the URL: `http://localhost:5524`
+
+## Development
+
+1.
