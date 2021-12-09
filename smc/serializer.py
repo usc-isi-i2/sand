@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from functools import partial
 from typing import Dict, List
 
@@ -11,42 +12,56 @@ from smc.models.ontology import OntProperty, OntClass, OntPropertyAR, OntClassAR
 
 def serialize_entity(ent: Entity):
     return {
-        "uri": ent.uri,
-        "label": ent.readable_label,
+        "id": ent.id,
+        "label": ent.label,
+        "aliases": ent.aliases,
         "description": ent.description,
-        "types": [],
+        "properties": {
+            prop: [
+                {
+                    "value": asdict(stmt.value),
+                    "qualifiers": {
+                        qid: [asdict(qval) for qval in qvals]
+                        for qid, qvals in stmt.qualifiers.items()
+                    },
+                    "qualifiers_order": stmt.qualifiers_order,
+                }
+                for stmt in stmts
+            ]
+            for prop, stmts in ent.properties.items()
+        },
     }
 
 
 def get_label(
-    uri: str,
+    id: str,
     is_entity: bool,
     is_class: bool,
     entities: Dict[str, Entity],
     ontprops: Dict[str, OntProperty],
     ontclasses: Dict[str, OntClass],
-) -> None:
+) -> str:
     if is_entity:
-        if uri in entities:
-            return entities[uri].readable_label
-        elif uri in ontclasses:
-            return ontclasses[uri].readable_label
-        elif uri in ontprops:
-            return ontprops[uri].readable_label
+        if id in entities:
+            return entities[id].readable_label
+        elif id in ontclasses:
+            return ontclasses[id].readable_label
+        elif id in ontprops:
+            return ontprops[id].readable_label
     elif is_class:
-        if uri in ontclasses:
-            return ontclasses[uri].readable_label
-        elif uri in ontprops:
-            return ontprops[uri].readable_label
-        elif uri in entities:
-            return entities[uri].readable_label
+        if id in ontclasses:
+            return ontclasses[id].readable_label
+        elif id in ontprops:
+            return ontprops[id].readable_label
+        elif id in entities:
+            return entities[id].readable_label
     else:
-        if uri in ontprops:
-            return ontprops[uri].readable_label
-        elif uri in ontclasses:
-            return ontclasses[uri].readable_label
-        elif uri in entities:
-            return entities[uri].readable_label
+        if id in ontprops:
+            return ontprops[id].readable_label
+        elif id in ontclasses:
+            return ontclasses[id].readable_label
+        elif id in entities:
+            return entities[id].readable_label
     return None
 
 

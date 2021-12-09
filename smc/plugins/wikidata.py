@@ -1,16 +1,15 @@
 from dataclasses import dataclass
+from hugedict.misc import identity
 
 from kgdata.wikidata import db
 from kgdata.wikidata.models import QNode, DataValue, WDClass, WDProperty
 from smc.models.base import StoreWrapper
-from smc.models.entity import Entity, Statement, Value, ValueType
+from smc.models.entity import Entity, Statement, Value
 from smc.models.ontology import OntClass, OntProperty
 
 
 @dataclass
-class WrapperQNode(Entity):
-    id: str
-
+class WrapperWDEntity(Entity):
     @property
     def readable_label(self):
         return f"{self.label} ({self.id})"
@@ -18,7 +17,7 @@ class WrapperQNode(Entity):
 
 @dataclass
 class WrapperWDClass(OntClass):
-    id: str = None
+    id: str = ""
 
     @property
     def readable_label(self):
@@ -27,7 +26,7 @@ class WrapperWDClass(OntClass):
 
 @dataclass
 class WrapperWDProperty(OntProperty):
-    id: str = None
+    id: str = ""
 
     @property
     def readable_label(self):
@@ -35,9 +34,10 @@ class WrapperWDProperty(OntProperty):
 
 
 def get_qnode_db(dbfile: str, proxy: bool):
+    store = db.get_qnode_db(dbfile, proxy=proxy, read_only=not proxy, compression=True)
     return StoreWrapper(
-        db.get_qnode_db(dbfile, proxy=proxy, read_only=not proxy, compression=True),
-        key_deser=uri2id,
+        store,
+        key_deser=identity,
         val_deser=qnode_deser,
     )
 
@@ -45,7 +45,7 @@ def get_qnode_db(dbfile: str, proxy: bool):
 def get_ontclass_db(dbfile: str, proxy: bool):
     return StoreWrapper(
         db.get_wdclass_db(dbfile, proxy=proxy, read_only=not proxy, compression=False),
-        key_deser=uri2id,
+        key_deser=identity,
         val_deser=ont_class_deser,
     )
 
@@ -53,19 +53,9 @@ def get_ontclass_db(dbfile: str, proxy: bool):
 def get_ontprop_db(dbfile: str, proxy: bool):
     return StoreWrapper(
         db.get_wdprop_db(dbfile, proxy=proxy, read_only=not proxy, compression=False),
-        key_deser=uri2id,
+        key_deser=identity,
         val_deser=ont_prop_deser,
     )
-
-
-def uri2id(uri: str):
-    if uri.startswith("http://www.wikidata.org/"):
-        uri = uri.replace("http://www.wikidata.org/entity/", "")
-        uri = uri.replace("http://www.wikidata.org/prop/", "")
-    elif uri.startswith("http://wikidata.org/"):
-        uri = uri.replace("http://wikidata.org/entity/", "")
-        uri = uri.replace("http://wikidata.org/prop/", "")
-    return uri
 
 
 def qnode_deser(qnode: QNode):
@@ -76,19 +66,19 @@ def qnode_deser(qnode: QNode):
             new_stmt = Statement(
                 value=wd_value_deser(stmt.value),
                 qualifiers={
-                    f"http://www.wikidata.org/prop/{qid}": [
-                        wd_value_deser(x) for x in lst
-                    ]
+                    qid: [wd_value_deser(x) for x in lst]
                     for qid, lst in stmt.qualifiers.items()
                 },
+                qualifiers_order=stmt.qualifiers_order,
             )
             new_stmts.append(new_stmt)
-        props[f"http://www.wikidata.org/prop/{pid}"] = new_stmts
-    return WrapperQNode(
+        props[pid] = new_stmts
+
+    return WrapperWDEntity(
         id=qnode.id,
-        uri=f"http://www.wikidata.org/entity/{qnode.id}",
-        label=qnode.label,
-        description=qnode.description,
+        label=qnode.label.lang2value,
+        aliases=qnode.aliases.lang2values,
+        description=qnode.description.lang2value,
         properties=props,
     )
 
@@ -127,14 +117,8 @@ def ont_prop_deser(item: WDProperty):
 
 def wd_value_deser(val: DataValue):
     if val.is_entity_id():
-        ent_id = val.as_entity_id()
-        if ent_id.startswith("Q"):
-            uri = f"http://www.wikidata.org/entity/{ent_id}"
-        elif ent_id.startswith("P"):
-            uri = f"http://www.wikidata.org/prop/{ent_id}"
-        else:
-            uri = ent_id
-        return Value(type=ValueType.URI, value=uri)
-    if val.is_quantity():
-        return Value(type=ValueType.Float, value=val.value["amount"])
-    return Value(type=ValueType.String, value=val.to_string_repr())
+        return Value(type="entityid", value=val.as_entity_id())
+    elif val.is_string():
+        return Value(type="string", value=val.as_string())
+    else:
+        return Value(type=val.type, value=val.value)  # type: ignore

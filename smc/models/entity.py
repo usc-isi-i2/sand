@@ -1,55 +1,58 @@
+from __future__ import annotations
+
 import enum
 import importlib
 from dataclasses import dataclass
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Literal, Union, Optional
+from kgdata.wikidata.models.qnode import (
+    DataValueGlobeCoordinate,
+    DataValueMonolingualText,
+    DataValueQuantity,
+    DataValueTime,
+    MultiLingualStringList,
+)
 
 from smc.config import DAO_SETTINGS
-from smc.models.base import Singleton
 
 
-class ValueType(enum.Enum):
-    URI = "uri"
-    String = "string"
-    Integer = "integer"
-    Float = "float"
-
-
-@dataclass
-class Value:
-    __slots__ = ("type", "value")
-    # uri, string, integer, float
-    type: ValueType
-    value: Union[str, int, float]
-
-    def is_uri(self):
-        return self.type == ValueType.URI
-
-    def as_uri(self):
-        if self.type == ValueType.URI:
-            return self.value
-        assert f"Cannot convert value of type {self.type} to URI"
-
-
-@dataclass
-class Statement:
-    __slots__ = ("value", "qualifiers")
-    value: Value
-    qualifiers: Dict[str, List[Value]]
+MultiLingualString = Dict[str, str]
+MultiLingualStringList = Dict[str, List[str]]
 
 
 @dataclass
 class Entity:
-    __slots__ = ("uri", "label", "description", "properties")
-
-    # id or uri of the entity
-    uri: str
-    label: str
-    description: str
+    id: str
+    label: MultiLingualString
+    aliases: MultiLingualStringList
+    description: MultiLingualString
     properties: Dict[str, List[Statement]]
 
     @property
     def readable_label(self):
         return self.label
+
+
+@dataclass
+class Statement:
+    __slots__ = ("value", "qualifiers", "qualifiers_order")
+    value: Value
+    qualifiers: Dict[str, List[Value]]
+    qualifiers_order: List[int]
+
+
+@dataclass
+class Value:
+    __slots__ = ("type", "value")
+    type: Literal[
+        "string", "time", "quantity", "globecoordinate", "entityid", "monolingualtext"
+    ]
+    value: Union[
+        str,
+        DataValueGlobeCoordinate,
+        DataValueQuantity,
+        DataValueTime,
+        DataValueMonolingualText,
+    ]
 
 
 ENTITY_AR = None
