@@ -30,4 +30,8 @@ Install from pip: `pip install -U sem-desc-curator`
 
 ## Development
 
-1.
+1. Install `yarn` and [`yalc`](https://github.com/wclr/yalc)
+2. Install dependencies: `yarn install`
+3. Start development server: `yarn start`
+4. Build production files: `yarn build`
+5. Build library files and publish to private index: `yarn build:lib && yalc public --private`
