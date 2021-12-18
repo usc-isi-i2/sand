@@ -4,25 +4,28 @@ from pathlib import Path
 
 import click
 from loguru import logger
-from tqdm.auto import tqdm
-
-from sm.prelude import I, O, M
-from tornado.wsgi import WSGIContainer
+from sm.prelude import M, O
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
+from tornado.wsgi import WSGIContainer
+from tqdm.auto import tqdm
+
+from smc.config import DAO_SETTINGS
+from smc.models import Project, SemanticModel, Table, TableRow, db as dbconn, init_db
+from smc.plugins.grams import convert_linked_table
 
 
 @click.command()
-def init():
+@click.option("-d", "--db", required=True, help="smc database file")
+def init(db):
     """Init database"""
-    from smc.models import db, Project, Table, TableRow, SemanticModel
-
-    db.create_tables([Project, Table, TableRow, SemanticModel])
+    init_db(db)
+    dbconn.create_tables([Project, Table, TableRow, SemanticModel])
     Project(name="default", description="The default project").save()
 
 
 @click.command()
-@click.option("-d", "--dbfile", default="", help="smc database file")
+@click.option("-d", "--db", required=True, help="smc database file")
 @click.option(
     "--externaldb",
     default="",
@@ -40,7 +43,7 @@ def init():
 )
 @click.option("--keyfile", default=None, help="Path to the key file")
 def start(
-    dbfile: str,
+    db: str,
     externaldb: str,
     externaldb_proxy: bool,
     wsgi: bool,
@@ -48,25 +51,22 @@ def start(
     certfile: str,
     keyfile: str,
 ):
-    if dbfile.strip() != "" and "DBFILE" not in os.environ:
-        os.environ["DBFILE"] = dbfile.strip()
+    init_db(db)
 
     if externaldb.strip() != "":
-        from smc.config import DAO_SETTINGS
-
         for cfg in DAO_SETTINGS.values():
             cfg["args"]["dbfile"] = os.path.join(
                 externaldb, Path(cfg["args"]["dbfile"]).name
             )
             cfg["args"]["proxy"] = externaldb_proxy
 
-    from smc.api import app
-
     if certfile is None or keyfile is None:
         ssl_options = None
     else:
         ssl_options = {"certfile": certfile, "keyfile": keyfile}
         assert not wsgi
+
+    from smc.api import app
 
     if wsgi:
         app.run(host="0.0.0.0", port=port)
@@ -78,36 +78,24 @@ def start(
 
 
 @click.command()
-@click.option("-d", "--description", required=True, help="Description of the project")
+@click.option("-d", "--db", required=True, help="smc database file")
+@click.option("--description", required=True, help="Description of the project")
 @click.argument("name")
-def create(description: str, name: str):
+def create(db, description: str, name: str):
     """Create project if not exist"""
-    from smc.models import Project
-
+    init_db(db)
     Project(name=name, description=description).save()
 
 
 @click.command()
+@click.option("-d", "--db", required=True, help="smc database file")
 @click.option("-p", "--project", default="default", help="Project name")
 @click.option("-t", "--tables", required=True, help="Path to tables")
-@click.option(
-    "-d", "--descriptions", default="", help="Path to semantic models of tables"
-)
-def load(project: str, tables: str, descriptions: str):
+@click.option("--descriptions", default="", help="Path to semantic models of tables")
+def load(db, project: str, tables: str, descriptions: str):
     """Load data into the project"""
-    from smc.models import (
-        db,
-        Project,
-        Value,
-        Link,
-        Table,
-        ContextPage,
-        TableRow,
-        SemanticModel,
-    )
-    from smc.plugins.grams import convert_linked_table
-
-    with db:
+    init_db(db)
+    with dbconn:
         project = Project.get(name=project)
         table_files = [Path(x) for x in sorted(glob.glob(tables))]
         if descriptions == "":

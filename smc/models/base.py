@@ -4,13 +4,20 @@ from typing import TypeVar, Type, Callable, Any
 import orjson
 from peewee import SqliteDatabase, Model, Field
 
-from smc.config import DBFILE, CACHE_SIZE
+from smc.config import CACHE_SIZE
 
 
 T = TypeVar("T", bound="Singleton")
 
 
-db = SqliteDatabase(DBFILE)
+# TODO: consider moving to APSWDatabase
+db = SqliteDatabase(None)
+
+
+def init_db(dbfile: str):
+    """Initialize database"""
+    global db
+    db.init(dbfile)
 
 
 class BaseModel(Model):

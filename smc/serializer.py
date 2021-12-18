@@ -1,6 +1,6 @@
 from dataclasses import asdict
 from functools import partial
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from playhouse.shortcuts import model_to_dict
 
@@ -31,38 +31,6 @@ def serialize_entity(ent: Entity):
             for prop, stmts in ent.properties.items()
         },
     }
-
-
-def get_label(
-    id: str,
-    is_entity: bool,
-    is_class: bool,
-    entities: Dict[str, Entity],
-    ontprops: Dict[str, OntProperty],
-    ontclasses: Dict[str, OntClass],
-) -> str:
-    if is_entity:
-        if id in entities:
-            return entities[id].readable_label
-        elif id in ontclasses:
-            return ontclasses[id].readable_label
-        elif id in ontprops:
-            return ontprops[id].readable_label
-    elif is_class:
-        if id in ontclasses:
-            return ontclasses[id].readable_label
-        elif id in ontprops:
-            return ontprops[id].readable_label
-        elif id in entities:
-            return entities[id].readable_label
-    else:
-        if id in ontprops:
-            return ontprops[id].readable_label
-        elif id in ontclasses:
-            return ontclasses[id].readable_label
-        elif id in entities:
-            return entities[id].readable_label
-    return None
 
 
 def serialize_graph(sm: O.SemanticModel, uri2lbl, columns: List[str]):
@@ -155,3 +123,35 @@ def batch_serialize_sms(sms: List[SemanticModel]):
         r["data"] = serialize_graph(r["data"], uri2lbl, tbls[sm.table_id].columns)
         output.append(r)
     return output
+
+
+def get_label(
+    id: str,
+    is_entity: bool,
+    is_class: bool,
+    entities: Dict[str, Entity],
+    ontprops: Dict[str, OntProperty],
+    ontclasses: Dict[str, OntClass],
+) -> Optional[str]:
+    if is_entity:
+        if id in entities:
+            return entities[id].readable_label
+        elif id in ontclasses:
+            return ontclasses[id].readable_label
+        elif id in ontprops:
+            return ontprops[id].readable_label
+    elif is_class:
+        if id in ontclasses:
+            return ontclasses[id].readable_label
+        elif id in ontprops:
+            return ontprops[id].readable_label
+        elif id in entities:
+            return entities[id].readable_label
+    else:
+        if id in ontprops:
+            return ontprops[id].readable_label
+        elif id in ontclasses:
+            return ontclasses[id].readable_label
+        elif id in entities:
+            return entities[id].readable_label
+    return None

@@ -29,7 +29,7 @@ class Entity:
 
     @property
     def readable_label(self):
-        return self.label
+        return self.label.get("en", "")
 
 
 @dataclass
