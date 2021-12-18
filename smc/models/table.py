@@ -1,4 +1,5 @@
 from typing import Optional, NamedTuple, List, Dict, Tuple
+from grams.inputs.context import ContentHierarchy
 
 import orjson
 from peewee import CharField, ForeignKeyField, CompositeKey, TextField, IntegerField
@@ -32,21 +33,12 @@ class ContextPage(NamedTuple):
     title: str
 
 
-class ContextLevel(NamedTuple):
-    level: int
-    header: str
-    content: str
-
-    def clone(self):
-        return ContextLevel(self.level, self.header, self.content)
-
-
 def deser_tbl_context_values(value):
     return [Value(**v) for v in orjson.loads(value)]
 
 
 def deser_tbl_context_tree(value):
-    return [ContextLevel(*v) for v in orjson.loads(value)]
+    return [ContentHierarchy.from_dict(v) for v in orjson.loads(value)]
 
 
 def deser_tbl_context_page(value):
@@ -67,8 +59,9 @@ def ser_tbl_links(pyvalue):
 class Table(BaseModel):
     name = CharField()
     description = TextField()
-    columns: List[str] = JSONField()  # list of columns in the table
-    project = ForeignKeyField(Project, backref="tables")
+    # list of columns in the table
+    columns: List[str] = JSONField()  # type: ignore
+    project = ForeignKeyField(Project, backref="tables", on_delete="CASCADE")
     size = IntegerField()
     context_page: Optional[ContextPage] = BlobField(
         serialize=lambda x: orjson.dumps(x, default=list),
@@ -78,8 +71,8 @@ class Table(BaseModel):
     context_values: List[Value] = BlobField(
         serialize=orjson.dumps, deserialize=deser_tbl_context_values
     )
-    context_tree: List[ContextLevel] = BlobField(
-        serialize=lambda x: orjson.dumps(x, default=list),
+    context_tree: List[ContentHierarchy] = BlobField(
+        serialize=lambda lst: orjson.dumps([x.to_dict() for x in lst]),
         deserialize=deser_tbl_context_tree,
     )
 
@@ -88,7 +81,7 @@ class Table(BaseModel):
 
 
 class TableRow(BaseModel):
-    table = ForeignKeyField(Table, backref="rows")
+    table = ForeignKeyField(Table, backref="rows", on_delete="CASCADE")
     index = IntegerField()
     row = JSONField(json_dumps=orjson.dumps, json_loads=orjson.loads)
     links: Dict[int, List[Link]] = BlobField(

@@ -42,7 +42,9 @@ V = TypeVar("V")
 
 
 class StoreWrapper:
-    def __init__(self, store: dict, key_deser: Callable[[K], Any], val_deser: Callable[[Any], V]):
+    def __init__(
+        self, store: dict, key_deser: Callable[[K], Any], val_deser: Callable[[Any], V]
+    ):
         self.store = store
         self.key_deser = key_deser
         self.val_deser = val_deser
@@ -57,13 +59,19 @@ class StoreWrapper:
         return self.val_deser(val)
 
     def __setitem__(self, key, val):
-        raise NotImplementedError(f"{self.__class__.__name__} does not support __setitem__ function")
+        raise NotImplementedError(
+            f"{self.__class__.__name__} does not support __setitem__ function"
+        )
 
     def __delitem__(self, key):
-        raise NotImplementedError(f"{self.__class__.__name__} does not support __delitem__ function")
+        raise NotImplementedError(
+            f"{self.__class__.__name__} does not support __delitem__ function"
+        )
 
     def __len__(self):
-        raise NotImplementedError(f"{self.__class__.__name__} does not support __len__ function")
+        raise NotImplementedError(
+            f"{self.__class__.__name__} does not support __len__ function"
+        )
 
     def get(self, key, default=None):
         if not self.__contains__(key):

@@ -16,16 +16,14 @@ def deser_sm(dbvalue: bytes):
 
 
 class SemanticModel(BaseModel):
-    project = ForeignKeyField(Project, backref="tables")
-    table = ForeignKeyField(Table, backref="semantic_models")
-    name = (
-        CharField()
-    )  # name of the semantic model as we may have more than one version for the same table
+    project = ForeignKeyField(Project, backref="tables", on_delete="CASCADE")
+    table = ForeignKeyField(Table, backref="semantic_models", on_delete="CASCADE")
+    # name of the semantic model as we may have more than one version for the same table
+    name = CharField()
     description = TextField()  # description of this model
     version = IntegerField()  # version of the semantic model
-    data: O.SemanticModel = BlobField(
-        serialize=ser_sm, deserialize=deser_sm
-    )  # the semantic model at this version
+    # the semantic model at this version
+    data: O.SemanticModel = BlobField(serialize=ser_sm, deserialize=deser_sm)  # type: ignore
 
     class Meta:
         indexes = ((("table", "name"), True),)

@@ -99,13 +99,13 @@ def load(project: str, tables: str, descriptions: str):
         db,
         Project,
         Value,
-        ValueType,
         Link,
         Table,
         ContextPage,
         TableRow,
         SemanticModel,
     )
+    from smc.plugins.grams import convert_linked_table
 
     with db:
         project = Project.get(name=project)
@@ -137,49 +137,12 @@ def load(project: str, tables: str, descriptions: str):
 
                 tbl = LinkedTable.from_dict(M.deserialize_json(file["table"]))
 
-                if tbl.context.page_entity_id is None:
-                    context_values = []
-                else:
-                    context_values = [Value(ValueType.URI, tbl.context.page_entity_id)]
-
-                links = {}
-                for ri, rlink in enumerate(tbl.links):
-                    if ri not in links:
-                        links[ri] = {}
-                    for ci, clinks in enumerate(rlink):
-                        if len(clinks) > 0:
-                            links[ri][ci] = []
-                            for clink in clinks:
-                                links[ri][ci].append(
-                                    Link(
-                                        clink.start,
-                                        clink.end,
-                                        clink.url,
-                                        clink.entity_id,
-                                        [],
-                                    )
-                                )
-
-                columns = [col.name for col in tbl.table.columns]
-                mtbl = Table(
-                    name=tbl.id,
-                    description="",
-                    columns=columns,
-                    size=tbl.size(),
-                    context_values=context_values,
-                    context_tree=[],
-                    context_page=ContextPage(
-                        tbl.context.page_url, tbl.context.page_title
-                    )
-                    if tbl.context.page_url is not None
-                    else None,
-                    project=project,
-                )
+                mtbl, mrows = convert_linked_table(tbl)
+                mtbl.project = project  # type: ignore
                 mtbl.save()
 
-                for ri in range(tbl.size()):
-                    row = [tbl.table[ri, ci] for ci in range(len(columns))]
-                    TableRow(table=mtbl, index=ri, row=row, links=links[ri]).save()
+                for row in mrows:
+                    row.save()
             else:
                 assert False
 
