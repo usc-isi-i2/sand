@@ -3,6 +3,9 @@ import { ExternalLink } from "rma-baseapp";
 
 /**
  * Render entity in a single line.
+ *
+ * @param entity the entity to render
+ * @param noLink whether to render the entity as plain text (not clickable to open a page)
  */
 export const InlineEntityComponent = ({
   entity,

@@ -1,10 +1,7 @@
 import { withStyles, WithStyles } from "@material-ui/styles";
 import { Col, Row, Typography } from "antd";
-import React from "react";
-import { FetchEntityComponent, InlineEntityComponent } from ".";
-import { Entity, Statement } from "../../models/entity";
+import { Entity } from "../../models/entity";
 import { StatementComponent } from "./StatementComponent";
-import { ValueComponent } from "./ValueComponent";
 
 const styles = {};
 
@@ -22,7 +19,8 @@ export const PropertyComponent = withStyles(styles)(
 
     const components = [];
     for (const pid of visibleProperties) {
-      const stmts = entity.properties[pid];
+      // we have undefined when entity does not have this property `pid`
+      const stmts = entity.properties[pid] || [];
       components.push(
         <Row gutter={8} key={pid}>
           <Col span={6}>

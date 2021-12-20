@@ -1,12 +1,11 @@
-import { Button, Descriptions, Select, Typography } from "antd";
 import ProTable from "@ant-design/pro-table";
-import { observer } from "mobx-react";
-import { InternalLinkBtn, ExternalLink } from "rma-baseapp";
 import { withStyles, WithStyles } from "@material-ui/styles";
-import * as RTable from "./RelationalTable";
-import { CellComponent } from "./CellComponent";
+import { Descriptions } from "antd";
 import React from "react";
-import { Entity, FetchEntityComponent, InlineEntityComponent } from "../entity";
+import { ExternalLink } from "rma-baseapp";
+import { FetchEntityComponent, InlineEntityComponent } from "../entity";
+import { CellComponent } from "./CellComponent";
+import * as RTable from "./RelationalTable";
 import { tableStyles } from "./styles";
 
 export const styles = {

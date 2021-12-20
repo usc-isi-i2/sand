@@ -1,19 +1,18 @@
-import { SERVER } from "../../env";
 import {
-  Record,
   CRUDStore,
-  RStore,
-  DraftUpdateRecord,
   DraftCreateRecord,
+  DraftUpdateRecord,
+  Record,
   SingleKeyIndex,
 } from "rma-baseapp";
+import { SERVER } from "../../env";
 import { SMGraph, SMNodeType } from "./SMGraph";
 
 // id of a semantic model is actually the combination of table & name
-const parseKey = (id: string) => {
-  const ptr = id.indexOf(":");
-  return { table: parseInt(id.substring(0, ptr)), name: id.substring(ptr) };
-};
+// const parseKey = (id: string) => {
+//   const ptr = id.indexOf(":");
+//   return { table: parseInt(id.substring(0, ptr)), name: id.substring(ptr) };
+// };
 const getKey = (name: string, table: number) => `${table}:${name}`;
 
 export class SemanticModel
@@ -89,7 +88,7 @@ export class SemanticModelStore extends CRUDStore<
   );
 
   constructor() {
-    super(`${SERVER}/api/semanticmodel`);
+    super(`${SERVER}/api/semanticmodel`, undefined, false);
   }
 
   /**

@@ -1,6 +1,6 @@
 {
   "name": "rma-baseapp",
-  "version": "1.2.1",
+  "version": "2.0.0",
   "private": false,
   "main": "./lib/cjs/index.js",
   "module": "./lib/esm/index.js",
@@ -58,5 +58,5 @@
     ]
   },
   "license": "MIT",
-  "yalcSig": "4f9a7332176c3a76d45229865e994a6d"
+  "yalcSig": "dbacde93cc5aefcc55eecf0941300c0d"
 }

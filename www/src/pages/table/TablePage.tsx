@@ -1,25 +1,20 @@
-import { useEffect, useMemo, useState } from "react";
-import { observer } from "mobx-react";
-import {
-  useStores,
-  TableStore as TableStoreType,
-  TableRow,
-  Project,
-  Table,
-} from "../../models";
-import { useLocation, useParams } from "react-router-dom";
-import { routes } from "../../routes";
-import React from "react";
-import { LoadingPage, NotFoundPage, history } from "rma-baseapp";
-import { Button, PageHeader, Popover, Space } from "antd";
-import ProTable from "@ant-design/pro-table";
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { useHotkeys } from "react-hotkeys-hook";
+import { Button, PageHeader, Space } from "antd";
 import _ from "lodash";
-import { toJS } from "mobx";
+import { observer } from "mobx-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
+import { history, LoadingPage, NotFoundPage } from "rma-baseapp";
 // import { TableComponent } from "./TableComponent";
 import { TableComponent } from "../../components/table";
 import * as RTable from "../../components/table/RelationalTable";
+import {
+  Project,
+  Table,
+  TableStore as TableStoreType,
+  useStores,
+} from "../../models";
+import { routes } from "../../routes";
 import { SemanticGraphComponent } from "./SemanticModelComponent";
 
 // https://cssinjs.org/jss-plugin-nested?v=v10.8.0#use--to-reference-selector-of-the-parent-rule
@@ -41,15 +36,8 @@ const styles = {
 export const TablePage = withStyles(styles)(
   observer(({ classes }: WithStyles<typeof styles>) => {
     // use stores
-    const {
-      projectStore,
-      tableStore,
-      tableRowStore,
-      semanticModelStore,
-      entityStore,
-    } = useStores();
-    // define states
-    const [invalidID, setInvalidID] = useState(false);
+    const { projectStore, tableStore, tableRowStore, semanticModelStore } =
+      useStores();
 
     // parse necessary route parameters
     const tableId = routes.table.useURLParams()!.tableId;
@@ -60,19 +48,15 @@ export const TablePage = withStyles(styles)(
 
     useEffect(() => {
       // fetch the table
-      if (!tableStore.has(tableId)) {
-        tableStore.fetch(tableId).then((tbl) => {
-          if (tbl === undefined) {
-            setInvalidID(true);
-            return;
-          }
-          projectStore.fetchIfMissing(tbl.project);
-        });
-      }
+      tableStore.fetchById(tableId).then((table) => {
+        if (table !== undefined) {
+          projectStore.fetchById(table.project);
+        }
+      });
 
       // fetch its semantic model
       if (!semanticModelStore.hasByTable(tableId)) {
-        semanticModelStore.fetchSome({
+        semanticModelStore.fetch({
           limit: 1000,
           offset: 0,
           conditions: {
@@ -80,7 +64,7 @@ export const TablePage = withStyles(styles)(
           },
         });
       }
-    }, [tableId]);
+    }, [tableStore, projectStore, semanticModelStore, tableId]);
 
     useHotkeys("b", toPreviousTable, [navState.version]);
     useHotkeys("n", toNextTable, [navState.version]);
@@ -88,7 +72,7 @@ export const TablePage = withStyles(styles)(
     const table = tableStore.get(tableId);
     const rtable: RTable.Table | undefined = useMemo(() => {
       const table = tableStore.get(tableId);
-      if (table === undefined) {
+      if (table === undefined || table === null) {
         return undefined;
       }
 
@@ -104,12 +88,15 @@ export const TablePage = withStyles(styles)(
           contentHierarchy: table.contextTree,
         },
       };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tableId, table !== undefined]);
 
-    if (table === undefined) {
-      if (invalidID) return <NotFoundPage />;
+    if (table === null) {
+      return <NotFoundPage />;
+    } else if (table === undefined) {
       return <LoadingPage />;
     }
+
     let semComponent = null;
     if (!semanticModelStore.hasByTable(tableId)) {
       semComponent = <LoadingPage bordered={true} />;
@@ -119,7 +106,7 @@ export const TablePage = withStyles(styles)(
     }
 
     const queryRow = async (limit: number, offset: number) => {
-      let result = await tableRowStore.fetchSome({
+      let result = await tableRowStore.fetch({
         limit,
         offset,
         conditions: { table: table.id },
@@ -180,12 +167,11 @@ export const TablePage = withStyles(styles)(
 
 function useTableNavigation(TableStore: TableStoreType, tableId: number) {
   const PREFETCH_LIMIT = 50;
-  const location = useLocation();
   const queryParams = routes.table.useQueryParams();
   const b64query = queryParams === null ? "" : queryParams.query;
   const tableQueryConditions = useMemo(
     () => (b64query !== "" ? TableStore.decodeWhereQuery(b64query) : {}),
-    [b64query]
+    [TableStore, b64query]
   );
 
   // Note: assume that the list is always sorted by id (which the order which the table)
@@ -299,6 +285,7 @@ function useTableNavigation(TableStore: TableStoreType, tableId: number) {
       });
     };
     fn();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableId, b64query]);
 
   // open another table relative to the current table by some offset
@@ -327,7 +314,7 @@ function useTableNavigation(TableStore: TableStoreType, tableId: number) {
 }
 
 const TableNavBar = (props: {
-  project?: Project;
+  project: Project | null | undefined;
   table: Table;
   btns?: React.ReactNode[];
   extraSubTitle?: React.ReactNode;

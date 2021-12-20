@@ -1,7 +1,5 @@
 import { withStyles, WithStyles } from "@material-ui/styles";
 import { Col, Row } from "antd";
-import React from "react";
-import { FetchEntityComponent, InlineEntityComponent } from ".";
 import { Statement } from "../../models/entity";
 import { ValueComponent } from "./ValueComponent";
 
@@ -20,9 +18,11 @@ export const StatementComponent = withStyles(styles)(
           <Col span={6}>{qid}</Col>
           <Col span={18}>
             {stmt.qualifiers[qid].map((value, valueIndex) => {
-              <div key={valueIndex}>
-                <ValueComponent value={value} />
-              </div>;
+              return (
+                <div key={valueIndex}>
+                  <ValueComponent value={value} />
+                </div>
+              );
             })}
           </Col>
         </Row>

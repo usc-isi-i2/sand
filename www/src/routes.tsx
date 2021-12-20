@@ -29,7 +29,7 @@ export const Layout = (
       <Space direction="vertical" style={{ width: "100%" }}>
         <LeftNavBar
           menus={{
-            home: <img src={logo} />,
+            home: <img src={logo} alt="logo" />,
             projects: { icon: <ProjectOutlined />, children: "Projects" },
             upload: { icon: <CloudUploadOutlined />, children: "Upload" },
             settings: { icon: <SettingOutlined />, children: "Settings" },

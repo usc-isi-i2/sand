@@ -1,17 +1,7 @@
 import * as RTable from "./RelationalTable";
-import { Button, Modal, Popover, Space, Typography } from "antd";
 import { withStyles, WithStyles } from "@material-ui/styles";
-import { Number, CheckboxIcon } from "../element";
-import { faCheck, faCheckDouble } from "@fortawesome/free-solid-svg-icons";
-import {
-  Entity,
-  FetchEntityComponent,
-  InlineEntityComponent,
-  PopoverEntityComponent,
-} from "../entity";
-import { blue, grey } from "@ant-design/colors";
-import React, { useMemo, useState } from "react";
-import ProTable from "@ant-design/pro-table";
+import { FetchEntityComponent, PopoverEntityComponent } from "../entity";
+import { grey } from "@ant-design/colors";
 import { CandidateEntityListComponent } from "./CandidateEntityListComponent";
 
 const styles = {

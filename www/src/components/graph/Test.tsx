@@ -1,13 +1,12 @@
+import G6 from "@antv/g6";
 import {
+  Circle,
+  createNodeFromReact,
+  Group,
+  Image,
   Rect,
   Text,
-  Circle,
-  Image,
-  Group,
-  createNodeFromReact,
 } from "@antv/g6-react-node";
-import React from "react";
-import G6 from "@antv/g6";
 
 export const Tag = ({ text, color }: any) => (
   <Rect

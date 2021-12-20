@@ -8,7 +8,7 @@ export class TableStore extends RStore<number, Table> {
   );
 
   constructor() {
-    super(`${SERVER}/api/table`);
+    super(`${SERVER}/api/table`, undefined, false);
   }
 
   /**
@@ -26,7 +26,11 @@ export class TableStore extends RStore<number, Table> {
 
   public deserialize(record: any): Table {
     record.contextPage = record.context_page;
-    if (record.contextPage !== null && record.contextPage !== undefined) {
+    if (
+      record.contextPage !== null &&
+      record.contextPage !== undefined &&
+      record.contextPage.entity !== null
+    ) {
       record.contextPage.entityId = record.contextPage.entity;
       delete record.contextPage.entity;
     }

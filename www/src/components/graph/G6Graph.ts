@@ -262,7 +262,7 @@ export class G6Graph {
    * @param significantChange
    * @param prevBBox
    */
-  untilLayoutStable = <F extends (...args: any) => any>(
+  untilLayoutStable = <F extends (...args: any[]) => any>(
     maxTries: number,
     delay: number,
     fn: F,

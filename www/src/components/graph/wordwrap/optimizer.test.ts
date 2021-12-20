@@ -1,8 +1,7 @@
-import { ParagraphOptimizer } from "./optimizer";
-import { Paragraph } from "./model";
-import { WordWrap } from ".";
 import enUsPatterns from "hyphenation.en-us";
 import Hypher from "hypher";
+import { Paragraph } from "./model";
+import { ParagraphOptimizer } from "./optimizer";
 
 const hypher = new Hypher(enUsPatterns);
 const hyphenate = (word: string) => {

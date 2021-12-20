@@ -1,15 +1,12 @@
-import { useEffect, useState } from "react";
-import { observer } from "mobx-react";
-import { Table, useStores } from "../models";
-import { useParams } from "react-router-dom";
-import { routes } from "../routes";
-import { InternalLink } from "rma-baseapp";
-import React from "react";
-import _ from "lodash";
-import { LoadingPage, NotFoundPage } from "rma-baseapp";
 import ProTable from "@ant-design/pro-table";
 import { withStyles, WithStyles } from "@material-ui/styles";
 import { Typography } from "antd";
+import _ from "lodash";
+import { observer } from "mobx-react";
+import React, { useEffect } from "react";
+import { InternalLink, LoadingPage, NotFoundPage } from "rma-baseapp";
+import { Table, useStores } from "../models";
+import { routes } from "../routes";
 
 const styles = {
   table: {
@@ -33,23 +30,15 @@ export const ProjectPage = withStyles(styles)(
     const projectId = routes.project.useURLParams()!.projectId;
 
     const { projectStore, tableStore } = useStores();
-    const [invalidID, setInvalidID] = useState(false);
-
     useEffect(() => {
-      if (projectStore.get(projectId) === undefined) {
-        projectStore.fetch(projectId).then((project) => {
-          if (project === undefined) {
-            setInvalidID(true);
-            return;
-          }
-        });
-      }
-    }, [projectId]);
+      projectStore.fetchById(projectId);
+    }, [projectStore, projectId]);
 
     const project = projectStore.get(projectId);
     if (project === undefined) {
-      if (invalidID) return <NotFoundPage />;
       return <LoadingPage />;
+    } else if (project === null) {
+      return <NotFoundPage />;
     }
 
     const columns = [
@@ -84,7 +73,7 @@ export const ProjectPage = withStyles(styles)(
           defaultSize="small"
           bordered={true}
           request={async (params, sort, filter) => {
-            let result = await tableStore.fetchSome({
+            let result = await tableStore.fetch({
               limit: params.pageSize!,
               offset: (params.current! - 1) * params.pageSize!,
               conditions: { project: projectId },

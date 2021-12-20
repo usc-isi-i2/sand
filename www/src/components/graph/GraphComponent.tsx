@@ -8,11 +8,11 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
 import { Button, Dropdown, Menu, Space, Tooltip } from "antd";
 import React, {
+  forwardRef,
   useEffect,
+  useImperativeHandle,
   useRef,
   useState,
-  forwardRef,
-  useImperativeHandle,
 } from "react";
 import { G6Graph, G6GraphProps, GraphEdge, GraphNode } from "./G6Graph";
 
@@ -132,7 +132,7 @@ export const GraphComponent = withStyles(styles)(
             () => {}
           );
         });
-      }, [id, version]);
+      }, [id, version, nodes, edges, props, renderingAdjustedHeight]);
 
       const toolbarElement =
         toolbar === false ? null : (

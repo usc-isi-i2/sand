@@ -1,8 +1,7 @@
-import { Popover, Typography, Descriptions, Row, Col } from "antd";
-import { Entity } from ".";
 import { withStyles, WithStyles } from "@material-ui/styles";
-import { ExternalLink, LoadingPage } from "rma-baseapp";
-import { StatementComponent } from "./StatementComponent";
+import { Typography } from "antd";
+import { ExternalLink } from "rma-baseapp";
+import { Entity } from ".";
 import { PropertyComponent } from "./PropertyComponent";
 const styles = {
   root: {

@@ -1,14 +1,8 @@
-import { Popover, Typography, Descriptions, Row, Col } from "antd";
-import React from "react";
-import {
-  Entity,
-  IncompleteEntity,
-  InlineEntityComponent,
-  isEntityComplete,
-} from ".";
 import { withStyles, WithStyles } from "@material-ui/styles";
+import { Popover, Typography } from "antd";
+import React from "react";
 import { ExternalLink, LoadingPage } from "rma-baseapp";
-import { StatementComponent } from "./StatementComponent";
+import { Entity, IncompleteEntity, isEntityComplete } from ".";
 import { PropertyComponent } from "./PropertyComponent";
 const styles = {
   root: {
@@ -46,7 +40,7 @@ export const PopoverEntityComponent = withStyles(styles)(
           className={`${classes.root} ${restprops.className}`}
         >
           <h2>
-            <ExternalLink href={Entity.id2uri(entity.id)}>
+            <ExternalLink href={Entity.id2uri(entity.id)} openInNewPage={true}>
               {" "}
               {entity.label["en"]}
             </ExternalLink>

@@ -1,0 +1,1 @@
+{"version":3,"sources":["webpack://src/index.css"],"names":[],"mappings":"AAGA,UAEE,WACF,CAEA,gBACE,gBAAiB,CACjB,iBACF","file":"main.8470bb9a.chunk.css","sourcesContent":["@import \"@ant-design/pro-table/dist/table.css\";\n@import \"~antd/dist/antd.css\";\n\nhtml,\nbody {\n  height: 100%;\n}\n\n.wide-container {\n  margin-left: 44px;\n  margin-right: 44px;\n}\n"]}

@@ -69,6 +69,7 @@ export const SemanticGraphComponent = withStyles(styles)(
       });
 
       return [nodes, edges];
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sm.id, sm.version]);
 
     const centering = () => {

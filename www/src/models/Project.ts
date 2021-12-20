@@ -62,7 +62,7 @@ export class ProjectStore extends CRUDStore<
   Project
 > {
   constructor() {
-    super(`${SERVER}/api/project`);
+    super(`${SERVER}/api/project`, undefined, false);
   }
 
   public deserialize(record: any): Project {

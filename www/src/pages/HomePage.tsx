@@ -1,17 +1,16 @@
 import { Avatar, Col, List, Row, Typography } from "antd";
-import { toJS } from "mobx";
-import { inject, observer } from "mobx-react";
+import { observer } from "mobx-react";
 import React, { useEffect } from "react";
+import { InternalLink } from "rma-baseapp";
 import { useStores } from "../models";
 import { routes } from "../routes";
-import { InternalLink } from "rma-baseapp";
 
 export const HomePage = observer(() => {
   const { projectStore } = useStores();
 
   useEffect(() => {
-    projectStore.fetchSome({ limit: 100, offset: 0 });
-  }, []);
+    projectStore.fetch({ limit: 100, offset: 0 });
+  }, [projectStore]);
 
   return (
     <React.Fragment>

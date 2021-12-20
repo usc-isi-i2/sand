@@ -1,5 +1,18 @@
 import { Paragraph, ParagraphUnit } from "./model";
 
+const cacheFn = <F extends (...args: any) => any>(
+  fn: F,
+  cache: { [key: string]: ReturnType<F> }
+): F => {
+  return ((...args: any) => {
+    const key = args.join(":");
+    if (cache[key] === undefined) {
+      cache[key] = fn(...args);
+    }
+    return cache[key];
+  }) as unknown as F;
+};
+
 /**
  * Optimize paragraph to fit lines.
  *
@@ -256,17 +269,3 @@ export class ParagraphOptimizer {
     return demerits;
   };
 }
-
-const cacheFn = <F extends (...args: any) => any>(
-  fn: F,
-  cache: { [key: string]: ReturnType<F> }
-): F => {
-  return ((...args: any) => {
-    const key = args.join(":");
-    const r = cache[key];
-    if (cache[key] === undefined) {
-      cache[key] = fn(...args);
-    }
-    return cache[key];
-  }) as unknown as F;
-};

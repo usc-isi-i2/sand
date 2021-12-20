@@ -52,7 +52,7 @@ export class WordWrap {
         this.cssLineHeight = layoutCfg.lineHeight;
       }
       if (layoutCfg.separable !== undefined) {
-        this.separable = this.separable;
+        this.separable = layoutCfg.separable;
       }
     }
 
@@ -125,8 +125,8 @@ export class WordWrap {
     const circleLayout = this.circleLayout.getLayout(radius);
     const {
       lines: lineLengths,
-      centralLine: centralLineLength,
-      linesY: line2Y,
+      // centralLine,
+      // linesY,
     } = circleLayout;
     const { units, width } = this.wrapText(
       text,
@@ -139,7 +139,7 @@ export class WordWrap {
     radius = width / 2;
     const deltaX = -radius;
     const deltaY =
-      -(nLines % 2 == 1 ? (nLines - 1) / 2 : nLines / 2) * this.lineHeight -
+      -(nLines % 2 === 1 ? (nLines - 1) / 2 : nLines / 2) * this.lineHeight -
       this.lineHeight / 2;
 
     for (let itemLayout of units) {
@@ -211,7 +211,7 @@ export class CircleLayout {
     let [start, end] = [0, maxRadius];
     let lowerbound = undefined;
     for (let i = 0; i < maxRadius; i++) {
-      if (end - start == 1) {
+      if (end - start === 1) {
         lowerbound = end;
         break;
       }

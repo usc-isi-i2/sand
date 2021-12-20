@@ -1,8 +1,6 @@
 import { withStyles, WithStyles } from "@material-ui/styles";
-import { Row } from "antd";
-import React from "react";
 import { FetchEntityComponent, InlineEntityComponent } from ".";
-import { DataValue, Statement } from "../../models/entity";
+import { DataValue } from "../../models/entity";
 
 const styles = {};
 

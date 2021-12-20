@@ -7,7 +7,7 @@ export class TableRowStore extends RStore<number, TableRow> {
     new PairKeysUniqueIndex("table", "index");
 
   constructor() {
-    super(`${SERVER}/api/tablerow`);
+    super(`${SERVER}/api/tablerow`, undefined, false);
   }
 
   /**
@@ -43,10 +43,11 @@ export class TableRowStore extends RStore<number, TableRow> {
         if (link.entity !== null) {
           link.entityId = link.entity;
         }
-        link.candidateEntities = link.candidate_entities.map((ce: any) => {
+        link.candidate_entities.forEach((ce: any) => {
           ce.entityId = ce.entity;
           delete ce.entity;
         });
+        link.candidateEntities = link.candidate_entities;
         delete link.entity_id;
         delete link.candidate_entities;
       });

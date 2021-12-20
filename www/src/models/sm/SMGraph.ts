@@ -346,8 +346,8 @@ export class SMGraph {
     pred1: Resource,
     pred2: Resource
   ) {
-    let source = this.node(sourceId);
-    let target = this.node(targetId);
+    // let source = this.node(sourceId);
+    // let target = this.node(targetId);
 
     let matchPaths = this.findPathMax2hops(sourceId, targetId);
 

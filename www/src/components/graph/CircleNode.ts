@@ -21,8 +21,8 @@ export function registerCircleNode(wordwrap: WordWrap) {
     {
       draw: ((cfg: CircleConfig, group: IGroup): IShape => {
         const padding = cfg.style.padding || 8;
-        const wp = cfg.style.paddingWidth || 0;
-        const hp = cfg.style.paddingHeight || 0;
+        // const wp = cfg.style.paddingWidth || 0;
+        // const hp = cfg.style.paddingHeight || 0;
         const labelPosition: string = "below";
         const labelOffset = cfg.labelCfg?.offset || 0;
 
@@ -50,7 +50,7 @@ export function registerCircleNode(wordwrap: WordWrap) {
         }
 
         // render text below circle
-        const { units, width, height } = wordwrap.wrapText(
+        const { units, width } = wordwrap.wrapText(
           cfg.label as string,
           defaultWidth,
           "center"
