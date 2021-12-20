@@ -11,14 +11,16 @@ import { useLocation, useParams } from "react-router-dom";
 import { routes } from "../../routes";
 import React from "react";
 import { LoadingPage, NotFoundPage, history } from "rma-baseapp";
-import { SemanticModelComponent } from "./SemanticModel";
 import { Button, PageHeader, Popover, Space } from "antd";
 import ProTable from "@ant-design/pro-table";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { useHotkeys } from "react-hotkeys-hook";
 import _ from "lodash";
 import { toJS } from "mobx";
-import { TableComponent } from "./Table";
+// import { TableComponent } from "./TableComponent";
+import { TableComponent } from "../../components/table";
+import * as RTable from "../../components/table/RelationalTable";
+import { SemanticGraphComponent } from "./SemanticModelComponent";
 
 // https://cssinjs.org/jss-plugin-nested?v=v10.8.0#use--to-reference-selector-of-the-parent-rule
 const styles = {
@@ -39,21 +41,26 @@ const styles = {
 export const TablePage = withStyles(styles)(
   observer(({ classes }: WithStyles<typeof styles>) => {
     // use stores
-    const { projectStore, tableStore, tableRowStore } = useStores();
+    const {
+      projectStore,
+      tableStore,
+      tableRowStore,
+      semanticModelStore,
+      entityStore,
+    } = useStores();
+    // define states
+    const [invalidID, setInvalidID] = useState(false);
 
     // parse necessary route parameters
     const tableId = routes.table.useURLParams()!.tableId;
-
-    // define states
-    const [invalidID, setInvalidID] = useState(false);
     const { navState, toNextTable, toPreviousTable } = useTableNavigation(
       tableStore,
       tableId
     );
 
     useEffect(() => {
-      // fetch the tables
-      if (tableStore.get(tableId) === undefined) {
+      // fetch the table
+      if (!tableStore.has(tableId)) {
         tableStore.fetch(tableId).then((tbl) => {
           if (tbl === undefined) {
             setInvalidID(true);
@@ -62,16 +69,67 @@ export const TablePage = withStyles(styles)(
           projectStore.fetchIfMissing(tbl.project);
         });
       }
+
+      // fetch its semantic model
+      if (!semanticModelStore.hasByTable(tableId)) {
+        semanticModelStore.fetchSome({
+          limit: 1000,
+          offset: 0,
+          conditions: {
+            table: tableId,
+          },
+        });
+      }
     }, [tableId]);
 
     useHotkeys("b", toPreviousTable, [navState.version]);
     useHotkeys("n", toNextTable, [navState.version]);
 
     const table = tableStore.get(tableId);
+    const rtable: RTable.Table | undefined = useMemo(() => {
+      const table = tableStore.get(tableId);
+      if (table === undefined) {
+        return undefined;
+      }
+
+      return {
+        name: table.name,
+        description: table.description,
+        columns: table.columns,
+        size: table.size,
+        context: {
+          webpage: table.contextPage?.url,
+          title: table.contextPage?.title,
+          entityId: table.contextPage?.entityId,
+          contentHierarchy: table.contextTree,
+        },
+      };
+    }, [tableId, table !== undefined]);
+
     if (table === undefined) {
       if (invalidID) return <NotFoundPage />;
       return <LoadingPage />;
     }
+    let semComponent = null;
+    if (!semanticModelStore.hasByTable(tableId)) {
+      semComponent = <LoadingPage bordered={true} />;
+    } else {
+      const sms = semanticModelStore.findByTable(tableId);
+      semComponent = <SemanticGraphComponent sm={sms[0]} />;
+    }
+
+    const queryRow = async (limit: number, offset: number) => {
+      let result = await tableRowStore.fetchSome({
+        limit,
+        offset,
+        conditions: { table: table.id },
+      });
+      return result.records.map((row) => ({
+        index: row.index,
+        row: row.row.map((v) => ({ value: v })),
+        links: row.links,
+      }));
+    };
 
     return (
       <React.Fragment>
@@ -105,8 +163,15 @@ export const TablePage = withStyles(styles)(
           }
         />
         <div className={classes.container}>
-          <SemanticModelComponent table={table} />
-          <TableComponent table={table} />
+          <Space direction="vertical" size={8}>
+            {semComponent}
+            <TableComponent
+              key={tableId}
+              toolBarRender={false}
+              table={rtable!}
+              query={queryRow}
+            />
+          </Space>
         </div>
       </React.Fragment>
     );

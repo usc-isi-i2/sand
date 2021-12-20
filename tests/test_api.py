@@ -14,4 +14,7 @@ def test_api_get_semantic_model(client):
     resp = client.get("/api/semanticmodel?limit=1000&offset=0&table=1")
     assert resp.status_code == 200
     sms = resp.json["items"]
-    print(sms)
+
+    assert len(sms) == 2
+    assert len(sms[0]["data"]["nodes"]) == 10
+    assert sms[0]["data"]["nodes"][0]["label"] == "human (Q5)"

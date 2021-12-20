@@ -21,7 +21,11 @@ def convert_linked_table(tbl: LinkedTable) -> Tuple[Table, List[TableRow]]:
         context_values = [Value("entityid", tbl.context.page_entity_id)]
 
     if tbl.context.page_url is not None:
-        context_page = ContextPage(tbl.context.page_url, tbl.context.page_title or "")
+        context_page = ContextPage(
+            tbl.context.page_url,
+            tbl.context.page_title or "",
+            tbl.context.page_entity_id,
+        )
     else:
         context_page = None
 

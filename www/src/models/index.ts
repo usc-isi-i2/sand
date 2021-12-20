@@ -2,15 +2,16 @@ import { Project, ProjectStore } from "./Project";
 import { createContext } from "react";
 
 import React from "react";
-import { TableRowStore, TableStore } from "./Table";
-import { SemanticModelStore } from "./sm/SemanticModelStore";
-import { Graph, URICount } from "./sm/Graph";
+import { TableStore, TableRowStore } from "./table";
+import { SMGraph, URICount, SemanticModelStore } from "./sm";
+import { Entity, EntityStore } from "./entity";
 
 export const stores = {
   projectStore: new ProjectStore(),
   tableStore: new TableStore(),
   tableRowStore: new TableRowStore(),
   semanticModelStore: new SemanticModelStore(),
+  entityStore: new EntityStore(),
 };
 (window as any)._stores = stores;
 export type IStore = Readonly<typeof stores>;
@@ -27,9 +28,10 @@ export {
   TableRowStore,
   Project,
   SemanticModelStore,
-  Graph,
+  SMGraph,
   URICount,
+  Entity,
 };
-export type { Table, TableRow } from "./Table";
+export type { Table, TableRow } from "./table";
 export type { SemanticModel } from "./sm/SemanticModelStore";
-export type { GraphEdge, GraphNode } from "./sm/Graph";
+export type { GraphEdge, SMNode as GraphNode } from "./sm/SMGraph";

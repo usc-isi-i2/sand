@@ -20,8 +20,9 @@ from smc.plugins.grams import convert_linked_table
 def init(db):
     """Init database"""
     init_db(db)
-    dbconn.create_tables([Project, Table, TableRow, SemanticModel])
-    Project(name="default", description="The default project").save()
+    dbconn.create_tables([Project, Table, TableRow, SemanticModel], safe=True)
+    if Project.select().where(Project.name == "default").count() == 0:
+        Project(name="default", description="The default project").save()
 
 
 @click.command()

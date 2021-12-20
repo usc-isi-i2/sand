@@ -7,7 +7,7 @@ import {
   DraftCreateRecord,
   SingleKeyIndex,
 } from "rma-baseapp";
-import { Graph } from "./Graph";
+import { SMGraph, SMNodeType } from "./SMGraph";
 
 // id of a semantic model is actually the combination of table & name
 const parseKey = (id: string) => {
@@ -22,7 +22,7 @@ export class SemanticModel
   id: string;
   description: string;
   version: number;
-  graph: Graph;
+  graph: SMGraph;
   table: number;
   project: number;
 
@@ -30,7 +30,7 @@ export class SemanticModel
     id: string,
     description: string,
     version: number,
-    graph: Graph,
+    graph: SMGraph,
     table: number,
     project: number
   ) {
@@ -65,7 +65,7 @@ export class DraftSemanticModel
     draftID: string,
     description: string,
     version: number,
-    graph: Graph,
+    graph: SMGraph,
     table: number,
     project: number
   ) {
@@ -92,17 +92,36 @@ export class SemanticModelStore extends CRUDStore<
     super(`${SERVER}/api/semanticmodel`);
   }
 
+  /**
+   * Find semantic models of the given table.
+   */
   public findByTable(tableId: number): SemanticModel[] {
-    const lst = [];
-    for (const id of this.tableIndex.index.get(tableId) || []) {
-      lst.push(this.records.get(id)!);
-    }
-    return lst;
+    return Array.from(this.tableIndex.index.get(tableId) || []).map(
+      (id) => this.records.get(id)!
+    );
+  }
+
+  /** Whether we have local copies of semantic models of a given table */
+  public hasByTable(tableId: number): boolean {
+    return this.tableIndex.index.has(tableId);
   }
 
   public deserialize(record: any): SemanticModel {
     let id = getKey(record.name, record.table);
-    let graph = new Graph(id, record.data.nodes, record.data.edges);
+    let nodes = record.data.nodes.map((node: any) => {
+      const type: SMNodeType = node.type;
+      delete node.type;
+      node.nodetype = type;
+      if (type === "data_node") {
+        node.columnIndex = node.column_index;
+        delete node.column_index;
+      } else if (type === "literal_node") {
+        node.isInContext = node.is_in_context;
+        delete node.is_in_context;
+      }
+      return node;
+    });
+    let graph = new SMGraph(id, nodes, record.data.edges);
     return new SemanticModel(
       id,
       record.description,

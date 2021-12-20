@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from grams.algorithm.wdont import WDOnt
 from hugedict.misc import identity
 
 from kgdata.wikidata import db
@@ -45,7 +46,7 @@ def get_qnode_db(dbfile: str, proxy: bool):
 def get_ontclass_db(dbfile: str, proxy: bool):
     return StoreWrapper(
         db.get_wdclass_db(dbfile, proxy=proxy, read_only=not proxy, compression=False),
-        key_deser=identity,
+        key_deser=get_wdclass_id,
         val_deser=ont_class_deser,
     )
 
@@ -53,7 +54,7 @@ def get_ontclass_db(dbfile: str, proxy: bool):
 def get_ontprop_db(dbfile: str, proxy: bool):
     return StoreWrapper(
         db.get_wdprop_db(dbfile, proxy=proxy, read_only=not proxy, compression=False),
-        key_deser=identity,
+        key_deser=get_wdprop_id,
         val_deser=ont_prop_deser,
     )
 
@@ -122,3 +123,11 @@ def wd_value_deser(val: DataValue):
         return Value(type="string", value=val.as_string())
     else:
         return Value(type=val.type, value=val.value)  # type: ignore
+
+
+def get_wdprop_id(uri: str):
+    return uri.replace(f"http://www.wikidata.org/prop/", "")
+
+
+def get_wdclass_id(uri: str):
+    return uri.replace(f"http://www.wikidata.org/entity/", "")

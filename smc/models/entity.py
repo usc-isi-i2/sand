@@ -12,7 +12,7 @@ from kgdata.wikidata.models.qnode import (
     MultiLingualStringList,
 )
 
-from smc.config import DAO_SETTINGS
+from smc.config import DAO_SETTINGS, import_func
 
 
 MultiLingualString = Dict[str, str]
@@ -31,13 +31,21 @@ class Entity:
     def readable_label(self):
         return self.label.get("en", "")
 
+    @staticmethod
+    def uri2id(uri: str) -> str:
+        """Convert entity URI to entity ID."""
+        raise NotImplementedError(
+            "The method is set when its store is initialized. Check the call order to ensure `EntityAR` is called first"
+        )
+
 
 @dataclass
 class Statement:
     __slots__ = ("value", "qualifiers", "qualifiers_order")
     value: Value
     qualifiers: Dict[str, List[Value]]
-    qualifiers_order: List[int]
+    # list of qualifiers id that records the order (as dict lacks of order)
+    qualifiers_order: List[str]
 
 
 @dataclass
@@ -63,8 +71,8 @@ def EntityAR() -> Dict[str, Entity]:
 
     if ENTITY_AR is None:
         cfg = DAO_SETTINGS["entity"]
-        module, func = cfg["constructor"].rsplit(".", 1)
-        func = getattr(importlib.import_module(module), func)
+        func = import_func(cfg["constructor"])
         ENTITY_AR = func(**cfg["args"])
+        Entity.uri2id = import_func(cfg["uri2id"])
 
     return ENTITY_AR

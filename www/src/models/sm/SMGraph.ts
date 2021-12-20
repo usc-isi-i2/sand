@@ -1,30 +1,32 @@
 import { observable, toJS, action, makeObservable } from "mobx";
-import { Resource } from "../Entity";
+import { Resource } from "../entity";
 
-export interface GraphClassNode {
+export interface ClassNode {
   id: string;
   uri: string;
   // for class node only, telling if the class is an approximation
   approximation: boolean;
   // readable label in form of `{label} ({qnode id})`; not obtaining from URICount.
   label: string;
+  readonly nodetype: "class_node";
 }
 
-export interface GraphDataNode {
+export interface DataNode {
   id: string;
   // column name
   label: string;
   columnIndex: number;
+  readonly nodetype: "data_node";
 }
 
 export type LiteralDataType = "entity-id" | "string";
 
-export interface GraphLiteralNode {
+export interface LiteralNode {
   id: string;
   /**
-   * URI for QNode only. Otherwise, will be an empty string
+   * ID for entity, otherwise string literal
    */
-  uri: string;
+  value: string;
   // column name
   label: string;
   /**
@@ -33,19 +35,11 @@ export interface GraphLiteralNode {
   datatype: LiteralDataType;
   // whether this is a node in the context, apply for literal node only
   readonly isInContext: boolean;
+  readonly nodetype: "literal_node";
 }
 
-export interface GraphNode
-  extends GraphClassNode,
-    GraphDataNode,
-    GraphLiteralNode {
-  // whether this is a class node; this is useful to distinguish between a literal values
-  readonly isClassNode: boolean;
-  // whether this is a data node
-  readonly isDataNode: boolean;
-  // whether this is a literal node
-  readonly isLiteralNode: boolean;
-}
+export type SMNode = ClassNode | DataNode | LiteralNode;
+export type SMNodeType = "class_node" | "data_node" | "literal_node";
 
 export interface GraphEdge {
   source: string;
@@ -60,9 +54,9 @@ export class URICount {
   private counter: { [uri: string]: number } = {};
   private id2num: { [id: string]: number } = {};
 
-  constructor(nodes?: GraphNode[]) {
+  constructor(nodes?: SMNode[]) {
     for (let node of nodes || []) {
-      if (node.isDataNode) continue;
+      if (node.nodetype !== "class_node") continue;
 
       if (this.counter[node.uri] === undefined) {
         this.counter[node.uri] = 1;
@@ -72,7 +66,7 @@ export class URICount {
     }
   }
 
-  label = (node: GraphNode) => {
+  label = (node: SMNode) => {
     return `${node.label} ${this.id2num[node.id]}`;
   };
 
@@ -84,7 +78,7 @@ export class URICount {
     return label.substring(0, label.lastIndexOf(" "));
   };
 
-  add = (node: GraphClassNode) => {
+  add = (node: ClassNode) => {
     if (this.counter[node.uri] === undefined) {
       this.counter[node.uri] = 1;
     }
@@ -93,17 +87,17 @@ export class URICount {
   };
 }
 
-export class Graph {
+export class SMGraph {
   public id: string;
   public version: number;
-  public nodes: GraphNode[];
+  public nodes: SMNode[];
   public edges: GraphEdge[];
   public stale: boolean; // if it is stale
   public nodeId2Index: { [id: string]: number } = {};
   public column2nodeIndex: { [columnIndex: number]: number } = {};
   public uriCount: URICount;
 
-  constructor(id: string, nodes: GraphNode[], edges: GraphEdge[]) {
+  constructor(id: string, nodes: SMNode[], edges: GraphEdge[]) {
     this.id = id;
     this.version = 0;
     this.nodes = nodes;
@@ -127,7 +121,9 @@ export class Graph {
       addClassNode: action,
       addLiteralNode: action,
       removeNode: action,
-      updateNode: action,
+      updateClassNode: action,
+      updateDataNode: action,
+      updateLiteralNode: action,
       addEdge: action,
       removeEdge: action,
       updateEdge: action,
@@ -140,7 +136,10 @@ export class Graph {
 
   node = (id: string) => this.nodes[this.nodeId2Index[id]];
   hasNode = (id: string) => this.nodeId2Index[id] !== undefined;
-  nodesByURI = (uri: string) => this.nodes.filter((node) => node.uri === uri);
+  nodesByURI = (uri: string) =>
+    this.nodes.filter(
+      (node) => node.nodetype === "class_node" && node.uri === uri
+    );
   nodeByColumnIndex = (id: number) => this.nodes[this.column2nodeIndex[id]];
 
   edge = (source: string, target: string) =>
@@ -218,7 +217,10 @@ export class Graph {
     let outprops: [GraphEdge, GraphEdge?][] = [];
     for (let outedge of this.outgoingEdges(id)) {
       let target = this.node(outedge.target);
-      if (target.uri === "http://wikiba.se/ontology#Statement") {
+      if (
+        target.nodetype === "class_node" &&
+        target.uri === "http://wikiba.se/ontology#Statement"
+      ) {
         for (let coutedge of this.outgoingEdges(outedge.target)) {
           outprops.push([outedge, coutedge]);
         }
@@ -288,10 +290,7 @@ export class Graph {
    * @param columnIndex
    * @param source
    */
-  public upsertColumnType(
-    columnIndex: number,
-    source: Omit<GraphClassNode, "id">
-  ) {
+  public upsertColumnType(columnIndex: number, source: Omit<ClassNode, "id">) {
     let target = this.nodeByColumnIndex(columnIndex);
     let targetIncomingEdges = this.incomingEdges(target.id);
 
@@ -317,7 +316,7 @@ export class Graph {
       });
     } else {
       let edge = targetIncomingEdges[0];
-      this.updateNode(edge.source, source);
+      this.updateClassNode(edge.source, source);
       if (edge.uri !== "http://www.w3.org/2000/01/rdf-schema#label") {
         // need to update the edge as well
         this.updateEdge(edge.source, edge.target, {
@@ -370,6 +369,7 @@ export class Graph {
           uri: "http://wikiba.se/ontology#Statement",
           label: "wikibase:Statement",
           approximation: false,
+          nodetype: "class_node",
         });
         this.addEdge({
           source: sourceId,
@@ -414,20 +414,12 @@ export class Graph {
   /**
    * Add a class node to the model.
    */
-  public addClassNode(node: GraphClassNode) {
+  public addClassNode(node: ClassNode) {
     if (this.nodeId2Index[node.id] !== undefined) {
       throw new Error("Duplicated id");
     }
     this.nodeId2Index[node.id] = this.nodes.length;
-    this.nodes.push({
-      ...node,
-      isClassNode: true,
-      isDataNode: false,
-      isLiteralNode: false,
-      isInContext: false,
-      datatype: "string",
-      columnIndex: -1,
-    });
+    this.nodes.push(node);
     this.uriCount.add(node);
     this.version += 1;
     this.stale = true;
@@ -436,19 +428,12 @@ export class Graph {
   /**
    * Add a literal node to the model
    */
-  public addLiteralNode(node: GraphLiteralNode) {
+  public addLiteralNode(node: LiteralNode) {
     if (this.nodeId2Index[node.id] !== undefined) {
       throw new Error("Duplicated id");
     }
     this.nodeId2Index[node.id] = this.nodes.length;
-    this.nodes.push({
-      ...node,
-      approximation: false,
-      isClassNode: false,
-      isDataNode: false,
-      isLiteralNode: true,
-      columnIndex: -1,
-    });
+    this.nodes.push(node);
     this.version += 1;
     this.stale = true;
   }
@@ -462,15 +447,49 @@ export class Graph {
     this.uriCount = new URICount(this.nodes);
   }
 
-  public updateNode(nodeId: string, props: Partial<GraphNode>) {
+  public updateClassNode(nodeId: string, props: Partial<ClassNode>) {
     let nodeIndex = this.nodeId2Index[nodeId];
-    this.nodes[nodeIndex] = { ...this.nodes[nodeIndex], ...props };
+    let node = this.nodes[nodeIndex];
 
+    if (node.nodetype !== "class_node") {
+      throw new Error(
+        `Invalid node type. Expected class node but get ${node.nodetype}`
+      );
+    }
+    Object.assign(node, props);
     this.version += 1;
     this.stale = true;
     if (props.uri !== undefined) {
       this.uriCount = new URICount(this.nodes);
     }
+  }
+
+  public updateLiteralNode(nodeId: string, props: Partial<LiteralNode>) {
+    let nodeIndex = this.nodeId2Index[nodeId];
+    let node = this.nodes[nodeIndex];
+
+    if (node.nodetype !== "literal_node") {
+      throw new Error(
+        `Invalid node type. Expected literal node but get ${node.nodetype}`
+      );
+    }
+    Object.assign(node, props);
+    this.version += 1;
+    this.stale = true;
+  }
+
+  public updateDataNode(nodeId: string, props: Partial<DataNode>) {
+    let nodeIndex = this.nodeId2Index[nodeId];
+    let node = this.nodes[nodeIndex];
+
+    if (node.nodetype !== "data_node") {
+      throw new Error(
+        `Invalid node type. Expected data node but get ${node.nodetype}`
+      );
+    }
+    Object.assign(node, props);
+    this.version += 1;
+    this.stale = true;
   }
 
   public addEdge(edge: GraphEdge) {
@@ -525,7 +544,12 @@ export class Graph {
     }
 
     let nodeIndex = this.nodeId2Index[nodeId];
-    if (this.nodes[nodeIndex].isDataNode || this.nodes[nodeIndex].isInContext) {
+    let node = this.nodes[nodeIndex];
+
+    if (
+      node.nodetype === "data_node" ||
+      (node.nodetype === "literal_node" && node.isInContext)
+    ) {
       // don't remove data nodes && context node;
       return;
     }
@@ -587,7 +611,7 @@ export class Graph {
     for (let i = 0; i < this.nodes.length; i++) {
       let n = this.nodes[i];
       this.nodeId2Index[n.id] = i;
-      if (n.columnIndex !== null) {
+      if (n.nodetype === "data_node" && n.columnIndex !== null) {
         this.column2nodeIndex[n.columnIndex] = i;
       }
     }

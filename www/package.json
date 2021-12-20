@@ -10,6 +10,8 @@
   ],
   "dependencies": {
     "@ant-design/pro-table": "^2.53.1",
+    "@antv/g6-react-node": "^1.4.4",
+    "@ant-design/colors": "^6.0.0",
     "@antv/g6": "^4.3.7",
     "@material-ui/styles": "^4.11.4",
     "@testing-library/jest-dom": "^5.11.4",
@@ -21,6 +23,14 @@
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
     "@types/react-router-dom": "^5.1.9",
+    "@fortawesome/fontawesome-svg-core": "^1.2.36",
+    "@fortawesome/free-regular-svg-icons": "^5.15.4",
+    "@fortawesome/free-solid-svg-icons": "^5.15.4",
+    "@fortawesome/react-fontawesome": "^0.1.16",
+    "@emotion/react": "^11.5.0",
+    "@emotion/styled": "^11.3.0",
+    "@mui/icons-material": "^5.0.5",
+    "@mui/material": "^5.0.6",
     "antd": "^4.16.13",
     "axios": "^0.21.4",
     "fuse.js": "^6.4.6",
@@ -35,7 +45,8 @@
     "react-scripts": "4.0.3",
     "rma-baseapp": "^1.1.11",
     "typescript": "^4.1.2",
-    "web-vitals": "^1.0.1"
+    "web-vitals": "^1.0.1",
+    "hyphenation.en-us": "^0.2.1"
   },
   "scripts": {
     "start": "BROWSER=none react-scripts start",
@@ -53,7 +64,7 @@
       "react-app/jest"
     ]
   },
-  "proxy": "http://localhost:5524",
+  "proxy": "http://192.168.86.24:5524",
   "browserslist": {
     "production": [
       ">0.2%",

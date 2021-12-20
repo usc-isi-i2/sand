@@ -1,6 +1,12 @@
 import G6 from "@antv/g6";
-import { THEME } from "../env";
-import { GraphEdge, GraphNode, URICount } from "../models";
+import { THEME } from "../src/env";
+import { GraphEdge, GraphNode, URICount } from "../src/models";
+import {
+  GraphClassNode,
+  GraphDataNode,
+  GraphLiteralNode,
+  GraphNodeType,
+} from "../src/models/sm/Graph";
 
 export interface G6GraphProps {
   // init height of the canvas
@@ -34,13 +40,17 @@ export const GraphNodeColors = {
   },
 };
 
-export interface G6GraphNode extends GraphNode {
+export interface G6GraphNode
+  extends Omit<GraphClassNode, "nodetype">,
+    Omit<GraphDataNode, "nodetype">,
+    Omit<GraphLiteralNode, "nodetype"> {
   x?: number;
   y?: number;
   type?: string;
   labelCfg?: object;
   style?: any;
   size?: number | number[];
+  nodetype: GraphNodeType;
 }
 
 interface G6GraphData {
@@ -143,8 +153,8 @@ export class G6Graph {
   ): G6GraphData => {
     // get new nodes
     let newNodes = nodes.map((u) => {
-      let n: G6GraphNode = { ...u };
-      if (u.isDataNode) {
+      let n: G6GraphNode = { ...u } as unknown as G6GraphNode;
+      if (u.nodetype === "data_node") {
         n.labelCfg = {
           style: {
             fill: "black",
@@ -164,7 +174,7 @@ export class G6Graph {
         if (n.label === "") {
           n.label = " ";
         }
-      } else if (n.isClassNode) {
+      } else if (n.nodetype === "class_node") {
         // n.type = 'ellipse';
         // n.size = [n.label.length * 6, 25];
         n.labelCfg = {
