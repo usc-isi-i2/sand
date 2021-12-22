@@ -18,3 +18,30 @@ def test_api_get_semantic_model(client):
     assert len(sms) == 2
     assert len(sms[0]["data"]["nodes"]) == 10
     assert sms[0]["data"]["nodes"][0]["label"] == "human (Q5)"
+
+
+def test_api_create_table(client):
+    resp = client.post(
+        "/api/table",
+        json={
+            "name": "11th_Lok_Sabha",
+            "description": "",
+            "columns": [
+                "No.",
+                "Constituency",
+                "Type",
+                "Name of Elected M.P.",
+                "Party Affiliation",
+            ],
+            "project": 1,
+            "size": 28,
+            "context_page": {
+                "url": "https://en.wikipedia.org/wiki/11th_Lok_Sabha",
+                "title": "11th Lok Sabha",
+                "entity": "Q3534024",
+            },
+            "context_values": [{"type": "entityid", "value": "Q3534024"}],
+            "context_tree": [],
+        },
+    )
+    assert resp.status_code == 200

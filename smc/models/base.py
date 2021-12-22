@@ -1,5 +1,6 @@
 import functools
-from typing import TypeVar, Type, Callable, Any
+from pathlib import Path
+from typing import TypeVar, Type, Callable, Any, Union
 
 import orjson
 from peewee import SqliteDatabase, Model, Field
@@ -7,17 +8,14 @@ from peewee import SqliteDatabase, Model, Field
 from smc.config import CACHE_SIZE
 
 
-T = TypeVar("T", bound="Singleton")
-
-
 # TODO: consider moving to APSWDatabase
 db = SqliteDatabase(None)
 
 
-def init_db(dbfile: str):
+def init_db(dbfile: Union[str, Path]):
     """Initialize database"""
     global db
-    db.init(dbfile)
+    db.init(str(dbfile), pragmas={"foreign_keys": 1})
 
 
 class BaseModel(Model):
@@ -25,23 +23,22 @@ class BaseModel(Model):
         database = db
 
 
+class ClassField(Field):
+    field_type = "BLOB"
+
+    def __init__(self, cls, **kwargs):
+        super().__init__(**kwargs)
+        self.db_value = getattr(cls, "db_value")
+        self.python_value = getattr(cls, "python_value")
+
+
 class BlobField(Field):
-    field_type = "blob"
+    field_type = "BLOB"
 
     def __init__(self, serialize, deserialize, **kwargs):
         super().__init__(**kwargs)
         self.db_value = serialize
         self.python_value = deserialize
-
-
-class Singleton:
-    instance = None
-
-    @classmethod
-    def get_instance(cls: Type[T]) -> T:
-        if cls.instance is None:
-            cls.instance = cls()
-        return cls.instance
 
 
 K = TypeVar("K")

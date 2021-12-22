@@ -34,6 +34,7 @@ def convert_linked_table(tbl: LinkedTable) -> Tuple[Table, List[TableRow]]:
         if ri not in links:
             links[ri] = {}
         for ci, clinks in enumerate(rlink):
+            ci = str(ci)
             if len(clinks) > 0:
                 links[ri][ci] = []
                 for clink in clinks:

@@ -15,7 +15,7 @@ def client():
         )
         init_db(str(Path(tempdir) / "smc.db"))
 
-        from smc.api import app
+        from smc.app import app
         from smc.config import DAO_SETTINGS, _ROOT_DIR
 
         externaldb = _ROOT_DIR / "../data/home/databases"

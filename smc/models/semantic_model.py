@@ -16,7 +16,6 @@ def deser_sm(dbvalue: bytes):
 
 
 class SemanticModel(BaseModel):
-    project = ForeignKeyField(Project, backref="tables", on_delete="CASCADE")
     table = ForeignKeyField(Table, backref="semantic_models", on_delete="CASCADE")
     # name of the semantic model as we may have more than one version for the same table
     name = CharField()

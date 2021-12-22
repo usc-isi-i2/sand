@@ -8,37 +8,30 @@ import {
 import { SERVER } from "../../env";
 import { SMGraph, SMNodeType } from "./SMGraph";
 
-// id of a semantic model is actually the combination of table & name
-// const parseKey = (id: string) => {
-//   const ptr = id.indexOf(":");
-//   return { table: parseInt(id.substring(0, ptr)), name: id.substring(ptr) };
-// };
-const getKey = (name: string, table: number) => `${table}:${name}`;
-
 export class SemanticModel
-  implements Record<string>, DraftUpdateRecord<string, SemanticModel>
+  implements Record<number>, DraftUpdateRecord<number, SemanticModel>
 {
-  id: string;
+  id: number;
+  name: string;
   description: string;
   version: number;
   graph: SMGraph;
   table: number;
-  project: number;
 
   constructor(
-    id: string,
+    id: number,
+    name: string,
     description: string,
     version: number,
     graph: SMGraph,
-    table: number,
-    project: number
+    table: number
   ) {
     this.id = id;
+    this.name = name;
     this.description = description;
     this.version = version;
     this.graph = graph;
     this.table = table;
-    this.project = project;
   }
 
   get isDraft() {
@@ -62,13 +55,13 @@ export class DraftSemanticModel
 
   constructor(
     draftID: string,
+    name: string,
     description: string,
     version: number,
     graph: SMGraph,
-    table: number,
-    project: number
+    table: number
   ) {
-    super(draftID, description, version, graph, table, project);
+    super(-1, name, description, version, graph, table);
     this.draftID = draftID;
   }
 
@@ -78,12 +71,12 @@ export class DraftSemanticModel
 }
 
 export class SemanticModelStore extends CRUDStore<
-  string,
+  number,
   DraftSemanticModel,
   SemanticModel,
   SemanticModel
 > {
-  protected tableIndex: SingleKeyIndex<string, number> = new SingleKeyIndex(
+  protected tableIndex: SingleKeyIndex<number, number> = new SingleKeyIndex(
     "table"
   );
 
@@ -106,7 +99,6 @@ export class SemanticModelStore extends CRUDStore<
   }
 
   public deserialize(record: any): SemanticModel {
-    let id = getKey(record.name, record.table);
     let nodes = record.data.nodes.map((node: any) => {
       const type: SMNodeType = node.type;
       delete node.type;
@@ -120,14 +112,14 @@ export class SemanticModelStore extends CRUDStore<
       }
       return node;
     });
-    let graph = new SMGraph(id, nodes, record.data.edges);
+    let graph = new SMGraph(record.id.toString(), nodes, record.data.edges);
     return new SemanticModel(
-      id,
+      record.id,
+      record.name,
       record.description,
       record.version,
       graph,
-      record.table,
-      record.project
+      record.table
     );
   }
 

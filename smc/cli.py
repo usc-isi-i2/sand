@@ -67,7 +67,7 @@ def start(
         ssl_options = {"certfile": certfile, "keyfile": keyfile}
         assert not wsgi
 
-    from smc.api import app
+    from smc.app import app
 
     if wsgi:
         app.run(host="0.0.0.0", port=port)
@@ -144,7 +144,6 @@ def load(db, project: str, tables: str, descriptions: str):
 
             for i, sm in enumerate(sms):
                 SemanticModel(
-                    project=project,
                     table=mtbl,
                     name=f"sm-{i}",
                     description="",

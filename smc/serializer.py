@@ -10,9 +10,22 @@ from smc.models.entity import Entity, EntityAR
 from smc.models.ontology import OntProperty, OntClass, OntPropertyAR, OntClassAR
 
 
+def serialize_property(prop: OntProperty):
+    return {
+        "id": prop.id,
+        "uri": prop.uri,
+        "label": prop.label,
+        "readable_label": prop.readable_label,
+        "aliases": prop.aliases,
+        "description": prop.description,
+        "parents": prop.parents,
+    }
+
+
 def serialize_entity(ent: Entity):
     return {
         "id": ent.id,
+        "readable_label": ent.readable_label,
         "label": ent.label,
         "aliases": ent.aliases,
         "description": ent.description,
@@ -36,7 +49,7 @@ def serialize_entity(ent: Entity):
 def serialize_graph(
     sm: O.SemanticModel,
     uri2label: Callable[[str, bool], Optional[str]],
-    columns: List[str],
+    columns: Optional[List[str]] = None,
 ):
     nodes = []
     for n in sm.iter_nodes():
@@ -54,7 +67,7 @@ def serialize_graph(
             nodes.append(
                 {
                     "id": n.id,
-                    "label": columns[n.col_index],
+                    "label": columns[n.col_index] if columns is not None else n.label,
                     "type": "data_node",
                     "column_index": n.col_index,
                 }
@@ -89,32 +102,24 @@ def serialize_graph(
     return dict(nodes=nodes, edges=edges)
 
 
-def serialize_sm(sm: SemanticModel):
-    ontprops = OntPropertyAR()
-    ontclasses = OntClassAR()
-
-    uri2lbl = partial(get_label, ontprops=ontprops, ontclasses=ontclasses)
-    output = model_to_dict(sm, recurse=False)
-    output["data"] = serialize_graph(output["data"], uri2lbl, sm.table.columns)
-    return output
-
-
 def batch_serialize_sms(sms: List[SemanticModel]):
-    tbls = {sm.table_id for sm in sms}  # type: ignore
-    tbls = {
-        tbl.id: tbl
-        for tbl in Table.select(Table.id, Table.columns).where(Table.id.in_(tbls))  # type: ignore
-    }
+    # tbls = {sm.table_id for sm in sms if sm.table_id is not None}  # type: ignore
+    # tbls = {
+    #     tbl.id: tbl
+    #     for tbl in Table.select(Table.id, Table.columns).where(Table.id.in_(tbls))  # type: ignore
+    # }
 
     ontprops = OntPropertyAR()
     ontclasses = OntClassAR()
-
     uri2lbl = partial(get_label, ontprops=ontprops, ontclasses=ontclasses)
 
     output = []
     for sm in sms:
         r = model_to_dict(sm, recurse=False)
-        r["data"] = serialize_graph(r["data"], uri2lbl, tbls[sm.table_id].columns)  # type: ignore
+        if r["data"] is not None:
+            # columns = None if sm.table_id is None else tbls[sm.table_id].columns
+            columns = None
+            r["data"] = serialize_graph(r["data"], uri2lbl, columns)  # type: ignore
         output.append(r)
     return output
 

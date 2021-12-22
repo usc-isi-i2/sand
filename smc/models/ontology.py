@@ -29,6 +29,10 @@ class OntProperty:
     parents_closure: Set[str] = field(default_factory=set)
 
     @property
+    def id(self):
+        return self.uri
+
+    @property
     def readable_label(self):
         return self.label
 

@@ -59,13 +59,61 @@ export interface Statement {
   qualifiersOrder: string[];
 }
 
-export interface DataValue {
-  type:
-    | "string"
-    | "time"
-    | "quantity"
-    | "globecoordinate"
-    | "monolingualtext"
-    | "entityid";
-  value: string | number | object;
+export type DataValue =
+  | DataValueString
+  | DataValueTime
+  | DataValueQuantity
+  | DataValueGlobeCoordinate
+  | DataValueMonolingualText
+  | DataValueEntity;
+
+export interface DataValueTime {
+  readonly type: "time";
+  value: {
+    time: string;
+    timezone: number;
+    before: number;
+    after: number;
+    precision: number;
+    calendarmodel: string;
+  };
+}
+
+export interface DataValueQuantity {
+  readonly type: "quantity";
+  value: {
+    amount: string;
+    upperBound: string;
+    lowerBound: string;
+    unit: string;
+  };
+}
+
+export interface DataValueMonolingualText {
+  readonly type: "monolingualtext";
+  value: {
+    text: string;
+    language: string;
+  };
+}
+
+export interface DataValueGlobeCoordinate {
+  readonly type: "globecoordinate";
+  value: {
+    latitude: number;
+    longitude: number;
+    precision: number;
+    altitude: null;
+    globe: string;
+  };
+}
+
+export interface DataValueEntity {
+  readonly type: "entityid";
+  value: string;
+}
+
+export interface DataValueString {
+  readonly type: "string";
+  value: string;
 }

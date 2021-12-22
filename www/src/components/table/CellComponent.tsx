@@ -1,8 +1,13 @@
 import * as RTable from "./RelationalTable";
 import { withStyles, WithStyles } from "@material-ui/styles";
-import { FetchEntityComponent, PopoverEntityComponent } from "../entity";
+import {
+  FetchEntityComponent,
+  openPageEntityComponent,
+  PopoverEntityComponent,
+} from "../entity";
 import { grey } from "@ant-design/colors";
 import { CandidateEntityListComponent } from "./CandidateEntityListComponent";
+import { ExternalLink } from "rma-baseapp";
 
 const styles = {
   link: {
@@ -33,12 +38,17 @@ export const CellComponent = withStyles(styles)(
           ? cell.substring(0, link.start)
           : cell.substring(links[index - 1].end, link.start);
       let linksurface = cell.substring(link.start, link.end);
+      let onCtrlClick = undefined;
+      if (link.entityId !== undefined) {
+        onCtrlClick = () => {
+          openPageEntityComponent(link.entityId!);
+        };
+      }
       const infix = (
-        <a
+        <ExternalLink
           key={index}
           href={link.url}
-          target="_blank"
-          rel="noopener noreferrer"
+          openInNewPage={true}
           dangerouslySetInnerHTML={{
             __html: linksurface.trim() === "" ? "&blank;" : linksurface,
           }}
@@ -47,6 +57,7 @@ export const CellComponent = withStyles(styles)(
             (link.entityId === undefined ? " " + classes.noEntityLink : "")
           }
           style={link.entityId === null ? { color: "#aaa" } : {}}
+          onCtrlClick={onCtrlClick}
         />
       );
 
@@ -60,7 +71,7 @@ export const CellComponent = withStyles(styles)(
           key={index}
           entityId={link.entityId}
           render={(entity) => (
-            <PopoverEntityComponent entity={entity}>
+            <PopoverEntityComponent entity={entity} zIndex={500}>
               {infix}
             </PopoverEntityComponent>
           )}

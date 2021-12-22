@@ -38,6 +38,7 @@ export const TablePage = withStyles(styles)(
     // use stores
     const { projectStore, tableStore, tableRowStore, semanticModelStore } =
       useStores();
+    const [fetchedSms, setFetchedSms] = useState(false);
 
     // parse necessary route parameters
     const tableId = routes.table.useURLParams()!.tableId;
@@ -63,6 +64,7 @@ export const TablePage = withStyles(styles)(
             table: tableId,
           },
         });
+        setFetchedSms(true);
       }
     }, [tableStore, projectStore, semanticModelStore, tableId]);
 
@@ -98,11 +100,11 @@ export const TablePage = withStyles(styles)(
     }
 
     let semComponent = null;
-    if (!semanticModelStore.hasByTable(tableId)) {
+    if (!semanticModelStore.hasByTable(tableId) && !fetchedSms) {
       semComponent = <LoadingPage bordered={true} />;
     } else {
       const sms = semanticModelStore.findByTable(tableId);
-      semComponent = <SemanticGraphComponent sm={sms[0]} />;
+      semComponent = <SemanticGraphComponent sms={sms} table={table} />;
     }
 
     const queryRow = async (limit: number, offset: number) => {
