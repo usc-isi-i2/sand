@@ -61,8 +61,10 @@ export function openPageEntityComponent(
   entity: Entity | string,
   zIndex?: number
 ) {
+  // avoid using instanceof Entity because it's going to be proxy object due to mobx
+  const isEntity = typeof entity !== "string";
   let content;
-  if (entity instanceof Entity) {
+  if (isEntity) {
     content = <PageEntityComponent entity={entity} />;
   } else {
     content = (
@@ -81,7 +83,7 @@ export function openPageEntityComponent(
     maskClosable: true,
     mask: true,
     zIndex: zIndex,
-    width: "calc(100% - 64px)",
-    style: { top: 32 },
+    width: "calc(100% - 128px)",
+    style: { top: 64 },
   });
 }

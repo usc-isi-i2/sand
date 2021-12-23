@@ -2,6 +2,8 @@ import G6, { Graph, GraphData, NodeConfig, LayoutConfig } from "@antv/g6";
 import { registerRectNode } from "./RectNode";
 import { registerCircleNode } from "./CircleNode";
 import { WordWrap } from "./wordwrap";
+import { testNodeWrap } from "./TestNodeWrap";
+import _ from "lodash";
 
 export interface GraphEdge {
   id: string;
@@ -28,14 +30,19 @@ export interface GraphNode {
 export interface G6GraphProps {
   // init height of the canvas
   initHeight: number;
-  // shift the node in the graph by `leftOffset` units
-  leftOffset: number;
+  // shift the node in the graph by `leftOffset` units -- default 0
+  leftOffset?: number;
+  // shift the node in the graph by `topOffset` units -- default 0
+  topOffset?: number;
   /**
    * Layout of the graph. Default it's force layout with distance 50
    */
   layout?: LayoutConfig;
   onNodeClick?: (nodeId: string) => void;
   onEdgeClick?: (edge: GraphEdge) => void;
+  // highlight the node and its related nodes and edges when the mouse enter the node;
+  // default is false
+  enableActivateRelations?: boolean;
 }
 
 export class G6Graph {
@@ -63,6 +70,15 @@ export class G6Graph {
     this.wordwrap = new WordWrap(cfg);
     registerRectNode(this.wordwrap);
     registerCircleNode(this.wordwrap);
+
+    const modes: any[] = ["drag-canvas", "drag-node"];
+
+    if (props.enableActivateRelations) {
+      modes.push({
+        type: "activate-relations",
+        resetSelected: true,
+      });
+    }
 
     this.graph = new G6.Graph({
       container: container,
@@ -96,12 +112,39 @@ export class G6Graph {
         },
       },
       modes: {
-        default: ["drag-canvas", "drag-node"],
+        default: modes,
         edit: ["click-select"],
       },
+      // these control styles of nodes & edges at different states
+      // currently define active & inactive for the activate-relations mode
       nodeStateStyles: {
-        hover: {
-          fill: "lightsteelblue",
+        active: {
+          opacity: 1,
+          // this is a custom attr for label's style
+          // checkout `setState` method in the custom nodes such as rect-wrap
+          label: {
+            opacity: 1,
+          },
+        },
+        inactive: {
+          opacity: 0.2,
+          // this is a custom attr for label's style
+          // checkout `setState` method in the custom nodes such as rect-wrap
+          label: {
+            opacity: 0.2,
+          },
+        },
+      },
+      edgeStateStyles: {
+        active: {
+          stroke: "black",
+          opacity: 1,
+        },
+        inactive: {
+          opacity: 0.2,
+          text: {
+            opacity: 0.2,
+          },
         },
       },
     });
@@ -121,6 +164,10 @@ export class G6Graph {
 
   /** Transform the data from our format to G6 format */
   static transformData(nodes: GraphNode[], edges: GraphEdge[]): GraphData {
+    // const { nodes: x, edges: y } = testNodeWrap("rect");
+    // nodes = x;
+    // edges = y;
+
     // get new nodes
     let newNodes = nodes.map((u, i) => {
       let type;
@@ -138,7 +185,12 @@ export class G6Graph {
         id: u.id,
         label: u.label,
         type: type,
-        style: { ...u.style, radius: 4, paddingHeight: 2, paddingWidth: 4 },
+        style: {
+          ...u.style,
+          radius: 4,
+          paddingHeight: 2,
+          paddingWidth: 4,
+        },
         labelCfg: {
           style: u.labelStyle,
         },
@@ -150,8 +202,15 @@ export class G6Graph {
     });
 
     // get new edges
+    if (_.uniq(edges.map((u) => u.id)).length !== edges.length) {
+      console.error(
+        "Edges must have unique ids. However, we get:",
+        edges.map((u) => u.id)
+      );
+    }
+
     let newEdges = edges.map((e) => ({
-      id: `${e.source}-${e.target}-${e.id}`,
+      id: e.id,
       source: e.source,
       target: e.target,
       label: e.label,
@@ -204,13 +263,20 @@ export class G6Graph {
     this.graph.layout();
   };
 
-  /** Adjust the canvas size to fit with the graph */
+  /**
+   * Adjust the canvas size to fit with the graph
+   *
+   * For fit-graph mode, the extraHeight mode is used to add top & bottom padding so that it's not too close (e.g., 20px)
+   * For fit-remaining-window, the offsetHeight is used to reserved some pixels at the bottom of the window so that it's not overflow (e.g., minus 1px for the border)
+   */
   updateContainerSize = ({
     center,
     height,
   }: {
     center: boolean;
-    height: "fit-graph" | "fit-remaining-window";
+    height:
+      | { type: "fit-graph"; extraHeight: number }
+      | { type: "fit-remaining-window"; offsetHeight: number };
   }): DOMRect => {
     // follow the code in fitView & fitCenter
     let group = this.graph.get("group");
@@ -220,26 +286,33 @@ export class G6Graph {
       // let graphWidth = this.graph.getWidth();
       let graphWidth = this.container.clientWidth;
 
-      if (center === true) {
-        this.graph.moveTo(graphWidth / 2 - bbox.width / 2, 10);
-      } else {
-        this.graph.moveTo(this.props.leftOffset, 10);
-      }
-
       let graphHeight;
-      switch (height) {
+      switch (height.type) {
         case "fit-graph":
-          graphHeight = bbox.height + 20;
+          graphHeight = bbox.height + height.extraHeight;
           break;
         case "fit-remaining-window":
           let viewportOffset = this.container.getBoundingClientRect().top;
           let documentScrollY = window.scrollY;
           let viewportHeight = document.documentElement.clientHeight;
           graphHeight =
-            viewportHeight - (viewportOffset + documentScrollY) - 10;
+            viewportHeight -
+            (viewportOffset + documentScrollY) -
+            height.offsetHeight;
           break;
       }
       this.graph.changeSize(graphWidth, graphHeight);
+      if (center === true) {
+        this.graph.moveTo(
+          graphWidth / 2 - bbox.width / 2,
+          graphHeight / 2 - bbox.height / 2
+        );
+      } else {
+        this.graph.moveTo(
+          this.props.leftOffset || 0,
+          this.props.topOffset || 0
+        );
+      }
     }
     return bbox;
   };

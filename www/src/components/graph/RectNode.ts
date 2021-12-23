@@ -1,5 +1,11 @@
 import { WordWrap } from "./wordwrap";
-import G6, { ModelConfig, ShapeStyle, IGroup, IShape } from "@antv/g6";
+import G6, {
+  ModelConfig,
+  ShapeStyle,
+  IGroup,
+  IShape,
+  LabelStyle,
+} from "@antv/g6";
 import { ParagraphRenderedUnit } from "./wordwrap/model";
 
 /** Draw paragraph */
@@ -15,16 +21,16 @@ export function drawText(
   }: {
     xoffset?: number;
     yoffset?: number;
-    cfg?: { [key: string]: any };
+    cfg?: LabelStyle;
     // whether to draw a small border around the text for better visibility
     stroke?: { width: number; color: string };
   }
-) {
+): IShape[] {
   xoffset = xoffset === undefined ? 0 : xoffset;
   yoffset = yoffset === undefined ? 0 : yoffset;
 
   if (stroke !== undefined) {
-    units.forEach(({ text, x, y }) => {
+    units.map(({ text, x, y }) => {
       group!.addShape("text", {
         attrs: {
           text,
@@ -37,14 +43,14 @@ export function drawText(
           stroke: stroke.color,
           lineWidth: stroke.width,
         },
-        name: "wrapped-text",
+        name: "bg-text",
         draggable: true,
       });
     });
   }
 
-  units.forEach(({ text, x, y }) => {
-    group!.addShape("text", {
+  return units.map(({ text, x, y }) => {
+    return group!.addShape("text", {
       attrs: {
         text,
         fill: "black",
@@ -53,7 +59,7 @@ export function drawText(
         fontFamily: wordwrap.fontFamily,
         ...cfg,
       },
-      name: "wrapped-text",
+      name: "text",
       draggable: true,
     });
   });
@@ -63,6 +69,7 @@ export function drawText(
  * Type of each rect node.
  */
 export interface RectConfig extends ModelConfig {
+  label: string;
   // width of the rectangle
   size: number;
   style: ShapeStyle & {
@@ -70,41 +77,88 @@ export interface RectConfig extends ModelConfig {
     paddingHeight?: number;
     paddingWidth?: number;
   };
+  labelCfg?: { style: LabelStyle };
 }
 
 export function registerRectNode(wordwrap: WordWrap) {
   const defaultWidth = wordwrap.getApproximateWidth(4);
+  // TODO: fix x and y as well as position of the text
+  const draw = (cfg: RectConfig, group: IGroup): IShape => {
+    const wp = cfg.style.paddingWidth || 0;
+    const hp = cfg.style.paddingHeight || 0;
+    const { units, width, height } = wordwrap.wrapText(
+      cfg.label,
+      cfg.size || defaultWidth,
+      "center"
+    );
+
+    // draw shape
+    const shape = group!.addShape("rect", {
+      attrs: {
+        // x,
+        // y,
+        width: width + wp * 2,
+        height: height + hp * 2,
+        ...cfg.style,
+      },
+      name: "rect",
+    });
+
+    // draw text
+    drawText(group, wordwrap, units, {
+      xoffset: wp,
+      yoffset: hp,
+      cfg: cfg.labelCfg?.style,
+    });
+    return shape;
+  };
 
   G6.registerNode(
     "rect-wrap",
     {
-      draw: ((cfg: RectConfig, group: IGroup): IShape => {
-        const wp = cfg.style.paddingWidth || 0;
-        const hp = cfg.style.paddingHeight || 0;
-        const { units, width, height } = wordwrap.wrapText(
-          cfg.label as string,
-          cfg.size || defaultWidth,
-          "center"
-        );
+      draw: (cfg?: ModelConfig, group?: IGroup) => {
+        return draw(cfg! as RectConfig, group!);
+      },
 
-        const shape = group!.addShape("rect", {
-          attrs: {
-            x: cfg.x,
-            y: cfg.y,
-            width: width + wp * 2,
-            height: height + hp * 2,
-            ...cfg.style,
+      // call everything state is changed so we can update the shape
+      // currently clear and re-draw it, but we could do better
+      setState(name, value, node) {
+        const cfg = node!._cfg!;
+        const model = cfg.model!;
+        const states = cfg.states!;
+        let styles: any = {};
+        let labelStyles = { ...model.labelCfg?.style };
+
+        for (const [name, prop] of Object.entries(model.style!)) {
+          if (typeof prop === "object") {
+            continue;
+          }
+          styles[name] = prop;
+        }
+        for (const state of states) {
+          for (const [name, prop] of Object.entries(
+            cfg.styles![state] as object
+          )) {
+            if (name === "label") {
+              Object.assign(labelStyles, prop);
+            } else {
+              styles[name] = prop;
+            }
+          }
+        }
+
+        const group = cfg.group!;
+        group.clear();
+        draw(
+          {
+            label: model.label as string,
+            size: model.size as number,
+            style: styles,
+            labelCfg: { style: labelStyles },
           },
-          name: "rect-soft-wrap-shape",
-        });
-
-        drawText(group, wordwrap, units, {
-          xoffset: wp,
-          yoffset: hp,
-          cfg: cfg?.labelCfg?.style,
-        });
-        return shape;
-      }) as (cfg?: ModelConfig, group?: IGroup) => IShape,
+          group
+        );
+      },
     },
     "single-node"
   );

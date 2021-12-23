@@ -35,7 +35,9 @@ export const PropertyComponent = withStyles(styles)(
       const components = [];
       for (const pid of visibleProperties) {
         // we have undefined when entity does not have this property `pid`
-        const stmts = entity.properties[pid] || [];
+        if (entity.properties[pid] === undefined) continue;
+
+        const stmts = entity.properties[pid];
         if (components.length > 0) {
           components.push(
             <hr key={`divider-${pid}`} className={classes.propDivider} />

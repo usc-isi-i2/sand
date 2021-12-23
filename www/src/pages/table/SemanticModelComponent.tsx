@@ -10,7 +10,7 @@ import {
   useStores,
 } from "../../models";
 import {
-  GraphComponent as GC,
+  GraphComponent,
   GraphComponentFunc,
   GraphEdge,
   GraphNode,
@@ -38,6 +38,7 @@ export const SemanticGraphComponent = withStyles(styles)(
       const [currentIndex, setCurrentIndex] = useState(0);
       const { semanticModelStore } = useStores();
       let sm = sms[currentIndex];
+      let isSmDraft = false; // use flag instead of instanceof to avoid wrapped object by mobx
 
       if (currentIndex >= sms.length) {
         // sm is undefined, we need to create a draft semantic model
@@ -65,6 +66,7 @@ export const SemanticGraphComponent = withStyles(styles)(
           semanticModelStore.setCreateDraft(draftModel);
         }
         sm = draftModel;
+        isSmDraft = true;
       }
 
       const [nodes, edges] = useMemo(() => {
@@ -119,11 +121,7 @@ export const SemanticGraphComponent = withStyles(styles)(
         if (graphRef.current === undefined) {
           return;
         }
-        const graph = graphRef.current.graph();
-        if (graph === undefined) {
-          return;
-        }
-        graph.updateContainerSize({ center: true, height: "fit-graph" });
+        graphRef.current.recenter();
       };
       useHotkeys("c", centering, [sm.id, graphRef !== undefined]);
 
@@ -141,7 +139,7 @@ export const SemanticGraphComponent = withStyles(styles)(
         );
       }
 
-      if (sm instanceof DraftSemanticModel) {
+      if (isSmDraft) {
         smLists.push(
           <Button
             size="small"
@@ -157,7 +155,7 @@ export const SemanticGraphComponent = withStyles(styles)(
       // only show the list of semantic models when we have more than one
       // or nothing and we are in the draft
       let smListComponent = undefined;
-      if (smLists.length !== 1 || sm instanceof DraftSemanticModel) {
+      if (smLists.length !== 1 || isSmDraft) {
         smListComponent = (
           <Space style={{ float: "right" }}>
             <span>Semantic Models:</span>
@@ -177,7 +175,7 @@ export const SemanticGraphComponent = withStyles(styles)(
             <Button size="small">Add node</Button>
             <Button size="small">Add edge</Button>
           </Space>
-          <GC
+          <GraphComponent
             ref={graphRef}
             className={classes.graphContainer}
             id={sm.id}
@@ -185,10 +183,9 @@ export const SemanticGraphComponent = withStyles(styles)(
             nodes={nodes}
             edges={edges}
             toolbar={false}
-            renderingAdjustedHeight="fit-graph"
+            renderingAdjustedHeight={{ type: "fit-graph", extraHeight: 20 }}
             props={{
               initHeight: 300,
-              leftOffset: 0,
               layout: {
                 type: "dagre",
                 rankdir: "TB",

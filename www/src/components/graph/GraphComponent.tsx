@@ -43,9 +43,11 @@ const styles = {
       },
     },
   },
-  container: {
+  bordered: {
     border: "1px solid #bbb",
     borderRadius: 4,
+  },
+  container: {
     // width: "calc(100% + 72px)",
     width: "100%",
     "& canvas": {
@@ -71,6 +73,7 @@ const GraphLayout = {
 
 export interface GraphComponentFunc {
   graph: () => G6Graph | undefined;
+  recenter: () => boolean;
 }
 
 export const GraphComponent = withStyles(styles)(
@@ -84,17 +87,23 @@ export const GraphComponent = withStyles(styles)(
         classes,
         props,
         className,
-        renderingAdjustedHeight = "fit-graph",
+        renderingAdjustedHeight = { type: "fit-graph", extraHeight: 8 },
         toolbar = false,
+        bordered = true,
+        layouts = GraphLayout,
       }: {
         nodes: GraphNode[];
         edges: GraphEdge[];
         id?: string | number;
         version?: number;
+        bordered?: boolean;
         toolbar?: boolean | "auto-hide";
         props?: G6GraphProps;
-        renderingAdjustedHeight?: "fit-graph" | "fit-remaining-window";
+        renderingAdjustedHeight?:
+          | { type: "fit-graph"; extraHeight: number }
+          | { type: "fit-remaining-window"; offsetHeight: number };
         className?: string;
+        layouts?: typeof GraphLayout;
       } & WithStyles<typeof styles>,
       ref
     ) => {
@@ -105,6 +114,14 @@ export const GraphComponent = withStyles(styles)(
         ref,
         (): GraphComponentFunc => ({
           graph: () => graph.current,
+          recenter: () => {
+            if (graph.current === undefined) return false;
+            graph.current.updateContainerSize({
+              center: true,
+              height: renderingAdjustedHeight,
+            });
+            return true;
+          },
         })
       );
 
@@ -115,7 +132,6 @@ export const GraphComponent = withStyles(styles)(
             container.current,
             props || {
               initHeight: 500,
-              leftOffset: 0,
             }
           );
         }
@@ -136,7 +152,11 @@ export const GraphComponent = withStyles(styles)(
 
       const toolbarElement =
         toolbar === false ? null : (
-          <GraphToolbar autoHide={toolbar === "auto-hide"} graph={graph} />
+          <GraphToolbar
+            autoHide={toolbar === "auto-hide"}
+            graph={graph}
+            layouts={layouts}
+          />
         );
 
       return (
@@ -144,7 +164,12 @@ export const GraphComponent = withStyles(styles)(
           <div className={classes.hide}>{version}</div>
           <div className={classes.graph}>
             {toolbarElement}
-            <div ref={container} className={classes.container}></div>
+            <div
+              ref={container}
+              className={
+                classes.container + (bordered ? " " + classes.bordered : "")
+              }
+            ></div>
           </div>
         </div>
       );
@@ -157,9 +182,11 @@ export const GraphToolbar = withStyles(styles)(
     autoHide = false,
     graph,
     classes,
+    layouts,
   }: {
     autoHide?: boolean;
     graph: React.MutableRefObject<G6Graph | undefined>;
+    layouts: typeof GraphLayout;
   } & WithStyles<typeof styles>) => {
     const [isHover, setIsHover] = useState(false);
     const [layout, setLayout] = useState("Force" as keyof typeof GraphLayout);
@@ -189,9 +216,9 @@ export const GraphToolbar = withStyles(styles)(
       graph.current?.graph.fitCenter();
     };
 
-    const changeLayout = (layout: keyof typeof GraphLayout) => {
-      setLayout(layout);
-      graph.current?.updateLayout(GraphLayout[layout]);
+    const changeLayout = (name: keyof typeof GraphLayout) => {
+      setLayout(name);
+      graph.current?.updateLayout(layouts[name]);
     };
 
     const cycleLayout = () => {
