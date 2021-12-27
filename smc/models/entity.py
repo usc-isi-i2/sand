@@ -12,7 +12,8 @@ from kgdata.wikidata.models.qnode import (
     MultiLingualStringList,
 )
 
-from smc.config import DAO_SETTINGS, import_func
+from smc.config import DAO_SETTINGS
+from sm.misc.funcs import import_func
 
 
 MultiLingualString = Dict[str, str]
