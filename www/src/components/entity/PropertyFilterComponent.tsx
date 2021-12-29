@@ -14,32 +14,28 @@ export const PropertyFilterComponent = withStyles(styles)(
   observer(
     ({
       entity,
+      enable,
+      setEnable,
       id2prop,
       filteredProps,
-      setFilteredProps,
+      addFilteredProp,
+      removeFilteredProp,
       classes,
     }: {
+      enable: boolean;
+      setEnable: (enable: boolean) => void;
       entity: Entity;
       id2prop: ID2Prop;
       filteredProps: string[];
-      setFilteredProps: (props: string[]) => void;
+      addFilteredProp: (prop: string) => void;
+      removeFilteredProp: (prop: string) => void;
     } & WithStyles<typeof styles>) => {
-      const [enable, setEnable] = useState(true);
-
       const props = useMemo(() => {
         return Object.keys(entity.properties).map((pid) => ({
           label: `${id2prop[pid].label} (${pid})`,
           value: pid,
         }));
       }, [id2prop, entity.id]);
-
-      const onSelect = (value: string) => {
-        setFilteredProps(filteredProps.concat([value]));
-      };
-
-      const onDeselect = (value: string) => {
-        setFilteredProps(filteredProps.filter((pid) => pid !== value));
-      };
 
       return (
         <div>
@@ -53,8 +49,8 @@ export const PropertyFilterComponent = withStyles(styles)(
             optionFilterProp="label"
             className={classes.root}
             value={filteredProps}
-            onSelect={onSelect}
-            onDeselect={onDeselect}
+            onSelect={addFilteredProp}
+            onDeselect={removeFilteredProp}
           />
         </div>
       );

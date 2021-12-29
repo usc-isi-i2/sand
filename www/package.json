@@ -1,6 +1,6 @@
 {
   "name": "smc",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "private": true,
   "main": "./lib/library.js",
   "module": "./lib/library.js",
@@ -50,7 +50,7 @@
   },
   "scripts": {
     "start": "BROWSER=none react-scripts start",
-    "build": "BUILD_PATH='../smc/www' react-scripts build",
+    "build": "python ./scripts/build.py ../smc/www",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "build:lib": "yarn compile && yarn compile:post",
@@ -64,7 +64,7 @@
       "react-app/jest"
     ]
   },
-  "proxy": "http://192.168.86.24:5524",
+  "proxy": "http://127.0.0.1:5524",
   "browserslist": {
     "production": [
       ">0.2%",

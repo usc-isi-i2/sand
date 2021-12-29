@@ -1,17 +1,25 @@
 import { AxiosError } from "axios";
+import { makeObservable, observable } from "mobx";
 import { RStore } from "rma-baseapp";
 import { SERVER } from "../../env";
 import { Entity } from "./Entity";
+import { EntitySettings } from "./EntitySettings";
 
 export class EntityStore extends RStore<string, Entity> {
   protected fetchByIdQueue: Map<
     string,
     ((entity?: Entity, error?: AxiosError<any>) => void)[]
   >;
+  public settings: EntitySettings;
 
   constructor() {
     super(`${SERVER}/api/entities`, undefined, false);
     this.fetchByIdQueue = new Map();
+    this.settings = new EntitySettings();
+
+    makeObservable(this, {
+      settings: observable,
+    });
   }
 
   /**

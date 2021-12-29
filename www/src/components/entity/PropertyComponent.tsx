@@ -21,19 +21,21 @@ export const PropertyComponent = withStyles(styles)(
     ({
       entity,
       id2prop,
-      visibleProperties,
+      filteredProps,
+      showId = false,
       classes,
     }: {
       entity: Entity;
       id2prop: ID2Prop;
-      visibleProperties?: string[];
+      showId?: boolean;
+      filteredProps: string[];
     } & WithStyles<typeof styles>) => {
-      if (visibleProperties === undefined) {
-        visibleProperties = Object.keys(entity.properties);
+      if (filteredProps.length === 0) {
+        filteredProps = Object.keys(entity.properties);
       }
 
       const components = [];
-      for (const pid of visibleProperties) {
+      for (const pid of filteredProps) {
         // we have undefined when entity does not have this property `pid`
         if (entity.properties[pid] === undefined) continue;
 
@@ -47,7 +49,10 @@ export const PropertyComponent = withStyles(styles)(
           <Row gutter={8} key={pid}>
             <Col span={6}>
               <Typography.Text strong={true}>
-                <InlinePropertyComponent property={id2prop[pid]} />
+                <InlinePropertyComponent
+                  property={id2prop[pid]}
+                  showId={showId}
+                />
               </Typography.Text>
             </Col>
             <Col span={18}>

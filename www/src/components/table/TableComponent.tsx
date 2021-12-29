@@ -1,9 +1,14 @@
 import ProTable from "@ant-design/pro-table";
 import { withStyles, WithStyles } from "@material-ui/styles";
-import { Descriptions } from "antd";
+import { Descriptions, Typography } from "antd";
 import React from "react";
 import { ExternalLink } from "rma-baseapp";
-import { FetchEntityComponent, InlineEntityComponent } from "../entity";
+import {
+  FetchEntityComponent,
+  InlineEntityComponent,
+  openPageEntityComponent,
+  PopoverEntityComponent,
+} from "../entity";
 import { CellComponent } from "./CellComponent";
 import * as RTable from "./RelationalTable";
 import { tableStyles } from "./styles";
@@ -18,10 +23,12 @@ export const TableComponent = withStyles(styles)(
     query,
     classes,
     toolBarRender,
+    showRowIndex = false,
   }: {
     table: RTable.Table;
     query: (limit: number, offset: number) => Promise<RTable.Row[]>;
     toolBarRender?: false;
+    showRowIndex?: boolean;
   } & WithStyles<typeof styles>) => {
     const columns = table.columns.map((col, columnIndex) => ({
       dataIndex: ["row", columnIndex, "value"],
@@ -32,6 +39,17 @@ export const TableComponent = withStyles(styles)(
         );
       }) as any,
     }));
+
+    if (showRowIndex) {
+      columns.splice(0, 0, {
+        title: (
+          <Typography.Text type="secondary" disabled={true}>
+            #
+          </Typography.Text>
+        ),
+        dataIndex: "index",
+      } as any);
+    }
 
     return (
       <React.Fragment>
@@ -105,7 +123,23 @@ export const TableInformation: React.FunctionComponent<{
     table.context.entityId !== undefined ? (
       <FetchEntityComponent
         entityId={table.context.entityId}
-        render={(entity) => <InlineEntityComponent entity={entity} />}
+        render={(entity, settings) => (
+          <PopoverEntityComponent
+            entity={entity}
+            zIndex={500}
+            settings={settings}
+          >
+            <InlineEntityComponent
+              entity={entity}
+              onCtrlClick={() => {
+                openPageEntityComponent({ entity, settings });
+              }}
+            />
+          </PopoverEntityComponent>
+        )}
+        renderNotFound={() => (
+          <span>`Entity ${table.context.entityId} does not exist`</span>
+        )}
       />
     ) : (
       "N/A"

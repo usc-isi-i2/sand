@@ -11,9 +11,11 @@ import { IncompleteProperty, isPropertyComplete } from "./Entity";
 export const InlinePropertyComponent = ({
   property,
   nolink = false,
+  showId = false,
   ...restprops
 }: {
   property: Property | IncompleteProperty;
+  showId?: boolean;
   nolink?: boolean;
 } & Omit<
   React.HTMLProps<HTMLAnchorElement>,
@@ -47,9 +49,11 @@ export const InlinePropertyComponent = ({
     );
   }
 
+  const label = showId ? `${property.label} (${property.id})` : property.label;
+
   return (
     <ExternalLink href={property.uri} openInNewPage={true} {...restprops}>
-      {property.label}
+      {label}
     </ExternalLink>
   );
 };

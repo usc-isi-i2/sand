@@ -3,17 +3,22 @@ import { observer } from "mobx-react";
 import React, { useEffect } from "react";
 import { LoadingPage } from "rma-baseapp";
 import { useStores } from "../../models";
+import { EntitySettings } from "../../models/entity";
 import { Entity } from "./Entity";
 
 export const FetchEntityComponent = observer(
   ({
     entityId,
     render,
+    renderLoading,
+    renderNotFound,
     forceWaiting = false,
   }: {
     entityId: string;
     forceWaiting?: boolean;
-    render: (entity: Entity) => React.ReactElement;
+    render: (entity: Entity, settings: EntitySettings) => React.ReactElement;
+    renderLoading?: () => React.ReactElement;
+    renderNotFound?: () => React.ReactElement;
   }) => {
     const { entityStore } = useStores();
 
@@ -25,6 +30,9 @@ export const FetchEntityComponent = observer(
 
     if (entity === undefined) {
       if (forceWaiting) {
+        if (renderLoading !== undefined) {
+          return renderLoading();
+        }
         return <LoadingPage />;
       }
 
@@ -32,6 +40,10 @@ export const FetchEntityComponent = observer(
     }
 
     if (entity === null) {
+      if (renderNotFound !== undefined) {
+        return renderNotFound();
+      }
+
       return (
         <Result
           status="404"
@@ -41,6 +53,6 @@ export const FetchEntityComponent = observer(
       );
     }
 
-    return render(entity);
+    return render(entity, entityStore.settings);
   }
 );

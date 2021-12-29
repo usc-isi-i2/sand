@@ -1,5 +1,5 @@
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { Button, PageHeader, Space } from "antd";
+import { Button, Descriptions, PageHeader, Space } from "antd";
 import _ from "lodash";
 import { observer } from "mobx-react";
 import React, { useEffect, useMemo, useState } from "react";
@@ -15,6 +15,7 @@ import {
   useStores,
 } from "../../models";
 import { routes } from "../../routes";
+import { EntitySettingComponent } from "./EntitySettingComponent";
 import { SemanticGraphComponent } from "./SemanticModelComponent";
 
 // https://cssinjs.org/jss-plugin-nested?v=v10.8.0#use--to-reference-selector-of-the-parent-rule
@@ -159,7 +160,9 @@ export const TablePage = withStyles(styles)(
               toolBarRender={false}
               table={rtable!}
               query={queryRow}
+              showRowIndex={true}
             />
+            <EntitySettingComponent />
           </Space>
         </div>
       </React.Fragment>

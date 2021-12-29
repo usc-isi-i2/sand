@@ -57,8 +57,8 @@ export const CandidateEntityListComponent = withStyles(styles)(
               <CheckboxIcon icon={faCheckDouble} />
               <FetchEntityComponent
                 entityId={candidateEntity.entityId}
-                render={(entity) => (
-                  <PopoverEntityComponent entity={entity}>
+                render={(entity, settings) => (
+                  <PopoverEntityComponent entity={entity} settings={settings}>
                     <InlineEntityComponent
                       nolink={true}
                       entity={entity}
@@ -94,10 +94,10 @@ export const CandidateEntityListComponent = withStyles(styles)(
               <CheckboxIcon icon={faCheckDouble} />
               <FetchEntityComponent
                 entityId={candidateEntity.entityId}
-                render={(entity) => (
+                render={(entity, settings) => (
                   <span className={classes.correctCandidateEntity}>
                     ({idx})&nbsp;
-                    <PopoverEntityComponent entity={entity}>
+                    <PopoverEntityComponent entity={entity} settings={settings}>
                       <InlineEntityComponent nolink={true} entity={entity} />
                     </PopoverEntityComponent>
                   </span>
@@ -138,8 +138,8 @@ export const CandidateEntityListComponent = withStyles(styles)(
           return (
             <FetchEntityComponent
               entityId={entityId}
-              render={(entity) => (
-                <PopoverEntityComponent entity={entity}>
+              render={(entity, settings) => (
+                <PopoverEntityComponent entity={entity} settings={settings}>
                   <InlineEntityComponent nolink={true} entity={entity} />
                 </PopoverEntityComponent>
               )}

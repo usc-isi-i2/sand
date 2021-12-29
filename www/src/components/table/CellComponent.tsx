@@ -12,9 +12,15 @@ import { ExternalLink } from "rma-baseapp";
 const styles = {
   link: {
     textDecoration: "underline",
+    "&:hover": {
+      textDecoration: "underline",
+    },
   },
   noEntityLink: {
     color: grey[5],
+    "&:hover": {
+      color: grey[5],
+    },
   },
 };
 
@@ -70,10 +76,17 @@ export const CellComponent = withStyles(styles)(
         <FetchEntityComponent
           key={index}
           entityId={link.entityId}
-          render={(entity) => (
-            <PopoverEntityComponent entity={entity} zIndex={500}>
+          render={(entity, settings) => (
+            <PopoverEntityComponent
+              entity={entity}
+              zIndex={500}
+              settings={settings}
+            >
               {infix}
             </PopoverEntityComponent>
+          )}
+          renderNotFound={() => (
+            <span className={classes.noEntityLink}>{infix}</span>
           )}
         />
       );

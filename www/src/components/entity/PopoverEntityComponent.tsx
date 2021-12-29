@@ -3,6 +3,7 @@ import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import { Popover, Typography } from "antd";
 import React from "react";
 import { ExternalLink } from "rma-baseapp";
+import { EntitySettings } from "../../models/entity";
 import { Entity, useEntityProperties } from "./Entity";
 import { openPageEntityComponent } from "./PageEntityComponent";
 import { PropertyComponent } from "./PropertyComponent";
@@ -27,14 +28,15 @@ export const PopoverEntityComponent = withStyles(styles)(
     children,
     classes,
     zIndex,
+    settings,
     ...restprops
   }: {
     entity: Entity;
+    settings: EntitySettings;
     zIndex?: number;
   } & React.HTMLProps<HTMLDivElement> &
     WithStyles<typeof styles>) => {
     // TODO: find a way to remove this hard code
-    const instanceOf = "P31";
     const id2prop = useEntityProperties(entity);
     const content = (
       <div {...restprops} className={`${classes.root} ${restprops.className}`}>
@@ -47,7 +49,7 @@ export const PopoverEntityComponent = withStyles(styles)(
             style={{ marginBottom: -2, paddingTop: 4, cursor: "pointer" }}
             onClick={() => {
               openPageEntityComponent(
-                entity,
+                { entity, settings },
                 zIndex !== undefined ? zIndex + 1 : undefined
               );
             }}
@@ -64,7 +66,7 @@ export const PopoverEntityComponent = withStyles(styles)(
         <PropertyComponent
           id2prop={id2prop}
           entity={entity}
-          visibleProperties={[instanceOf]}
+          filteredProps={settings.showedPropsInPopoverView}
         />
       </div>
     );

@@ -10,10 +10,12 @@ import { Entity } from "./Entity";
 export const InlineEntityComponent = ({
   entity,
   nolink = false,
+  onCtrlClick,
   ...restprops
 }: {
   entity: Entity;
   nolink?: boolean;
+  onCtrlClick?: () => void;
 } & Omit<React.HTMLProps<HTMLAnchorElement>, "href" | "target" | "rel">) => {
   if (nolink) {
     return (
@@ -27,6 +29,7 @@ export const InlineEntityComponent = ({
     <ExternalLink
       href={Entity.id2uri(entity.id)}
       openInNewPage={true}
+      onCtrlClick={onCtrlClick}
       {...restprops}
     >
       {entity.label["en"]} ({entity.id})
