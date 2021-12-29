@@ -9,8 +9,14 @@ else
     FLAG="--wsgi"
 fi
 
-python -m smc.cli init --db /workspace/sm-dev/data/home/databases/smc.db
+if [ "$2" == "" ]; then
+    DIR=/workspace/sm-dev
+else
+    DIR=$2
+fi
+
+python -m smc.cli init --db $DIR/data/home/databases/smc.db
 
 python -m smc.cli start $FLAG \
-    --db /workspace/sm-dev/data/home/databases/smc.db \
-    --externaldb /workspace/sm-dev/data/home/databases
+    --db $DIR/data/home/databases/smc.db \
+    --externaldb $DIR/data/home/databases
