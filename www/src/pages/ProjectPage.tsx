@@ -91,7 +91,7 @@ export const ProjectPage = withStyles(styles)(
           // toolBarRender={false}
           search={false}
           pagination={{
-            pageSize: 10,
+            pageSize: 500,
             pageSizeOptions: ["10", "20", "50", "100", "200", "500", "1000"],
           }}
           rowKey="id"
