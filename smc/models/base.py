@@ -1,6 +1,6 @@
 import functools
 from pathlib import Path
-from typing import TypeVar, Type, Callable, Any, Union
+from typing import Mapping, TypeVar, Type, Callable, Any, Union
 
 import orjson
 from peewee import SqliteDatabase, Model, Field
@@ -47,7 +47,10 @@ V = TypeVar("V")
 
 class StoreWrapper:
     def __init__(
-        self, store: dict, key_deser: Callable[[K], Any], val_deser: Callable[[Any], V]
+        self,
+        store: Mapping[K, V],
+        key_deser: Callable[[K], Any],
+        val_deser: Callable[[Any], V],
     ):
         self.store = store
         self.key_deser = key_deser

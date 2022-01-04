@@ -37,10 +37,11 @@ def serialize_class(cls: OntClass):
 def serialize_entity(ent: Entity):
     return {
         "id": ent.id,
+        "uri": Entity.id2uri(ent.id),
         "readable_label": ent.readable_label,
-        "label": ent.label,
-        "aliases": ent.aliases,
-        "description": ent.description,
+        "label": ent.label.serialize(),
+        "aliases": ent.aliases.serialize(),
+        "description": ent.description.serialize(),
         "properties": {
             prop: [
                 {

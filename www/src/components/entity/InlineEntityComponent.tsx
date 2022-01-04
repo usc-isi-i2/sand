@@ -18,11 +18,7 @@ export const InlineEntityComponent = ({
   onCtrlClick?: () => void;
 } & Omit<React.HTMLProps<HTMLAnchorElement>, "href" | "target" | "rel">) => {
   if (nolink) {
-    return (
-      <span {...restprops}>
-        {entity.label["en"]} ({entity.id})
-      </span>
-    );
+    return <span {...restprops}>{entity.readableLabel}</span>;
   }
 
   return (
@@ -32,7 +28,7 @@ export const InlineEntityComponent = ({
       onCtrlClick={onCtrlClick}
       {...restprops}
     >
-      {entity.label["en"]} ({entity.id})
+      {entity.readableLabel}
     </ExternalLink>
   );
 };

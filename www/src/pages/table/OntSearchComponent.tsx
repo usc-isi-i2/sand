@@ -11,114 +11,71 @@ const styles = {
   },
 };
 
+type SearchProps = {
+  value?: string | string[];
+  onDeselect?: (value: string) => void;
+  onSelect?: (value: string) => void;
+  mode?: "multiple" | "tags";
+} & WithStyles<typeof styles>;
+
 export const OntPropSearchComponent = withStyles(styles)(
-  observer(
-    ({
-      classes,
-      value,
-      onSelect,
-      onDeselect,
-      mode,
-    }: {
-      value?: string | string[];
-      onDeselect?: (value: string) => void;
-      onSelect?: (value: string) => void;
-      mode?: "multiple" | "tags";
-    } & WithStyles<typeof styles>) => {
-      const { propertyStore } = useStores();
-      const seqInvoker = new SequentialFuncInvoker();
-
-      // gather all options already in the store, leverage the fact
-      // that property store is readonly
-      const options = useMemo(() => {
-        const options = [];
-        for (const prop of propertyStore.iter()) {
-          options.push({
-            value: prop.id,
-            label: prop.readableLabel,
-          });
-        }
-        return options;
-      }, [propertyStore.records.size]);
-
-      // search for additional properties if it's not in the list
-      const onSearch = (query: string) => {
-        if (query === "") return;
-        seqInvoker.exec(() => {
-          return propertyStore.fetchById(query);
-        });
-      };
-
-      return (
-        <Select
-          mode={mode}
-          allowClear={true}
-          options={options}
-          optionFilterProp="label"
-          className={classes.selection}
-          showSearch={true}
-          onSearch={onSearch}
-          value={value}
-          onSelect={onSelect as any}
-          onDeselect={onDeselect as any}
-        />
-      );
-    }
-  )
+  observer((props: SearchProps) => {
+    return useSearchComponent("propertyStore", props);
+  })
 );
 
 export const OntClassSearchComponent = withStyles(styles)(
-  observer(
-    ({
-      classes,
-      value,
-      onSelect,
-      onDeselect,
-      mode,
-    }: {
-      value?: string;
-      onDeselect?: (value: string) => void;
-      onSelect?: (value: string) => void;
-      mode?: "multiple" | "tags";
-    } & WithStyles<typeof styles>) => {
-      const { classStore } = useStores();
-      const seqInvoker = new SequentialFuncInvoker();
-
-      // gather all options already in the store, leverage the fact
-      // that the class store is readonly
-      const options = useMemo(() => {
-        const options = [];
-        for (const cls of classStore.iter()) {
-          options.push({
-            value: cls.id,
-            label: cls.readableLabel,
-          });
-        }
-        return options;
-      }, [classStore.records.size]);
-
-      // search for additional properties if it's not in the list
-      const onSearch = (query: string) => {
-        if (query === "") return;
-        seqInvoker.exec(() => {
-          return classStore.fetchById(query);
-        });
-      };
-
-      return (
-        <Select
-          mode={mode}
-          allowClear={true}
-          options={options}
-          optionFilterProp="label"
-          className={classes.selection}
-          showSearch={true}
-          onSearch={onSearch}
-          value={value}
-          onSelect={onSelect as any}
-          onDeselect={onDeselect as any}
-        />
-      );
-    }
-  )
+  observer((props: SearchProps) => {
+    return useSearchComponent("classStore", props);
+  })
 );
+
+export const EntitySearchComponent = withStyles(styles)(
+  observer((props: SearchProps) => {
+    return useSearchComponent("entityStore", props);
+  })
+);
+
+function useSearchComponent(
+  storeName: "propertyStore" | "classStore" | "entityStore",
+  props: SearchProps
+) {
+  const store = useStores()[storeName];
+  const seqInvoker = new SequentialFuncInvoker();
+
+  // gather all options already in the store, leverage the fact
+  // that property store is readonly
+  const options = useMemo(() => {
+    const options = [];
+    for (const r of store.iter()) {
+      options.push({
+        value: r.id,
+        label: r.readableLabel,
+      });
+    }
+    return options;
+  }, [store.records.size]);
+
+  // search for additional properties if it's not in the list
+  const onSearch = (query: string) => {
+    if (query === "") return;
+    seqInvoker.exec(() => {
+      return store.fetchById(query).then(() => 1);
+    });
+  };
+
+  return (
+    <Select
+      mode={props.mode}
+      allowClear={true}
+      options={options}
+      optionFilterProp="label"
+      className={props.classes.selection}
+      showSearch={true}
+      onSearch={onSearch}
+      value={props.value}
+      onSelect={props.onSelect as any}
+      onDeselect={props.onDeselect as any}
+    />
+  );
+}

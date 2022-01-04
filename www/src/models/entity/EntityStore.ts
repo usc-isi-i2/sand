@@ -62,6 +62,8 @@ export class EntityStore extends RStore<string, Entity> {
   }
 
   public deserialize = (record: any): Entity => {
+    record.readableLabel = record.readable_label;
+    delete record.readable_label;
     for (const stmts of Object.values(record.properties)) {
       for (let stmt of stmts as any[]) {
         stmt.qualifiersOrder = stmt.qualifiers_order;

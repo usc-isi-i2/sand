@@ -13,6 +13,7 @@ DAO_SETTINGS = {
     "entity": {
         "constructor": "smc.plugins.wikidata.get_qnode_db",
         "uri2id": "grams.algorithm.wdont.WDOnt.get_qnode_id",
+        "id2uri": "grams.algorithm.wdont.WDOnt.get_qnode_uri",
         "args": {
             "dbfile": "/tmp/qnodes.db",
             "proxy": True,

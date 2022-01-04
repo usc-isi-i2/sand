@@ -4,7 +4,10 @@ import { observer } from "mobx-react";
 import { useState } from "react";
 import { useStores } from "../../../models";
 import { SMNode, SemanticModel, SMNodeType } from "../../../models/sm";
-import { OntClassSearchComponent } from "../OntSearchComponent";
+import {
+  EntitySearchComponent,
+  OntClassSearchComponent,
+} from "../OntSearchComponent";
 
 const styles = {} as const;
 
@@ -16,7 +19,7 @@ export interface NodeFormProps {
 export const NodeForm = withStyles(styles)(
   observer(
     ({ sm, node, classes }: NodeFormProps & WithStyles<typeof styles>) => {
-      const { classStore } = useStores();
+      const { classStore, entityStore } = useStores();
       const [nodetype, setNodeType] = useState<SMNodeType>("class_node");
       const [nodeId, setNodeId] = useState<string | undefined>(node?.id);
       const [approximation, setApproximation] = useState(
@@ -39,10 +42,9 @@ export const NodeForm = withStyles(styles)(
 
       const save = () => {
         if (!isValid()) return;
-        const node = classStore.get(nodeId!)!;
-
         switch (nodetype) {
           case "class_node":
+            const node = classStore.get(nodeId!)!;
             sm.graph.addClassNode({
               id: sm.graph.nextNodeId(),
               uri: node.uri,
@@ -52,14 +54,15 @@ export const NodeForm = withStyles(styles)(
             });
             break;
           case "literal_node":
+            const entity = entityStore.get(nodeId!)!;
             sm.graph.addLiteralNode({
-              id: `ent:${node.id}`,
+              id: `ent:${entity.id}`,
               value: {
                 type: "entity-id",
-                id: node.id,
-                uri: node.uri,
+                id: entity.id,
+                uri: entity.uri,
               },
-              label: node.readableLabel,
+              label: entity.readableLabel,
               isInContext: isInContext,
               nodetype,
             });
@@ -93,11 +96,19 @@ export const NodeForm = withStyles(styles)(
             </Radio.Group>
           </Form.Item>
           <Form.Item label="ID or URI">
-            <OntClassSearchComponent
-              value={nodeId}
-              onSelect={setNodeId}
-              onDeselect={(value) => setNodeId(undefined)}
-            />
+            {nodetype === "class_node" ? (
+              <OntClassSearchComponent
+                value={nodeId}
+                onSelect={setNodeId}
+                onDeselect={(value) => setNodeId(undefined)}
+              />
+            ) : (
+              <EntitySearchComponent
+                value={nodeId}
+                onSelect={setNodeId}
+                onDeselect={(value) => setNodeId(undefined)}
+              />
+            )}
           </Form.Item>
           {nodetype === "class_node" ? (
             <Form.Item label="Approximation">

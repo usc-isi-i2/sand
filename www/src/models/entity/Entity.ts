@@ -3,20 +3,26 @@ import { makeObservable, observable } from "mobx";
 /** An entity modeled according to Wikidata Qnode */
 export class Entity {
   public id: string;
+  public uri: string;
   public label: MultiLingualString;
+  public readableLabel: string;
   public aliases: MultiLingualStringList;
   public description: MultiLingualString;
   public properties: { [prop: string]: Statement[] };
 
   constructor(
     id: string,
+    uri: string,
     label: MultiLingualString,
+    readableLabel: string,
     aliases: MultiLingualStringList,
     description: MultiLingualString,
     props: { [prop: string]: Statement[] }
   ) {
     this.id = id;
+    this.uri = uri;
     this.label = label;
+    this.readableLabel = readableLabel;
     this.aliases = aliases;
     this.description = description;
     this.properties = props;
@@ -48,8 +54,14 @@ export class Entity {
   };
 }
 
-export type MultiLingualString = { [lang: string]: string };
-export type MultiLingualStringList = { [lang: string]: string[] };
+export type MultiLingualString = {
+  lang2value: { [lang: string]: string };
+  lang: string;
+};
+export type MultiLingualStringList = {
+  lang2values: { [lang: string]: string[] };
+  lang: string;
+};
 
 export interface Statement {
   value: DataValue;

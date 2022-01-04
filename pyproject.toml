@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sem-desc-curator"
-version = "1.1.2"
+version = "1.2.0"
 description = "UI for browsing/editing semantic descriptions"
 authors = ["Binh Vu <binh@toan2.com>"]
 license = "MIT"

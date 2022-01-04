@@ -42,18 +42,23 @@ export const PageEntityComponent = withStyles(styles)(
             />
           </Space>
           <h2>
-            <ExternalLink href={Entity.id2uri(entity.id)}>
-              {" "}
-              {entity.label["en"]}
+            <ExternalLink href={Entity.id2uri(entity.id)} openInNewPage={true}>
+              {entity.label.lang2value[entity.label.lang]}
             </ExternalLink>
+            &nbsp;
+            <Typography.Text
+              italic={true}
+              strong={false}
+              style={{ fontSize: 14, fontWeight: 400 }}
+              copyable={{ text: entity.id }}
+            >
+              ({entity.id})
+            </Typography.Text>
           </h2>
-          <p>
-            <i>({entity.id})</i>
-          </p>
           <Typography.Text type="secondary">
-            {entity.aliases["en"].join(" | ")}
+            {entity.aliases.lang2values[entity.aliases.lang].join(" | ")}
           </Typography.Text>
-          <p>{entity.description["en"]}</p>
+          <p>{entity.description.lang2value[entity.description.lang]}</p>
           <hr />
           <PropertyComponent
             entity={entity}

@@ -36,7 +36,7 @@ class WrapperWDProperty(OntProperty):
 
 
 def get_qnode_db(dbfile: str, proxy: bool):
-    store = db.get_qnode_db(dbfile, proxy=proxy, read_only=not proxy, compression=True)
+    store = db.get_qnode_db(dbfile, proxy=proxy, read_only=not proxy)
     return StoreWrapper(
         store,
         key_deser=identity,
@@ -46,7 +46,7 @@ def get_qnode_db(dbfile: str, proxy: bool):
 
 def get_ontclass_db(dbfile: str, proxy: bool):
     return StoreWrapper(
-        db.get_wdclass_db(dbfile, proxy=proxy, read_only=not proxy, compression=False),
+        db.get_wdclass_db(dbfile, proxy=proxy, read_only=not proxy),
         key_deser=get_wdclass_id,
         val_deser=ont_class_deser,
     )
@@ -54,7 +54,7 @@ def get_ontclass_db(dbfile: str, proxy: bool):
 
 def get_ontprop_db(dbfile: str, proxy: bool):
     return StoreWrapper(
-        db.get_wdprop_db(dbfile, proxy=proxy, read_only=not proxy, compression=False),
+        db.get_wdprop_db(dbfile, proxy=proxy, read_only=not proxy),
         key_deser=get_wdprop_id,
         val_deser=ont_prop_deser,
     )
@@ -78,9 +78,9 @@ def qnode_deser(qnode: QNode):
 
     return WrapperWDEntity(
         id=qnode.id,
-        label=qnode.label.lang2value,
-        aliases=qnode.aliases.lang2values,
-        description=qnode.description.lang2value,
+        label=qnode.label,
+        aliases=qnode.aliases,
+        description=qnode.description,
         properties=props,
     )
 
