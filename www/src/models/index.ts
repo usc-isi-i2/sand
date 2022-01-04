@@ -12,6 +12,7 @@ import {
 } from "./sm";
 import { Entity, EntityStore } from "./entity";
 import { PropertyStore } from "./ontology/PropertyStore";
+import { ClassStore } from "./ontology/ClassStore";
 
 export const stores = {
   projectStore: new ProjectStore(),
@@ -20,6 +21,7 @@ export const stores = {
   semanticModelStore: new SemanticModelStore(),
   entityStore: new EntityStore(),
   propertyStore: new PropertyStore(),
+  classStore: new ClassStore(),
 };
 (window as any)._stores = stores;
 export type IStore = Readonly<typeof stores>;
@@ -38,6 +40,7 @@ export {
   SemanticModelStore,
   DraftSemanticModel,
   PropertyStore,
+  ClassStore,
   SemanticModel,
   SMGraph,
   URICount,

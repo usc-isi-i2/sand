@@ -65,9 +65,9 @@ export class ProjectStore extends CRUDStore<
     super(`${SERVER}/api/project`, undefined, false);
   }
 
-  public deserialize(record: any): Project {
+  public deserialize = (record: any): Project => {
     return new Project(record.id, record.name, record.description);
-  }
+  };
 
   public serializeUpdateDraft(record: DraftUpdateProject): object {
     return {

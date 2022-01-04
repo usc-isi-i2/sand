@@ -20,6 +20,7 @@ DAO_SETTINGS = {
     },
     "ont_classes": {
         "constructor": "smc.plugins.wikidata.get_ontclass_db",
+        "uri2id": "smc.plugins.wikidata.uri2id",
         "args": {
             "dbfile": "/tmp/wdclasses.db",
             "proxy": True,
@@ -27,6 +28,7 @@ DAO_SETTINGS = {
     },
     "ont_props": {
         "constructor": "smc.plugins.wikidata.get_ontprop_db",
+        "uri2id": "smc.plugins.wikidata.uri2id",
         "args": {
             "dbfile": "/tmp/wdprops.db",
             "proxy": True,

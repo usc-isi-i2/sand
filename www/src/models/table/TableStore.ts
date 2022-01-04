@@ -3,12 +3,14 @@ import { SingleKeyIndex, RStore } from "rma-baseapp";
 import { Table } from "./Table";
 
 export class TableStore extends RStore<number, Table> {
-  protected projectIndex: SingleKeyIndex<number, number> = new SingleKeyIndex(
-    "project"
-  );
-
   constructor() {
-    super(`${SERVER}/api/table`, undefined, false);
+    super(`${SERVER}/api/table`, undefined, false, [
+      new SingleKeyIndex("project"),
+    ]);
+  }
+
+  get projectIndex() {
+    return this.indices[0] as SingleKeyIndex<number, number, Table>;
   }
 
   /**
@@ -24,7 +26,7 @@ export class TableStore extends RStore<number, Table> {
     );
   };
 
-  public deserialize(record: any): Table {
+  public deserialize = (record: any): Table => {
     record.contextPage = record.context_page;
     if (
       record.contextPage !== null &&
@@ -40,7 +42,7 @@ export class TableStore extends RStore<number, Table> {
     delete record.context_values;
     delete record.context_page;
     return record;
-  }
+  };
 
   protected index(record: Table) {
     this.projectIndex.add(record);

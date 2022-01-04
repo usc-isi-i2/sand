@@ -5,8 +5,10 @@ import {
   Record,
   SingleKeyIndex,
 } from "rma-baseapp";
+import { Table } from "../table";
 import { SERVER } from "../../env";
 import { SMGraph, SMNodeType } from "./SMGraph";
+import { toJS } from "mobx";
 
 export class SemanticModel
   implements Record<number>, DraftUpdateRecord<number, SemanticModel>
@@ -34,9 +36,11 @@ export class SemanticModel
     this.table = table;
   }
 
-  get isDraft() {
-    return false;
-  }
+  static isDraft = (
+    sm: SemanticModel | DraftSemanticModel
+  ): sm is DraftSemanticModel => {
+    return (sm as DraftSemanticModel).draftID !== undefined;
+  };
 
   markSaved(): void {
     this.graph.onSave();
@@ -65,8 +69,27 @@ export class DraftSemanticModel
     this.draftID = draftID;
   }
 
-  get isDraft() {
-    return true;
+  /**
+   * Get a default draft model for a table
+   */
+  static getDefaultDraftSemanticModel(
+    id: string,
+    name: string,
+    table: Table,
+    description = ""
+  ): DraftSemanticModel {
+    const graph = new SMGraph(
+      id,
+      table.columns.map((column, index) => ({
+        id: `col-${index}`,
+        label: column,
+        columnIndex: index,
+        nodetype: "data_node",
+      })),
+      []
+    );
+    graph.stale = true;
+    return new DraftSemanticModel(id, name, description, 0, graph, table.id);
   }
 }
 
@@ -76,12 +99,58 @@ export class SemanticModelStore extends CRUDStore<
   SemanticModel,
   SemanticModel
 > {
-  protected tableIndex: SingleKeyIndex<number, number> = new SingleKeyIndex(
-    "table"
-  );
-
   constructor() {
-    super(`${SERVER}/api/semanticmodel`, undefined, false);
+    super(`${SERVER}/api/semanticmodel`, undefined, false, [
+      new SingleKeyIndex("table"),
+    ]);
+  }
+
+  get tableIndex() {
+    return this.indices[0] as SingleKeyIndex<number, number, SemanticModel>;
+  }
+
+  /** Generate new draft id */
+  getNewDraftId = (table: Table): string => {
+    let i = 0;
+    while (true) {
+      const id = `draft-${i}:${table.id}`;
+      if (this.getCreateDraft(id) === undefined) {
+        return id;
+      }
+      i++;
+    }
+  };
+
+  /** Generate new semantic model name */
+  getNewSemanticModelName(table: Table): string {
+    const sms = this.findByTable(table.id);
+    const drafts = this.getDraftsByTable(table);
+
+    let idx = -1;
+    for (const sm of sms.concat(drafts)) {
+      const m = /sm-(\d+)/.exec(sm.name);
+      if (m === null) continue;
+      if (parseInt(m[1]) >= idx) {
+        idx = Math.max(idx, parseInt(m[1]));
+      }
+    }
+    return `sm-${idx + 1}`;
+  }
+
+  /** Get all drafts of a table */
+  getDraftsByTable(table: Table): DraftSemanticModel[] {
+    const drafts = [];
+    let i = 0;
+    while (true) {
+      const id = `draft-${i}:${table.id}`;
+      const draft = this.getCreateDraft(id);
+      if (draft === undefined) {
+        break;
+      }
+      drafts.push(draft);
+      i++;
+    }
+    return drafts;
   }
 
   /**
@@ -93,12 +162,21 @@ export class SemanticModelStore extends CRUDStore<
     );
   }
 
+  /**
+   * Remove a record (by id) from your indexes
+   */
+  protected deindex(record: SemanticModel): void {
+    for (const index of this.indices) {
+      index.remove(record);
+    }
+  }
+
   /** Whether we have local copies of semantic models of a given table */
   public hasByTable(tableId: number): boolean {
     return this.tableIndex.index.has(tableId);
   }
 
-  public deserialize(record: any): SemanticModel {
+  public deserialize = (record: any): SemanticModel => {
     let nodes = record.data.nodes.map((node: any) => {
       const type: SMNodeType = node.type;
       delete node.type;
@@ -121,17 +199,57 @@ export class SemanticModelStore extends CRUDStore<
       graph,
       record.table
     );
-  }
+  };
 
-  public serializeUpdateDraft(record: any): object {
-    throw new Error("Method not implemented.");
+  public serializeUpdateDraft(record: SemanticModel): object {
+    record.version += 1;
+    return {
+      table: record.table,
+      name: record.name,
+      description: record.description,
+      version: record.version,
+      data: {
+        nodes: record.graph.nodes.map((node) => {
+          switch (node.nodetype) {
+            case "class_node":
+              return {
+                id: node.id,
+                uri: node.uri,
+                approximation: node.approximation,
+                label: node.label,
+                type: node.nodetype,
+              };
+            case "data_node":
+              return {
+                id: node.id,
+                label: node.label,
+                column_index: node.columnIndex,
+                type: node.nodetype,
+              };
+            case "literal_node":
+              return {
+                id: node.id,
+                value: node.value,
+                label: node.label,
+                is_in_context: node.isInContext,
+                type: node.nodetype,
+              };
+          }
+        }),
+        edges: record.graph.edges.map((edge) => {
+          return {
+            source: edge.source,
+            target: edge.target,
+            uri: edge.uri,
+            approximation: edge.approximation,
+            label: edge.label,
+          };
+        }),
+      },
+    };
   }
 
   public serializeCreateDraft(record: DraftSemanticModel): object {
-    throw new Error("Method not implemented.");
-  }
-
-  protected index(record: SemanticModel): void {
-    this.tableIndex.add(record);
+    return this.serializeUpdateDraft(record);
   }
 }

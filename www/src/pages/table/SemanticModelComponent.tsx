@@ -1,6 +1,6 @@
 import { withStyles, WithStyles } from "@material-ui/styles";
-import { Button, Space } from "antd";
-import { useMemo, useRef, useState } from "react";
+import { Button, Divider, Popconfirm, Space } from "antd";
+import React, { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import {
   SemanticModel,
@@ -15,8 +15,10 @@ import {
   GraphEdge,
   GraphNode,
 } from "../../components/graph";
-import { gold, green, orange, purple, yellow } from "@ant-design/colors";
+import { gold, green, orange, yellow, purple, grey } from "@ant-design/colors";
 import { observer } from "mobx-react";
+import { openForm } from "./forms";
+import { toJS } from "mobx";
 
 const styles = {
   hide: {
@@ -25,49 +27,41 @@ const styles = {
   graphContainer: {
     marginTop: 8,
   },
+  draft: {
+    border: `1px dashed ${yellow[7]} !important`,
+    "&:hover": {
+      color: `${gold[5]} !important`,
+    },
+  },
+  selectedDraft: {
+    backgroundColor: `${gold[5]} !important`,
+  },
 };
 
-export const SemanticGraphComponent = withStyles(styles)(
+export const SemanticModelComponent = withStyles(styles)(
   observer(
-    ({
-      sms,
-      classes,
-      table,
-    }: { sms: SemanticModel[]; table: Table } & WithStyles<typeof styles>) => {
+    ({ classes, table }: { table: Table } & WithStyles<typeof styles>) => {
       const graphRef = useRef<GraphComponentFunc | undefined>(undefined);
       const [currentIndex, setCurrentIndex] = useState(0);
       const { semanticModelStore } = useStores();
-      let sm = sms[currentIndex];
-      let isSmDraft = false; // use flag instead of instanceof to avoid wrapped object by mobx
-
-      if (currentIndex >= sms.length) {
-        // sm is undefined, we need to create a draft semantic model
-        // currently only support one draft
-        const id = `${table.id}:draft`;
-        let draftModel = semanticModelStore.getCreateDraft(id);
-        if (draftModel === undefined) {
-          draftModel = new DraftSemanticModel(
-            id,
-            `sm-${sms.length}`,
-            "",
-            0,
-            new SMGraph(
-              id,
-              table.columns.map((column, index) => ({
-                id: `col-${index}`,
-                label: column,
-                columnIndex: index,
-                nodetype: "data_node",
-              })),
-              []
-            ),
-            table.id
-          );
-          semanticModelStore.setCreateDraft(draftModel);
-        }
-        sm = draftModel;
-        isSmDraft = true;
+      const sms = semanticModelStore.findByTable(table.id);
+      const drafts = semanticModelStore.getDraftsByTable(table);
+      if (currentIndex >= sms.length + drafts.length) {
+        // there is no semantic model & no draft for this table, create a new draft
+        const id = semanticModelStore.getNewDraftId(table);
+        const draft = DraftSemanticModel.getDefaultDraftSemanticModel(
+          id,
+          `sm-${sms.length}`,
+          table
+        );
+        semanticModelStore.setCreateDraft(draft);
+        drafts.push(draft);
       }
+
+      const sm =
+        currentIndex < sms.length
+          ? sms[currentIndex]
+          : drafts[currentIndex - sms.length];
 
       const [nodes, edges] = useMemo(() => {
         const nodes = sm.graph.nodes.map((node) => {
@@ -82,7 +76,7 @@ export const SemanticGraphComponent = withStyles(styles)(
               style = { fill: gold[3], stroke: gold[8] };
               break;
             case "literal_node":
-              if (node.datatype === "entity-id") {
+              if (node.value.type === "entity-id") {
                 shape = "circle";
               } else {
                 shape = "rect";
@@ -115,8 +109,13 @@ export const SemanticGraphComponent = withStyles(styles)(
 
         return [nodes, edges];
         // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, [sm.id, sm.version]);
+      }, [
+        SemanticModel.isDraft(sm) ? sm.draftID : null,
+        sm.id,
+        sm.graph.version,
+      ]);
 
+      // center the graph
       const centering = () => {
         if (graphRef.current === undefined) {
           return;
@@ -125,44 +124,98 @@ export const SemanticGraphComponent = withStyles(styles)(
       };
       useHotkeys("c", centering, [sm.id, graphRef !== undefined]);
 
+      // add model
+      const cloneNewModel = () => {
+        const id = semanticModelStore.getNewDraftId(table);
+        const nSms = sms.length + drafts.length;
+        const draft = DraftSemanticModel.getDefaultDraftSemanticModel(
+          id,
+          semanticModelStore.getNewSemanticModelName(table),
+          table
+        );
+        draft.graph = sm.graph.clone();
+        draft.graph.id = id;
+        semanticModelStore.setCreateDraft(draft);
+        setCurrentIndex(nSms);
+      };
+
       const smLists = [];
-      for (const [idx, item] of sms.entries()) {
+      for (let idx = 0; idx < sms.length + drafts.length; idx++) {
+        const item = idx < sms.length ? sms[idx] : drafts[idx - sms.length];
+        const isSelected = idx === currentIndex;
         smLists.push(
           <Button
             size="small"
             key={item.id}
-            type={item.id === sm.id ? "primary" : "default"}
+            type={isSelected ? "primary" : "default"}
             onClick={() => setCurrentIndex(idx)}
+            className={
+              item.graph.stale || SemanticModel.isDraft(item)
+                ? classes.draft +
+                  (isSelected ? ` ${classes.selectedDraft}` : "")
+                : ""
+            }
           >
             {item.name}
           </Button>
         );
       }
 
-      if (isSmDraft) {
-        smLists.push(
-          <Button
-            size="small"
-            key="draft"
-            type="primary"
-            style={{ backgroundColor: gold[5], borderColor: gold[7] }}
-          >
-            {sm.name}
-          </Button>
-        );
-      }
-
-      // only show the list of semantic models when we have more than one
-      // or nothing and we are in the draft
+      // only show the list of semantic models when we have more than one semantic model
+      // or when we have some drafts or when the only semantic model is modified
       let smListComponent = undefined;
-      if (smLists.length !== 1 || isSmDraft) {
-        smListComponent = (
-          <Space style={{ float: "right" }}>
-            <span>Semantic Models:</span>
-            {smLists}
-          </Space>
-        );
-      }
+      smListComponent = (
+        <Space style={{ float: "right" }}>
+          {smLists.length !== 1 || drafts.length > 0 || sms[0].graph.stale ? (
+            <React.Fragment>
+              <span>Semantic Models:</span>
+              {smLists}
+              <Divider type="vertical" />
+            </React.Fragment>
+          ) : null}
+          {/* reset is nice to have, but we didn't have the original copy... */}
+          {/* {!sm.isDraft && sm.graph.stale ? (
+            <Button size="small" onClick={() => openForm({ type: "edge", sm })}>
+              Reset
+            </Button>
+          ) : null} */}
+          {sms.length + drafts.length > 1 ? (
+            <Popconfirm
+              title="Are you sure to delete this model?"
+              onConfirm={() => {
+                if (SemanticModel.isDraft(sm)) {
+                  semanticModelStore.deleteCreateDraft(sm.draftID);
+                } else {
+                  semanticModelStore.delete(sm.id);
+                }
+                setCurrentIndex(0);
+              }}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button size="small" danger={true}>
+                Delete model
+              </Button>
+            </Popconfirm>
+          ) : null}
+          {SemanticModel.isDraft(sm) || sm.graph.stale ? (
+            <Button
+              size="small"
+              onClick={() =>
+                SemanticModel.isDraft(sm)
+                  ? semanticModelStore.create(sm)
+                  : semanticModelStore.update(sm)
+              }
+            >
+              Save model
+            </Button>
+          ) : null}
+
+          <Button size="small" onClick={cloneNewModel}>
+            Add model
+          </Button>
+        </Space>
+      );
 
       return (
         <div>
@@ -171,15 +224,18 @@ export const SemanticGraphComponent = withStyles(styles)(
             <Button size="small" onClick={centering}>
               Center graph (C)
             </Button>
-            <Button size="small">Add model</Button>
-            <Button size="small">Add node</Button>
-            <Button size="small">Add edge</Button>
+            <Button size="small" onClick={() => openForm({ type: "node", sm })}>
+              Add node
+            </Button>
+            <Button size="small" onClick={() => openForm({ type: "edge", sm })}>
+              Add edge
+            </Button>
           </Space>
           <GraphComponent
             ref={graphRef}
             className={classes.graphContainer}
             id={sm.id}
-            version={sm.version}
+            version={sm.graph.version}
             nodes={nodes}
             edges={edges}
             toolbar={false}
@@ -193,10 +249,18 @@ export const SemanticGraphComponent = withStyles(styles)(
                 ranksep: 15,
               },
               onNodeClick: (nodeId: string) => {
-                console.log("click node", nodeId);
+                openForm({
+                  type: "node",
+                  sm,
+                  node: sm.graph.node(nodeId),
+                });
               },
               onEdgeClick: (edge: GraphEdge) => {
-                console.log("click edge", edge);
+                openForm({
+                  type: "edge",
+                  sm,
+                  edge: sm.graph.edge(edge.source, edge.target),
+                });
               },
             }}
           />

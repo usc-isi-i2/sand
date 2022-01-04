@@ -5,7 +5,6 @@ import { observer } from "mobx-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { history, LoadingPage, NotFoundPage } from "rma-baseapp";
-// import { TableComponent } from "./TableComponent";
 import { TableComponent } from "../../components/table";
 import * as RTable from "../../components/table/RelationalTable";
 import {
@@ -16,7 +15,7 @@ import {
 } from "../../models";
 import { routes } from "../../routes";
 import { EntitySettingComponent } from "./EntitySettingComponent";
-import { SemanticGraphComponent } from "./SemanticModelComponent";
+import { SemanticModelComponent } from "./SemanticModelComponent";
 
 // https://cssinjs.org/jss-plugin-nested?v=v10.8.0#use--to-reference-selector-of-the-parent-rule
 const styles = {
@@ -39,7 +38,6 @@ export const TablePage = withStyles(styles)(
     // use stores
     const { projectStore, tableStore, tableRowStore, semanticModelStore } =
       useStores();
-    const [fetchedSms, setFetchedSms] = useState(false);
 
     // parse necessary route parameters
     const tableId = routes.table.useURLParams()!.tableId;
@@ -65,7 +63,6 @@ export const TablePage = withStyles(styles)(
             table: tableId,
           },
         });
-        setFetchedSms(true);
       }
     }, [tableStore, projectStore, semanticModelStore, tableId]);
 
@@ -101,11 +98,10 @@ export const TablePage = withStyles(styles)(
     }
 
     let semComponent = null;
-    if (!semanticModelStore.hasByTable(tableId) && !fetchedSms) {
+    if (!semanticModelStore.hasByTable(tableId)) {
       semComponent = <LoadingPage bordered={true} />;
     } else {
-      const sms = semanticModelStore.findByTable(tableId);
-      semComponent = <SemanticGraphComponent sms={sms} table={table} />;
+      semComponent = <SemanticModelComponent key={tableId} table={table} />;
     }
 
     const queryRow = async (limit: number, offset: number) => {

@@ -1,7 +1,7 @@
 import { RStore, SingleKeyIndex, SingleKeyUniqueIndex } from "rma-baseapp";
 import { SERVER } from "../../env";
 
-export interface Property {
+export interface Class {
   id: string;
   uri: string;
   label: string;
@@ -11,21 +11,18 @@ export interface Property {
   parents: string[];
 }
 
-export class PropertyStore extends RStore<string, Property> {
+export class ClassStore extends RStore<string, Class> {
   constructor() {
-    super(
-      `${SERVER}/api/properties`,
-      { readableLabel: "readable_label" },
-      false,
-      [new SingleKeyUniqueIndex("uri")]
-    );
+    super(`${SERVER}/api/classes`, { readableLabel: "readable_label" }, false, [
+      new SingleKeyUniqueIndex("uri"),
+    ]);
   }
 
   get uriIndex() {
-    return this.indices[0] as SingleKeyUniqueIndex<string, string, Property>;
+    return this.indices[0] as SingleKeyUniqueIndex<string, string, Class>;
   }
 
-  getPropertyByURI = (uri: string): Property | undefined => {
+  getClassByURI = (uri: string): Class | undefined => {
     const id = this.uriIndex.index.get(uri);
     return id !== undefined ? this.get(id)! : undefined;
   };

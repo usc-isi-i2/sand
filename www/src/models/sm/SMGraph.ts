@@ -24,15 +24,20 @@ export type LiteralDataType = "entity-id" | "string";
 export interface LiteralNode {
   id: string;
   /**
-   * ID for entity, otherwise string literal
+   * value of this literal node, depends on the type
    */
-  value: string;
-  // column name
+  value:
+    | {
+        type: "string";
+        value: string;
+      }
+    | {
+        type: "entity-id";
+        id: string;
+        uri: string;
+      };
+  // readable name for this node
   label: string;
-  /**
-   * DataType of the literal node
-   */
-  datatype: LiteralDataType;
   // whether this is a node in the context, apply for literal node only
   readonly isInContext: boolean;
   readonly nodetype: "literal_node";
@@ -129,6 +134,11 @@ export class SMGraph {
       updateEdge: action,
     });
   }
+
+  clone = () => {
+    const record = this.toJS();
+    return new SMGraph(this.id, record.nodes, record.edges);
+  };
 
   onSave = () => {
     this.stale = false;

@@ -22,6 +22,18 @@ def serialize_property(prop: OntProperty):
     }
 
 
+def serialize_class(cls: OntClass):
+    return {
+        "id": cls.id,
+        "uri": cls.uri,
+        "label": cls.label,
+        "readable_label": cls.readable_label,
+        "aliases": cls.aliases,
+        "description": cls.description,
+        "parents": cls.parents,
+    }
+
+
 def serialize_entity(ent: Entity):
     return {
         "id": ent.id,
@@ -74,9 +86,13 @@ def serialize_graph(
             )
         else:
             if n.datatype == O.LiteralNodeDataType.Entity:
-                value = Entity.uri2id(n.value)
+                value = {
+                    "id": Entity.uri2id(n.value),
+                    "uri": n.value,
+                    "type": n.datatype.value,
+                }
             else:
-                value = n.value
+                value = {"type": n.datatype.value, "value": n.value}
             nodes.append(
                 {
                     "id": n.id,
@@ -84,7 +100,6 @@ def serialize_graph(
                     "label": n.label,
                     "type": "literal_node",
                     "is_in_context": n.is_in_context,
-                    "datatype": n.datatype.value,
                 }
             )
 
@@ -93,7 +108,7 @@ def serialize_graph(
             "source": e.source,
             "target": e.target,
             "uri": e.abs_uri,
-            "label": uri2label(e.abs_uri, False) or e.rel_uri,
+            "label": e.readable_label or uri2label(e.abs_uri, False) or e.rel_uri,
             "approximation": e.approximation,
         }
         for e in sm.iter_edges()

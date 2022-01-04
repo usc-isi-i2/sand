@@ -50,7 +50,7 @@ export class G6Graph {
   private container: HTMLDivElement;
   public graph: Graph;
   private data: GraphData;
-  private props: G6GraphProps;
+  public props: G6GraphProps;
   private wordwrap: WordWrap;
 
   constructor(container: HTMLDivElement, props: G6GraphProps) {
@@ -151,16 +151,34 @@ export class G6Graph {
 
     if (props.onNodeClick !== undefined) {
       this.graph.on("node:click", (event: any) => {
-        props.onNodeClick!(event.item._cfg.model.id);
+        this.props.onNodeClick!(event.item._cfg.model.id);
       });
     }
 
     if (props.onEdgeClick !== undefined) {
       this.graph.on("edge:click", (event: any) => {
-        props.onEdgeClick!(event.item._cfg.model);
+        this.props.onEdgeClick!(event.item._cfg.model);
       });
     }
   }
+
+  /** Try to hot-swap the properties of this graph and returns whether it's success or not */
+  hotswapProps = (props: G6GraphProps) => {
+    if (!_.isEqual(this.props.layout, props.layout)) {
+      return false;
+    }
+
+    if (this.props.enableActivateRelations !== props.enableActivateRelations) {
+      return false;
+    }
+
+    this.props = props;
+    return true;
+  };
+
+  destroy = () => {
+    this.graph.destroy();
+  };
 
   /** Transform the data from our format to G6 format */
   static transformData(nodes: GraphNode[], edges: GraphEdge[]): GraphData {

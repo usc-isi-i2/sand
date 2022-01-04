@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from grams.algorithm.wdont import WDOnt
 from hugedict.misc import identity
-
+from itertools import chain
 from kgdata.wikidata import db
 from kgdata.wikidata.models import QNode, DataValue, WDClass, WDProperty
+from rdflib.namespace import RDFS
 from smc.models.base import StoreWrapper
 from smc.models.entity import Entity, Statement, Value
 from smc.models.ontology import OntClass, OntProperty
@@ -131,3 +132,60 @@ def get_wdprop_id(uri: str):
 
 def get_wdclass_id(uri: str):
     return uri.replace(f"http://www.wikidata.org/entity/", "")
+
+
+@dataclass
+class _OntClass(OntClass):
+    id: str = ""
+
+
+@dataclass
+class _OntProperty(OntProperty):
+    id: str = ""
+
+
+DEFAULT_ONT_PROPS = {
+    "rdfs:label": _OntProperty(
+        id="rdfs:label",
+        uri=str(RDFS.label),
+        label="rdfs:label",
+        aliases=[],
+        description="",
+        parents=[],
+    )
+}
+DEFAULT_ONT_CLASSES = {
+    WDOnt.STATEMENT_REL_URI: _OntClass(
+        id=WDOnt.STATEMENT_REL_URI,
+        uri=WDOnt.STATEMENT_URI,
+        label=WDOnt.STATEMENT_REL_URI,
+        aliases=[],
+        description="",
+        parents=[],
+    )
+}
+INVERSE_DEFAULT_URI2ID = {
+    v.uri: k for k, v in chain(DEFAULT_ONT_PROPS.items(), DEFAULT_ONT_CLASSES.items())
+}
+
+
+def uri2id(uri: str):
+    if uri.startswith("http://www.wikidata.org/prop/"):
+        return WDOnt.get_prop_id(uri)
+    if uri.startswith("http://www.wikidata.org/entity/"):
+        return WDOnt.get_qnode_id(uri)
+    if uri in INVERSE_DEFAULT_URI2ID:
+        return INVERSE_DEFAULT_URI2ID[uri]
+    return uri
+
+
+def get_rel_uri(uri: str):
+    if WDOnt.is_uri_statement(uri):
+        return WDOnt.STATEMENT_REL_URI
+    if WDOnt.is_uri_qnode(uri):
+        return WDOnt.get_qnode_rel_uri(uri)
+    if WDOnt.is_uri_property(uri):
+        return WDOnt.get_prop_rel_uri(uri)
+    if uri == str(RDFS.label):
+        return "rdfs:label"
+    return uri

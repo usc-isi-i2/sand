@@ -3,11 +3,19 @@ import { PairKeysUniqueIndex, RStore } from "rma-baseapp";
 import { TableRow } from "./Table";
 
 export class TableRowStore extends RStore<number, TableRow> {
-  protected tableIndex: PairKeysUniqueIndex<number, number, number> =
-    new PairKeysUniqueIndex("table", "index");
-
   constructor() {
-    super(`${SERVER}/api/tablerow`, undefined, false);
+    super(`${SERVER}/api/tablerow`, undefined, false, [
+      new PairKeysUniqueIndex("table", "index"),
+    ]);
+  }
+
+  get tableIndex() {
+    return this.indices[0] as PairKeysUniqueIndex<
+      number,
+      number,
+      number,
+      TableRow
+    >;
   }
 
   /**
@@ -37,7 +45,7 @@ export class TableRowStore extends RStore<number, TableRow> {
     this.tableIndex.add(record);
   }
 
-  public deserialize(record: any): TableRow {
+  public deserialize = (record: any): TableRow => {
     Object.values(record.links).forEach((links: any) => {
       links.forEach((link: any) => {
         if (link.entity !== null) {
@@ -53,5 +61,5 @@ export class TableRowStore extends RStore<number, TableRow> {
       });
     });
     return record;
-  }
+  };
 }

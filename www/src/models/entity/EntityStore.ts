@@ -61,7 +61,7 @@ export class EntityStore extends RStore<string, Entity> {
     });
   }
 
-  public deserialize(record: any): Entity {
+  public deserialize = (record: any): Entity => {
     for (const stmts of Object.values(record.properties)) {
       for (let stmt of stmts as any[]) {
         stmt.qualifiersOrder = stmt.qualifiers_order;
@@ -69,5 +69,5 @@ export class EntityStore extends RStore<string, Entity> {
       }
     }
     return record;
-  }
+  };
 }

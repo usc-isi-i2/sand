@@ -136,7 +136,20 @@ export const GraphComponent = withStyles(styles)(
           );
         }
 
-        const g = graph.current;
+        let g = graph.current;
+        if (props !== undefined) {
+          const success = g.hotswapProps(props);
+          if (!success) {
+            g.destroy();
+            graph.current = new G6Graph(
+              container.current,
+              props || {
+                initHeight: 500,
+              }
+            );
+            g = graph.current;
+          }
+        }
         g.setDataAndRender(G6Graph.transformData(nodes, edges), () => {
           (window as any).g = g;
           // maximum wait is 1 second

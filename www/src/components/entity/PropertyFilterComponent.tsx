@@ -49,8 +49,8 @@ export const PropertyFilterComponent = withStyles(styles)(
             optionFilterProp="label"
             className={classes.root}
             value={filteredProps}
-            onSelect={addFilteredProp}
-            onDeselect={removeFilteredProp}
+            onSelect={addFilteredProp as any}
+            onDeselect={removeFilteredProp as any}
           />
         </div>
       );
