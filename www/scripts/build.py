@@ -2,6 +2,7 @@ import json, os, subprocess, copy, sys
 from pathlib import Path
 
 outdir = Path(sys.argv[1]).absolute()
+force = len(sys.argv) > 2 and sys.argv[2] == "force"
 www_dir = Path(os.path.abspath("."))
 
 with open(www_dir / "package.json") as f:
@@ -14,7 +15,7 @@ else:
     with open(outdir / "version.txt", "r") as f:
         built_version = f.read().strip()
 
-if version == built_version:
+if version == built_version and not force:
     print(f"The package's version ({version}) is up to date. Skip building")
     exit(0)
 
