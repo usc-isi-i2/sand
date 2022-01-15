@@ -286,6 +286,7 @@ export class G6Graph {
    *
    * For fit-graph mode, the extraHeight mode is used to add top & bottom padding so that it's not too close (e.g., 20px)
    * For fit-remaining-window, the offsetHeight is used to reserved some pixels at the bottom of the window so that it's not overflow (e.g., minus 1px for the border)
+   * For keep-as-is, we use the initial height
    */
   updateContainerSize = ({
     center,
@@ -294,7 +295,8 @@ export class G6Graph {
     center: boolean;
     height:
       | { type: "fit-graph"; extraHeight: number }
-      | { type: "fit-remaining-window"; offsetHeight: number };
+      | { type: "fit-remaining-window"; offsetHeight: number }
+      | { type: "keep-as-is" };
   }): DOMRect => {
     // follow the code in fitView & fitCenter
     let group = this.graph.get("group");
@@ -318,6 +320,8 @@ export class G6Graph {
             (viewportOffset + documentScrollY) -
             height.offsetHeight;
           break;
+        case "keep-as-is":
+          graphHeight = this.props.initHeight;
       }
       this.graph.changeSize(graphWidth, graphHeight);
       if (center === true) {

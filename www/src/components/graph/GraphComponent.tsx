@@ -101,7 +101,8 @@ export const GraphComponent = withStyles(styles)(
         props?: G6GraphProps;
         renderingAdjustedHeight?:
           | { type: "fit-graph"; extraHeight: number }
-          | { type: "fit-remaining-window"; offsetHeight: number };
+          | { type: "fit-remaining-window"; offsetHeight: number }
+          | { type: "keep-as-is" };
         className?: string;
         layouts?: typeof GraphLayout;
       } & WithStyles<typeof styles>,
@@ -232,6 +233,7 @@ export const GraphToolbar = withStyles(styles)(
     const changeLayout = (name: keyof typeof GraphLayout) => {
       setLayout(name);
       graph.current?.updateLayout(layouts[name]);
+      graph.current?.untilLayoutStable(20, 50, centerGraph, [], () => {});
     };
 
     const cycleLayout = () => {
@@ -249,7 +251,7 @@ export const GraphToolbar = withStyles(styles)(
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
       >
-        <Space size={4}>
+        <Space size={4} align="start">
           <Tooltip title="Center the graph">
             <Button className="icon" onClick={centerGraph}>
               <MyLocationIcon />
