@@ -20,9 +20,18 @@ def deserialize_graph(value) -> O.SemanticModel:
     for node in value["nodes"]:
         if not isinstance(node, dict):
             raise ValueError(f"expect node to be a dictionary but get {type(node)}")
-
+        if "id" not in node:
+            raise ValueError(f"missing `id` in node")
+        if isinstance(node["id"], str):
+            if not node["id"].isdigit():
+                raise ValueError(
+                    f"expect `id` to be a string number but get {type(node['id'])}"
+                )
+            node["id"] = int(node["id"])
+        if not isinstance(node["id"], int):
+            raise ValueError(f"expect `id` to be a number but get {type(node['id'])}")
         if node["type"] == "class_node":
-            for k in ["id", "uri", "label"]:
+            for k in ["uri", "label"]:
                 if k not in node:
                     raise ValueError(f"missing `{k}` in class_node")
                 if not isinstance(node[k], str):
@@ -44,7 +53,7 @@ def deserialize_graph(value) -> O.SemanticModel:
                 readable_label=node["label"],
             )
         elif node["type"] == "data_node":
-            for k in ["id", "label"]:
+            for k in ["label"]:
                 if k not in node:
                     raise ValueError(f"missing `{k}` in data_node")
                 if not isinstance(node[k], str):
@@ -64,7 +73,7 @@ def deserialize_graph(value) -> O.SemanticModel:
                 label=node["label"],
             )
         elif node["type"] == "literal_node":
-            for k in ["id", "label"]:
+            for k in ["label"]:
                 if k not in node:
                     raise ValueError(f"missing `{k}` in literal_node")
                 if not isinstance(node[k], str):
@@ -127,11 +136,23 @@ def deserialize_graph(value) -> O.SemanticModel:
         if not isinstance(edge, dict):
             raise ValueError(f"expect edge to be a dictionary but get {type(edge)}")
 
-        for k in ["source", "target", "uri", "label"]:
+        for k in ["uri", "label"]:
             if k not in edge:
                 raise ValueError(f"missing `{k}` in edge")
             if not isinstance(edge[k], str):
                 raise ValueError(f"expect `{k}` to be a string but get {type(edge[k])}")
+
+        for k in ["source", "target"]:
+            if k not in edge:
+                raise ValueError(f"missing `{k}` in edge")
+            if isinstance(edge[k], str):
+                if not edge[k].isdigit():
+                    raise ValueError(
+                        f"expect `{k}` to be a string number but get {type(edge[k])}"
+                    )
+                edge[k] = int(edge[k])
+            if not isinstance(edge[k], int):
+                raise ValueError(f"expect `{k}` to be a number but get {type(edge[k])}")
 
         if "approximation" not in edge:
             raise ValueError(f"missing `approximation` in edge")

@@ -14,7 +14,7 @@ smc = 'smc.cli:cli'
 [tool.poetry.dependencies]
 python = "^3.8"
 kgdata = "~1.6.0"
-sm-grams = "~1.4.0"
+sm-grams = "~1.5.0"
 sem-desc = "~3.0.0"
 peewee = "^3.14.4"
 Flask = "^2.0.2"

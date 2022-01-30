@@ -69,7 +69,7 @@ def serialize_graph(
         if isinstance(n, O.ClassNode):
             nodes.append(
                 {
-                    "id": n.id,
+                    "id": str(n.id),
                     "uri": n.abs_uri,
                     "label": uri2label(n.abs_uri, True) or n.rel_uri,
                     "approximation": n.approximation,
@@ -79,7 +79,7 @@ def serialize_graph(
         elif isinstance(n, O.DataNode):
             nodes.append(
                 {
-                    "id": n.id,
+                    "id": str(n.id),
                     "label": columns[n.col_index] if columns is not None else n.label,
                     "type": "data_node",
                     "column_index": n.col_index,
@@ -96,7 +96,7 @@ def serialize_graph(
                 value = {"type": n.datatype.value, "value": n.value}
             nodes.append(
                 {
-                    "id": n.id,
+                    "id": str(n.id),
                     "value": value,
                     "label": n.label,
                     "type": "literal_node",
@@ -106,8 +106,8 @@ def serialize_graph(
 
     edges = [
         {
-            "source": e.source,
-            "target": e.target,
+            "source": str(e.source),
+            "target": str(e.target),
             "uri": e.abs_uri,
             "label": e.readable_label or uri2label(e.abs_uri, False) or e.rel_uri,
             "approximation": e.approximation,
