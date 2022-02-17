@@ -1,6 +1,6 @@
 from dataclasses import asdict
 from functools import partial
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Mapping, Optional
 
 from playhouse.shortcuts import model_to_dict
 
@@ -143,8 +143,8 @@ def batch_serialize_sms(sms: List[SemanticModel]):
 def get_label(
     id: str,
     is_class: bool,
-    ontprops: Dict[str, OntProperty],
-    ontclasses: Dict[str, OntClass],
+    ontprops: Mapping[str, OntProperty],
+    ontclasses: Mapping[str, OntClass],
 ) -> Optional[str]:
     if is_class:
         if id in ontclasses:

@@ -16,3 +16,7 @@ export interface Text {
 export interface LineBreak {
   nLines: number;
 }
+
+export function isLineBreak(item: Text | LineBreak): item is LineBreak {
+  return (item as LineBreak).nLines !== undefined;
+}

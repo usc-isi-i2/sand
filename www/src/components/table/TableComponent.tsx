@@ -1,8 +1,10 @@
 import ProTable from "@ant-design/pro-table";
 import { withStyles, WithStyles } from "@material-ui/styles";
 import { Descriptions, Typography } from "antd";
+import { toJS } from "mobx";
 import React from "react";
 import { ExternalLink } from "rma-baseapp";
+import { isLineBreak, LineBreak, Text } from "../../models/table/TableContext";
 import {
   FetchEntityComponent,
   InlineEntityComponent,
@@ -146,20 +148,32 @@ export const TableInformation: React.FunctionComponent<{
     ),
   ]);
 
-  let content = (table.context.contentHierarchy || []).map(
+  let content = (table.context.contentHierarchy || []).flatMap(
     (hierarchy, index) => {
-      return (
-        <div key={index}>
+      if (hierarchy.level === 0 && hierarchy.heading.trim().length === 0) {
+        if (
+          hierarchy.contentBefore.every(isLineBreak) &&
+          hierarchy.contentAfter.length === 0
+        ) {
+          return [];
+        }
+      }
+      const output = [
+        <p key={`${index}-head`}>
           <b>
             {"#".repeat(hierarchy.level)} {hierarchy.heading}
           </b>
-          <p>{hierarchy.contentBefore}</p>
-          <p>{hierarchy.contentAfter}</p>
-        </div>
-      );
+        </p>,
+      ];
+      return output
+        .concat(ContentComponent(`${index}-before`, hierarchy.contentBefore))
+        .concat(ContentComponent(`${index}-after`, hierarchy.contentAfter));
     }
   );
-  info.push(["Content Hierarchy", content.length > 0 ? content : "N/A"]);
+  info.push([
+    "Content Hierarchy",
+    content.length > 0 ? <div>{content}</div> : "N/A",
+  ]);
 
   return (
     <Descriptions title="Table Info" size="small">
@@ -170,4 +184,18 @@ export const TableInformation: React.FunctionComponent<{
       ))}
     </Descriptions>
   );
+};
+
+const ContentComponent = (key: string, lines: (Text | LineBreak)[]) => {
+  const comps: string[][] = [[]];
+  for (const line of lines) {
+    if (isLineBreak(line)) {
+      comps.push([]);
+    } else {
+      comps[comps.length - 1].push(line.value);
+    }
+  }
+  return comps
+    .filter((lst) => lst.length > 0)
+    .map((lst, i) => <p key={`${key}-${i}`}>{lst}</p>);
 };

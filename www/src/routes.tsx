@@ -18,7 +18,7 @@ import {
 } from "@ant-design/icons";
 
 /*************************************************************************************
- * Layouts of the applications
+ * Layouts of the application
  */
 export const Layout = (
   component: React.FunctionComponent<any> | React.ComponentClass<any, any>
@@ -46,20 +46,16 @@ export const Layout = (
 /*************************************************************************************
  * Definitions for routes in this application
  */
-// export const RouteURLArgs_project = { projectId: "number" };
-// export const RouteURLArgs_table = { tableId: "number" };
-// export const RouteQueryArgs_table = { query?: "string" };
-
 export const routes = {
   project: new NoQueryArgsPathDef({
-    urlSchema: { projectId: "number" },
     component: ProjectPage,
+    urlSchema: { projectId: "number" },
     pathDef: "/projects/:projectId",
   }),
   table: new PathDef({
+    component: TablePage,
     urlSchema: { tableId: "number" },
     querySchema: { query: "string" },
-    component: TablePage,
     pathDef: "/tables/:tableId",
   }),
   settings: new NoArgsPathDef({

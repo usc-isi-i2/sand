@@ -37,7 +37,28 @@ export class TableStore extends RStore<number, Table> {
       delete record.contextPage.entity;
     }
     record.contextValues = record.context_values;
-    record.contextTree = record.context_tree;
+    if (record.context_tree !== undefined) {
+      record.contextTree = record.context_tree.map((item: any) => {
+        item.contentBefore = item.content_before.map((x: any) => {
+          if (x.n_lines !== undefined) {
+            x.nLines = x.n_lines;
+            delete x.n_lines;
+          }
+          return x;
+        });
+        item.contentAfter = item.content_after.map((x: any) => {
+          if (x.n_lines !== undefined) {
+            x.nLines = x.n_lines;
+            delete x.n_lines;
+          }
+          return x;
+        });
+        delete item.content_before;
+        delete item.content_after;
+        return item;
+      });
+      delete record.context_tree;
+    }
     delete record.context_tree;
     delete record.context_values;
     delete record.context_page;
