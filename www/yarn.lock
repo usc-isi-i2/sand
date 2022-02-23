@@ -11577,10 +11577,10 @@ ripemd160@^2.0.0, ripemd160@^2.0.1:
     hash-base "^3.0.0"
     inherits "^2.0.1"
 
-rma-baseapp@^2.4.6:
-  version "2.4.6"
-  resolved "https://registry.yarnpkg.com/rma-baseapp/-/rma-baseapp-2.4.6.tgz#02e153c35e6df3ca39586d3cc4daf2df6fe5abec"
-  integrity sha512-+bjqRxXjESgJ/Tpz/UIt+nVBSl4IYWcbRtHNkA6xCElDitDwR7OF6+lbnwdVy3sTW9dRm4rJ6jOtgwTcdxFfHA==
+rma-baseapp@^2.6.0:
+  version "2.6.0"
+  resolved "https://registry.yarnpkg.com/rma-baseapp/-/rma-baseapp-2.6.0.tgz#aa89bf7ad37f2ec2b008b9f0cc0338121086167e"
+  integrity sha512-fYfc/h0UWvSjq80WIoffFEsGv6jUtUGR7wQigZ6T7zI5seavA8IhgVCEPJH9RJL1S9Hf5iPUuSOh32cQF12Yaw==
   dependencies:
     "@material-ui/styles" "^4.11.4"
     "@testing-library/jest-dom" "^5.11.4"

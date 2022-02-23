@@ -16,14 +16,12 @@ from smc.serializer import (
 )
 import sm.outputs as O
 from smc.plugins.wikidata import DEFAULT_ONT_CLASSES, DEFAULT_ONT_PROPS
+from smc.controllers.table import table_bp
 
 
 app = generate_app(
     [
-        generate_api(
-            Table,
-            deserializers=generate_deserializer(Table, {Attribute: deserialize_dict}),
-        ),
+        table_bp,
         generate_api(Project),
         generate_api(TableRow),
         generate_api(

@@ -10,6 +10,7 @@ import {
   GraphEdge,
   GraphNode,
 } from "../../components/graph";
+import { routes } from "../../routes";
 import {
   DraftSemanticModel,
   SemanticModel,
@@ -138,6 +139,12 @@ export const SemanticModelComponent = withStyles(styles)(
         setCurrentIndex(nSms);
       };
 
+      const onExport = () => {
+        routes.tableExport
+          .path({ tableId: table.id })
+          .mouseClickNavigationHandler(undefined, true);
+      };
+
       const smLists = [];
       for (let idx = 0; idx < sms.length + drafts.length; idx++) {
         const item = idx < sms.length ? sms[idx] : drafts[idx - sms.length];
@@ -212,6 +219,18 @@ export const SemanticModelComponent = withStyles(styles)(
 
           <Button size="small" onClick={cloneNewModel}>
             Add model
+          </Button>
+
+          <Button size="small" type="primary" disabled={true}>
+            Import
+          </Button>
+          <Button
+            size="small"
+            type="primary"
+            style={{ background: green[6], borderColor: green[6] }}
+            onClick={onExport}
+          >
+            Export
           </Button>
         </Space>
       );

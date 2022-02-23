@@ -72,7 +72,7 @@ def OntPropertyAR() -> Mapping[str, OntProperty]:
     return PROP_AR
 
 
-def OntClassAR() -> Mapping[str, OntProperty]:
+def OntClassAR() -> Mapping[str, OntClass]:
     global CLASS_AR
 
     if CLASS_AR is None:

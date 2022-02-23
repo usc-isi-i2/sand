@@ -43,6 +43,8 @@ export const Layout = (
   };
 };
 
+const None = () => <h1>Not supposed to see this page</h1>;
+
 /*************************************************************************************
  * Definitions for routes in this application
  */
@@ -57,6 +59,11 @@ export const routes = {
     urlSchema: { tableId: "number" },
     querySchema: { query: "string" },
     pathDef: "/tables/:tableId",
+  }),
+  tableExport: new NoQueryArgsPathDef({
+    component: None,
+    urlSchema: { tableId: "number" },
+    pathDef: "/api/table/:tableId/export?attachment=true",
   }),
   settings: new NoArgsPathDef({
     component: SettingPage,
