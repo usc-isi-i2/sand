@@ -516,12 +516,8 @@ export class SMGraph {
   }
 
   public addEdge(edge: SMEdge) {
-    if (
-      this.edges.filter(
-        (e) => e.source === edge.source && e.target === edge.target
-      ).length > 0
-    ) {
-      throw new Error("Cannot have more than one edge between two classes");
+    if (this.hasEdge(edge.source, edge.target)) {
+      throw new Error("Cannot have more than one edge between two nodes");
     }
 
     this.edges.push(edge);

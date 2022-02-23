@@ -88,6 +88,20 @@ export const EdgeForm = withStyles(styles)(
       const [uri, setURI] = useState<string | undefined>(edge?.uri);
       const [approximation, setApproximation] = useState(false);
 
+      // whether there exists an edge between source & target
+      // if yes, we can't insert because we assume only one relationship
+      // between two nodes
+      const dupEdge = useMemo(() => {
+        if (source === undefined || source.type === "class") return false;
+        if (target === undefined || target.type === "class") return false;
+        return (
+          sm.graph.hasEdge(source.id, target.id) &&
+          (edge === undefined ||
+            source.id !== edge.source ||
+            target.id !== edge.target)
+        );
+      }, [sm.graph.version, source?.id, target?.id]);
+
       useEffect(() => {
         if (edge === undefined) return;
         if (propertyStore.getPropertyByURI(edge.uri) !== undefined) return;
@@ -98,6 +112,8 @@ export const EdgeForm = withStyles(styles)(
       const onSave = () => {
         if (uri === undefined || source === undefined || target === undefined)
           return;
+        if (dupEdge) return;
+
         const prop = propertyStore.getPropertyByURI(uri)!;
         let sourceId, targetId;
 
@@ -168,7 +184,15 @@ export const EdgeForm = withStyles(styles)(
           labelWrap={true}
           layout="horizontal"
         >
-          <Form.Item label="Source">
+          <Form.Item
+            label="Source"
+            validateStatus={dupEdge ? "error" : undefined}
+            help={
+              dupEdge
+                ? "Cannot have more than one edge between two nodes"
+                : undefined
+            }
+          >
             <NodeSearchComponent
               sm={sm}
               value={source}
@@ -210,7 +234,8 @@ export const EdgeForm = withStyles(styles)(
                   source === undefined ||
                   target === undefined ||
                   uri === undefined ||
-                  !isModified()
+                  !isModified() ||
+                  dupEdge
                 }
               >
                 Save
