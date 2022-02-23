@@ -5,10 +5,32 @@ import React, { useMemo } from "react";
 import { SequentialFuncInvoker } from "../../misc";
 import { SemanticModel, useStores } from "../../models";
 import { SMNodeType } from "../../models/sm";
+import { gold, green, purple, yellow } from "@ant-design/colors";
 
 const styles = {
   selection: {
     width: "100%",
+  },
+  class_node: {
+    backgroundColor: green[2],
+    "&:hover": {
+      backgroundColor: green[8],
+      color: "white",
+    },
+  },
+  literal_node: {
+    backgroundColor: purple[2],
+    "&:hover": {
+      backgroundColor: purple[8],
+      color: "white",
+    },
+  },
+  data_node: {
+    backgroundColor: gold[2],
+    "&:hover": {
+      backgroundColor: gold[8],
+      color: "white",
+    },
   },
 };
 
@@ -53,7 +75,8 @@ export const NodeSearchComponent = withStyles(styles)(
             id: u.id,
             value: `${u.nodetype}:${u.id}`,
             label: sm.graph.uriCount.label(u),
-          });
+            className: classes[u.nodetype],
+          } as any);
         }
         return options;
       }, [classStore.records.size]);
