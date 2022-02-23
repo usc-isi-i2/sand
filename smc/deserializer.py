@@ -17,19 +17,27 @@ def deserialize_graph(value) -> O.SemanticModel:
         raise ValueError(f"expect `edges` to be a list but get {type(value['edges'])}")
 
     sm = O.SemanticModel()
+    idmap = {}
+
     for node in value["nodes"]:
         if not isinstance(node, dict):
             raise ValueError(f"expect node to be a dictionary but get {type(node)}")
-        if "id" not in node:
-            raise ValueError(f"missing `id` in node")
-        if isinstance(node["id"], str):
-            if not node["id"].isdigit():
+        for k in ["id", "type"]:
+            if k not in node:
+                raise ValueError(f"missing `{k}` in node")
+            if not isinstance(node[k], (int, str)):
                 raise ValueError(
-                    f"expect `id` to be a string number but get {type(node['id'])}"
+                    f"expect `{k}` to be a string or number but get {type(node[k])}"
                 )
-            node["id"] = int(node["id"])
-        if not isinstance(node["id"], int):
-            raise ValueError(f"expect `id` to be a number but get {type(node['id'])}")
+        # if isinstance(node["id"], str):
+        #     if not node["id"].isdigit():
+        #         raise ValueError(
+        #             f"expect `id` to be a string number but get {type(node['id'])}"
+        #         )
+        #     node["id"] = int(node["id"])
+        # if not isinstance(node["id"], int):
+        #     raise ValueError(f"expect `id` to be a number but get {type(node['id'])}")
+
         if node["type"] == "class_node":
             for k in ["uri", "label"]:
                 if k not in node:
@@ -46,7 +54,7 @@ def deserialize_graph(value) -> O.SemanticModel:
                 )
 
             n = O.ClassNode(
-                id=node["id"],
+                # id=node["id"],
                 abs_uri=node["uri"],
                 rel_uri=get_rel_uri(node["uri"]),
                 approximation=node["approximation"],
@@ -68,7 +76,7 @@ def deserialize_graph(value) -> O.SemanticModel:
                 )
 
             n = O.DataNode(
-                id=node["id"],
+                # id=node["id"],
                 col_index=node["column_index"],
                 label=node["label"],
             )
@@ -121,7 +129,7 @@ def deserialize_graph(value) -> O.SemanticModel:
                 raise ValueError(f"unknown datatype {node['value']['type']}")
 
             n = O.LiteralNode(
-                id=node["id"],
+                # id=node["id"],
                 value=node_value,
                 is_in_context=node["is_in_context"],
                 readable_label=node["label"],
@@ -130,7 +138,7 @@ def deserialize_graph(value) -> O.SemanticModel:
         else:
             raise ValueError(f"unknown node type {node['type']}")
 
-        sm.add_node(n)
+        idmap[node["id"]] = sm.add_node(n)
 
     for edge in value["edges"]:
         if not isinstance(edge, dict):
@@ -145,14 +153,20 @@ def deserialize_graph(value) -> O.SemanticModel:
         for k in ["source", "target"]:
             if k not in edge:
                 raise ValueError(f"missing `{k}` in edge")
-            if isinstance(edge[k], str):
-                if not edge[k].isdigit():
-                    raise ValueError(
-                        f"expect `{k}` to be a string number but get {type(edge[k])}"
-                    )
-                edge[k] = int(edge[k])
-            if not isinstance(edge[k], int):
-                raise ValueError(f"expect `{k}` to be a number but get {type(edge[k])}")
+            if not isinstance(edge[k], (str, int)):
+                raise ValueError(
+                    f"expect `{k}` to be string or number but get {type(edge[k])}"
+                )
+            if edge[k] not in idmap:
+                raise KeyError(f"expect edge's {k} to exist")
+            # if isinstance(edge[k], str):
+            #     if not edge[k].isdigit():
+            #         raise ValueError(
+            #             f"expect `{k}` to be a string number but get {type(edge[k])}"
+            #         )
+            #     edge[k] = int(edge[k])
+            # if not isinstance(edge[k], int):
+            #     raise ValueError(f"expect `{k}` to be a number but get {type(edge[k])}")
 
         if "approximation" not in edge:
             raise ValueError(f"missing `approximation` in edge")
@@ -162,8 +176,8 @@ def deserialize_graph(value) -> O.SemanticModel:
             )
 
         e = O.Edge(
-            source=edge["source"],
-            target=edge["target"],
+            source=idmap[edge["source"]],
+            target=idmap[edge["target"]],
             abs_uri=edge["uri"],
             rel_uri=get_rel_uri(edge["uri"]),
             approximation=edge["approximation"],

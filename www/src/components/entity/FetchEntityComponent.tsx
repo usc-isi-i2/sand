@@ -23,7 +23,7 @@ export const FetchEntityComponent = observer(
     const { entityStore } = useStores();
 
     useEffect(() => {
-      entityStore.serializeFetchById(entityId);
+      entityStore.batch.fetchById(entityId);
     }, [entityStore, entityId]);
 
     const entity = entityStore.get(entityId);

@@ -1,8 +1,7 @@
 import { withStyles, WithStyles } from "@material-ui/styles";
-import { Col, Divider, Row, Space, Typography } from "antd";
+import { Col, Row, Space, Typography } from "antd";
 import { observer } from "mobx-react";
-import { ID2Prop, IncompleteProperty, useEntityProperties } from ".";
-import { Property } from "../../models";
+import { ID2Prop } from ".";
 import { Entity } from "../../models/entity";
 import { InlinePropertyComponent } from "./InlinePropertyComponent";
 import { StatementComponent } from "./StatementComponent";

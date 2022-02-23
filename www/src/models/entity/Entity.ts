@@ -52,6 +52,19 @@ export class Entity {
         return entityId;
     }
   };
+
+  static uri2id = (entityURI: string): string => {
+    if (entityURI.startsWith("https://www.wikidata.org/wiki/Property:")) {
+      return entityURI.slice("https://www.wikidata.org/wiki/Property:".length);
+    }
+    if (entityURI.startsWith("https://www.wikidata.org/wiki/Lexeme:")) {
+      return entityURI.slice("https://www.wikidata.org/wiki/Lexeme:".length);
+    }
+    if (entityURI.startsWith("https://www.wikidata.org/wiki/")) {
+      return entityURI.slice("https://www.wikidata.org/wiki/".length);
+    }
+    return entityURI;
+  };
 }
 
 export type MultiLingualString = {

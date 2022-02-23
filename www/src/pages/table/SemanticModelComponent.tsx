@@ -19,6 +19,7 @@ import { gold, green, orange, yellow, purple, grey } from "@ant-design/colors";
 import { observer } from "mobx-react";
 import { openForm } from "./forms";
 import { toJS } from "mobx";
+import { SMNode } from "../../models/sm";
 
 const styles = {
   hide: {
@@ -93,7 +94,7 @@ export const SemanticModelComponent = withStyles(styles)(
 
           return {
             id: node.id,
-            label: node.label,
+            label: getNodeLabel(sm, node),
             style,
             shape,
           };
@@ -269,3 +270,14 @@ export const SemanticModelComponent = withStyles(styles)(
     }
   )
 );
+
+const getNodeLabel = (sm: SemanticModel, node: SMNode) => {
+  switch (node.nodetype) {
+    case "data_node":
+      return node.label;
+    case "literal_node":
+      return node.label;
+    case "class_node":
+      return sm.graph.uriCount.label(node);
+  }
+};

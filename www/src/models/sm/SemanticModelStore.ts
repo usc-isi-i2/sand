@@ -7,7 +7,7 @@ import {
 } from "rma-baseapp";
 import { Table } from "../table";
 import { SERVER } from "../../env";
-import { SMGraph, SMNodeType } from "./SMGraph";
+import { GraphEdge, SMGraph, SMNode, SMNodeType } from "./SMGraph";
 import { toJS } from "mobx";
 
 export class SemanticModel
@@ -177,7 +177,7 @@ export class SemanticModelStore extends CRUDStore<
   }
 
   public deserialize = (record: any): SemanticModel => {
-    let nodes = record.data.nodes.map((node: any) => {
+    const nodes: SMNode[] = record.data.nodes.map((node: any) => {
       const type: SMNodeType = node.type;
       delete node.type;
       node.nodetype = type;
@@ -190,7 +190,9 @@ export class SemanticModelStore extends CRUDStore<
       }
       return node;
     });
-    let graph = new SMGraph(record.id.toString(), nodes, record.data.edges);
+    const edges: GraphEdge[] = record.data.edges;
+
+    let graph = new SMGraph(record.id.toString(), nodes, edges);
     return new SemanticModel(
       record.id,
       record.name,

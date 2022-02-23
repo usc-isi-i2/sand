@@ -4,8 +4,15 @@ import { toJS } from "mobx";
 import { observer } from "mobx-react";
 import { useEffect, useMemo, useState } from "react";
 import { SequentialFuncInvoker } from "../../../misc";
-import { SemanticModel, useStores, GraphEdge, Property } from "../../../models";
+import {
+  SemanticModel,
+  useStores,
+  GraphEdge,
+  Property,
+  ClassStore,
+} from "../../../models";
 import { SMNode } from "../../../models/sm";
+import { NodeSearchComponent, SearchValue } from "../NodeSearchComponent";
 import {
   OntClassSearchComponent,
   OntPropSearchComponent,
@@ -79,60 +86,91 @@ export type EdgeFormProps = {
 export const EdgeForm = withStyles(styles)(
   observer(
     ({ sm, edge, classes }: EdgeFormProps & WithStyles<typeof styles>) => {
-      const { propertyStore } = useStores();
-      const [source, setSource] = useState<string | undefined>(edge?.source);
-      const [target, setTarget] = useState<string | undefined>(edge?.target);
-      const [predicate, setPredicate] = useState<string | undefined>(
-        edge === undefined
-          ? undefined
-          : propertyStore.getPropertyByURI(edge.uri)?.id
+      const { classStore, propertyStore } = useStores();
+      const [source, setSource] = useState<SearchValue | undefined>(
+        edge !== undefined
+          ? { type: sm.graph.node(edge.source).nodetype, id: edge.source }
+          : undefined
       );
+      const [target, setTarget] = useState<SearchValue | undefined>(
+        edge !== undefined
+          ? { type: sm.graph.node(edge.target).nodetype, id: edge.target }
+          : undefined
+      );
+      const [uri, setURI] = useState<string | undefined>(edge?.uri);
       const [approximation, setApproximation] = useState(false);
 
       useEffect(() => {
-        if (edge === undefined) {
+        if (edge === undefined) return;
+        if (propertyStore.getPropertyByURI(edge.uri) !== undefined) return;
+
+        propertyStore.fetchOne({ conditions: { uri: edge.uri } });
+      }, [edge, uri]);
+
+      const onSave = () => {
+        if (uri === undefined || source === undefined || target === undefined)
           return;
+        const prop = propertyStore.getPropertyByURI(uri)!;
+        let sourceId, targetId;
+
+        if (source.type === "class") {
+          const cls = classStore.get(source.id)!;
+          sourceId = sm.graph.nextNodeId();
+          sm.graph.addClassNode({
+            id: sourceId,
+            uri: cls.uri,
+            label: cls.readableLabel,
+            approximation: false,
+            nodetype: "class_node",
+          });
+        } else {
+          sourceId = source.id;
         }
 
-        if (propertyStore.getPropertyByURI(edge.uri) === undefined) {
-          propertyStore
-            .fetchOne({
-              conditions: { uri: edge.uri },
-            })
-            .then((prop: Property | undefined) => {
-              if (prop === undefined) return;
-              setPredicate(prop.id);
-            });
+        if (target.type === "class") {
+          const cls = classStore.get(target.id)!;
+          targetId = sm.graph.nextNodeId();
+          sm.graph.addClassNode({
+            id: targetId,
+            uri: cls.uri,
+            label: cls.readableLabel,
+            approximation: false,
+            nodetype: "class_node",
+          });
+        } else {
+          targetId = target.id;
         }
-      }, [edge, predicate]);
-
-      const isValid = () => {
-        return (
-          source !== undefined &&
-          target !== undefined &&
-          predicate !== undefined
-        );
-      };
-
-      const save = () => {
-        if (!isValid()) return;
-        const prop = propertyStore.get(predicate!)!;
 
         sm.graph.addEdge({
-          source: source!,
-          target: target!,
+          source: sourceId,
+          target: targetId,
           uri: prop.uri,
           approximation,
-          label: prop.label,
+          label: prop.readableLabel,
         });
+
+        if (edge !== undefined) {
+          // remove the old edge
+          sm.graph.removeEdge(edge.source, edge.target);
+        }
 
         Modal.destroyAll();
       };
 
-      const remove = () => {
+      const onDelete = () => {
         if (edge === undefined) return;
         sm.graph.removeEdge(edge.source, edge.target);
         Modal.destroyAll();
+      };
+
+      const isModified = () => {
+        return (
+          edge === undefined ||
+          source?.id !== edge.source ||
+          target?.id !== edge.target ||
+          uri !== edge.uri ||
+          approximation !== edge.approximation
+        );
       };
 
       return (
@@ -143,7 +181,7 @@ export const EdgeForm = withStyles(styles)(
           layout="horizontal"
         >
           <Form.Item label="Source">
-            <NodeSelectionComponent
+            <NodeSearchComponent
               sm={sm}
               value={source}
               onSelect={setSource}
@@ -151,7 +189,7 @@ export const EdgeForm = withStyles(styles)(
             />
           </Form.Item>
           <Form.Item label="Target">
-            <NodeSelectionComponent
+            <NodeSearchComponent
               sm={sm}
               value={target}
               onSelect={setTarget}
@@ -160,9 +198,13 @@ export const EdgeForm = withStyles(styles)(
           </Form.Item>
           <Form.Item label="Predicate">
             <OntPropSearchComponent
-              value={predicate}
-              onSelect={setPredicate}
-              onDeselect={(value) => setPredicate(undefined)}
+              value={
+                uri !== undefined
+                  ? propertyStore.getPropertyByURI(uri)?.id
+                  : undefined
+              }
+              onSelect={(id) => setURI(propertyStore.get(id)?.uri)}
+              onDeselect={(value) => setURI(undefined)}
             />
           </Form.Item>
           <Form.Item label="Approximation">
@@ -173,16 +215,20 @@ export const EdgeForm = withStyles(styles)(
           </Form.Item>
           <Form.Item label="Button">
             <Space>
-              <Button type="primary" onClick={save} disabled={!isValid()}>
+              <Button
+                type="primary"
+                onClick={onSave}
+                disabled={
+                  source === undefined ||
+                  target === undefined ||
+                  uri === undefined ||
+                  !isModified()
+                }
+              >
                 Save
               </Button>
               {edge !== undefined ? (
-                <Button
-                  type="primary"
-                  danger={true}
-                  onClick={remove}
-                  disabled={!isValid()}
-                >
+                <Button type="primary" danger={true} onClick={onDelete}>
                   delete
                 </Button>
               ) : null}

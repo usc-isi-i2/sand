@@ -1,7 +1,7 @@
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { Select } from "antd";
 import { observer } from "mobx-react";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { SequentialFuncInvoker } from "../../misc";
 import { useStores } from "../../models";
 
@@ -42,6 +42,24 @@ function useSearchComponent(
 ) {
   const store = useStores()[storeName];
   const seqInvoker = new SequentialFuncInvoker();
+
+  // when the provided value is not in the store, fetch it
+  useEffect(() => {
+    if (props.value === undefined) {
+      return;
+    }
+
+    if (Array.isArray(props.value)) {
+      // leverage the fact that the three stores are not re-fetched
+      if (!store.refetch) {
+        store.fetchByIds(props.value);
+      } else {
+        store.fetchByIds(props.value.filter((id) => !store.records.has(id)));
+      }
+    } else if (store.get(props.value) === undefined) {
+      store.fetchById(props.value);
+    }
+  }, [props.value]);
 
   // gather all options already in the store, leverage the fact
   // that property store is readonly

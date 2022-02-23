@@ -72,15 +72,17 @@ export class URICount {
   }
 
   label = (node: SMNode) => {
+    if (this.id2num[node.id] === undefined || this.id2num[node.id] === 1) {
+      return node.label;
+    }
     return `${node.label} ${this.id2num[node.id]}`;
   };
 
   nextLabel = (uri: string, label: string) => {
-    return `${label} ${this.counter[uri] || 1}`;
-  };
-
-  unlabel = (label: string) => {
-    return label.substring(0, label.lastIndexOf(" "));
+    if (this.counter[uri] === undefined) {
+      return label;
+    }
+    return `${label} ${this.counter[uri]}`;
   };
 
   add = (node: ClassNode) => {
@@ -89,6 +91,10 @@ export class URICount {
     }
     this.id2num[node.id] = this.counter[node.uri];
     this.counter[node.uri] += 1;
+  };
+
+  getNum = (node: ClassNode) => {
+    return this.id2num[node.id];
   };
 }
 
@@ -151,6 +157,13 @@ export class SMGraph {
       (node) => node.nodetype === "class_node" && node.uri === uri
     );
   nodeByColumnIndex = (id: number) => this.nodes[this.column2nodeIndex[id]];
+  nodeByEntityId = (id: string) =>
+    this.nodes.filter(
+      (node) =>
+        node.nodetype === "literal_node" &&
+        node.value.type === "entity-id" &&
+        node.value.id === id
+    )[0];
 
   edge = (source: string, target: string) =>
     this.edges.filter((e) => e.source === source && e.target === target)[0];

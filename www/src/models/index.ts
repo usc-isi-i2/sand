@@ -9,6 +9,7 @@ import {
   SMGraph,
   URICount,
   SemanticModelStore,
+  SMNode,
 } from "./sm";
 import { Entity, EntityStore } from "./entity";
 import { PropertyStore } from "./ontology/PropertyStore";

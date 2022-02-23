@@ -63,7 +63,7 @@ export function useEntityProperties(entity: Entity): ID2Prop {
   const { propertyStore } = useStores();
 
   useEffect(() => {
-    propertyStore.fetchByIds(propIds);
+    propertyStore.batch.fetchByIds(propIds);
   }, [entity.id]);
 
   return Object.fromEntries(

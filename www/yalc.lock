@@ -2,7 +2,7 @@
   "version": "v1",
   "packages": {
     "rma-baseapp": {
-      "signature": "612c0f077ef13662af203c8f778692ea",
+      "signature": "5b413ad72cf09e1780759c85588645e6",
       "replaced": "^2.3.0"
     }
   }
