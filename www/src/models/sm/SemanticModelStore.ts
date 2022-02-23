@@ -5,10 +5,9 @@ import {
   Record,
   SingleKeyIndex,
 } from "rma-baseapp";
-import { Table } from "../table";
 import { SERVER } from "../../env";
-import { GraphEdge, SMGraph, SMNode, SMNodeType } from "./SMGraph";
-import { toJS } from "mobx";
+import { Table } from "../table";
+import { SMEdge, SMGraph, SMNode, SMNodeType } from "./SMGraph";
 
 export class SemanticModel
   implements Record<number>, DraftUpdateRecord<number, SemanticModel>
@@ -190,7 +189,7 @@ export class SemanticModelStore extends CRUDStore<
       }
       return node;
     });
-    const edges: GraphEdge[] = record.data.edges;
+    const edges: SMEdge[] = record.data.edges;
 
     let graph = new SMGraph(record.id.toString(), nodes, edges);
     return new SemanticModel(

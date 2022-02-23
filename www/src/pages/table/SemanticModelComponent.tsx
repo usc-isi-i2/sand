@@ -1,25 +1,23 @@
+import { gold, green, purple, yellow } from "@ant-design/colors";
 import { withStyles, WithStyles } from "@material-ui/styles";
 import { Button, Divider, Popconfirm, Space } from "antd";
+import { observer } from "mobx-react";
 import React, { useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import {
-  SemanticModel,
-  Table,
-  DraftSemanticModel,
-  SMGraph,
-  useStores,
-} from "../../models";
 import {
   GraphComponent,
   GraphComponentFunc,
   GraphEdge,
   GraphNode,
 } from "../../components/graph";
-import { gold, green, orange, yellow, purple, grey } from "@ant-design/colors";
-import { observer } from "mobx-react";
-import { openForm } from "./forms";
-import { toJS } from "mobx";
+import {
+  DraftSemanticModel,
+  SemanticModel,
+  Table,
+  useStores,
+} from "../../models";
 import { SMNode } from "../../models/sm";
+import { openForm } from "./forms";
 
 const styles = {
   hide: {

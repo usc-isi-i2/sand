@@ -46,7 +46,7 @@ export interface LiteralNode {
 export type SMNode = ClassNode | DataNode | LiteralNode;
 export type SMNodeType = "class_node" | "data_node" | "literal_node";
 
-export interface GraphEdge {
+export interface SMEdge {
   source: string;
   target: string;
   uri: string;
@@ -102,13 +102,13 @@ export class SMGraph {
   public id: string;
   public version: number;
   public nodes: SMNode[];
-  public edges: GraphEdge[];
+  public edges: SMEdge[];
   public stale: boolean; // if it is stale
   public nodeId2Index: { [id: string]: number } = {};
   public column2nodeIndex: { [columnIndex: number]: number } = {};
   public uriCount: URICount;
 
-  constructor(id: string, nodes: SMNode[], edges: GraphEdge[]) {
+  constructor(id: string, nodes: SMNode[], edges: SMEdge[]) {
     this.id = id;
     this.version = 0;
     this.nodes = nodes;
@@ -197,8 +197,8 @@ export class SMGraph {
   findPathMax2hops = (
     sourceId: string,
     targetId: string
-  ): [GraphEdge, GraphEdge?][] => {
-    let matchPaths: [GraphEdge, GraphEdge?][] = [];
+  ): [SMEdge, SMEdge?][] => {
+    let matchPaths: [SMEdge, SMEdge?][] = [];
     let outedges = this.outgoingEdges(sourceId);
     for (let outedge of outedges) {
       if (outedge.target === targetId) {
@@ -236,8 +236,8 @@ export class SMGraph {
     return undefined;
   };
 
-  getOutgoingProperties = (id: string): [GraphEdge, GraphEdge?][] => {
-    let outprops: [GraphEdge, GraphEdge?][] = [];
+  getOutgoingProperties = (id: string): [SMEdge, SMEdge?][] => {
+    let outprops: [SMEdge, SMEdge?][] = [];
     for (let outedge of this.outgoingEdges(id)) {
       let target = this.node(outedge.target);
       if (
@@ -271,7 +271,7 @@ export class SMGraph {
   public addColumnRelationship(
     sourceColumnIndex: number,
     targetColumnIndex: number,
-    edgeData: Omit<GraphEdge, "source" | "target">
+    edgeData: Omit<SMEdge, "source" | "target">
   ) {
     let source = this.nodeByColumnIndex(sourceColumnIndex);
     let target = this.nodeByColumnIndex(targetColumnIndex);
@@ -515,7 +515,7 @@ export class SMGraph {
     this.stale = true;
   }
 
-  public addEdge(edge: GraphEdge) {
+  public addEdge(edge: SMEdge) {
     if (
       this.edges.filter(
         (e) => e.source === edge.source && e.target === edge.target
@@ -542,7 +542,7 @@ export class SMGraph {
     this.stale = true;
   }
 
-  public updateEdge(source: string, target: string, props: Partial<GraphEdge>) {
+  public updateEdge(source: string, target: string, props: Partial<SMEdge>) {
     for (let i = 0; i < this.edges.length; i++) {
       let edge = this.edges[i];
       if (edge.source === source && edge.target === target) {

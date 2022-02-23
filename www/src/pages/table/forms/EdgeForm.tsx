@@ -1,22 +1,10 @@
 import { withStyles, WithStyles } from "@material-ui/styles";
-import { Button, Form, Input, Modal, Radio, Select, Space, Switch } from "antd";
-import { toJS } from "mobx";
+import { Button, Form, Modal, Select, Space, Switch } from "antd";
 import { observer } from "mobx-react";
 import { useEffect, useMemo, useState } from "react";
-import { SequentialFuncInvoker } from "../../../misc";
-import {
-  SemanticModel,
-  useStores,
-  GraphEdge,
-  Property,
-  ClassStore,
-} from "../../../models";
-import { SMNode } from "../../../models/sm";
+import { SemanticModel, SMEdge, useStores } from "../../../models";
 import { NodeSearchComponent, SearchValue } from "../NodeSearchComponent";
-import {
-  OntClassSearchComponent,
-  OntPropSearchComponent,
-} from "../OntSearchComponent";
+import { OntPropSearchComponent } from "../OntSearchComponent";
 
 const styles = {
   table: {
@@ -80,7 +68,7 @@ export const NodeSelectionComponent = withStyles(styles)(
 
 export type EdgeFormProps = {
   sm: SemanticModel;
-  edge?: GraphEdge;
+  edge?: SMEdge;
 };
 
 export const EdgeForm = withStyles(styles)(
@@ -105,7 +93,7 @@ export const EdgeForm = withStyles(styles)(
         if (propertyStore.getPropertyByURI(edge.uri) !== undefined) return;
 
         propertyStore.fetchOne({ conditions: { uri: edge.uri } });
-      }, [edge, uri]);
+      }, [propertyStore, edge, uri]);
 
       const onSave = () => {
         if (uri === undefined || source === undefined || target === undefined)

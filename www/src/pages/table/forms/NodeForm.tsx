@@ -1,17 +1,15 @@
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { Button, Form, Modal, Radio, Space, Switch, Typography } from "antd";
+import { Button, Form, Modal, Radio, Space, Switch } from "antd";
 import { observer } from "mobx-react";
 import React, { useEffect, useMemo, useState } from "react";
-import { Entity, useStores } from "../../../models";
+import { useStores } from "../../../models";
 import {
-  SemanticModel,
-  SMNodeType,
-  SMNode,
   ClassNode,
-  DataNode,
   LiteralNode,
+  SemanticModel,
+  SMNode,
+  SMNodeType,
 } from "../../../models/sm";
-import { NodeSearchComponent, SearchValue } from "../NodeSearchComponent";
 import {
   EntitySearchComponent,
   OntClassSearchComponent,

@@ -49,4 +49,4 @@ export {
 };
 export type { Property } from "./ontology/PropertyStore";
 export type { Table, TableRow } from "./table";
-export type { GraphEdge, SMNode as GraphNode } from "./sm/SMGraph";
+export type { SMEdge, SMNode } from "./sm/SMGraph";

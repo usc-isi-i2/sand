@@ -1,5 +1,5 @@
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { Button, Descriptions, PageHeader, Space } from "antd";
+import { Button, PageHeader, Space } from "antd";
 import _ from "lodash";
 import { observer } from "mobx-react";
 import React, { useEffect, useMemo, useState } from "react";
