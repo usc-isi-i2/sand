@@ -145,17 +145,22 @@ export const EdgeForm = withStyles(styles)(
           targetId = target.id;
         }
 
-        sm.graph.addEdge({
+        const newEdge = {
           source: sourceId,
           target: targetId,
           uri: prop.uri,
           approximation,
           label: prop.readableLabel,
-        });
-
+        };
         if (edge !== undefined) {
-          // remove the old edge
-          sm.graph.removeEdge(edge.source, edge.target);
+          if (edge.source === sourceId && edge.target === targetId) {
+            sm.graph.updateEdge(edge.source, edge.target, newEdge);
+          } else {
+            sm.graph.removeEdge(edge.source, edge.target);
+            sm.graph.addEdge(newEdge);
+          }
+        } else {
+          sm.graph.addEdge(newEdge);
         }
 
         Modal.destroyAll();
