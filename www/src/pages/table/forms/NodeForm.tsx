@@ -1,5 +1,5 @@
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { Button, Form, Modal, Radio, Space, Switch } from "antd";
+import { Button, Form, Modal, Radio, Space, Switch, Typography } from "antd";
 import { observer } from "mobx-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useStores } from "../../../models";
@@ -83,7 +83,21 @@ export const ClassNodeSubForm = observer(
 
     return (
       <React.Fragment>
-        <Form.Item label="Class">
+        <Form.Item
+          label={
+            <Typography.Text
+              copyable={
+                uri !== undefined
+                  ? {
+                      text: classStore.getClassByURI(uri)?.id,
+                    }
+                  : undefined
+              }
+            >
+              Class
+            </Typography.Text>
+          }
+        >
           <OntClassSearchComponent
             value={
               uri !== undefined ? classStore.getClassByURI(uri)?.id : undefined
@@ -197,7 +211,13 @@ export const LiteralNodeSubForm = observer(
     return (
       <React.Fragment>
         <Form.Item
-          label="Entity"
+          label={
+            <Typography.Text
+              copyable={id !== undefined ? { text: id } : undefined}
+            >
+              Entity
+            </Typography.Text>
+          }
           validateStatus={duplicatedId ? "error" : undefined}
           help={duplicatedId ? "Entity's already in the graph" : undefined}
         >

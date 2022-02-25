@@ -1,5 +1,5 @@
 import { withStyles, WithStyles } from "@material-ui/styles";
-import { Button, Form, Modal, Select, Space, Switch } from "antd";
+import { Button, Form, Modal, Select, Space, Switch, Typography } from "antd";
 import { observer } from "mobx-react";
 import { useEffect, useMemo, useState } from "react";
 import { SemanticModel, SMEdge, useStores } from "../../../models";
@@ -190,7 +190,15 @@ export const EdgeForm = withStyles(styles)(
           layout="horizontal"
         >
           <Form.Item
-            label="Source"
+            label={
+              <Typography.Text
+                copyable={
+                  source !== undefined ? { text: source.id } : undefined
+                }
+              >
+                Source
+              </Typography.Text>
+            }
             validateStatus={dupEdge ? "error" : undefined}
             help={
               dupEdge
@@ -205,7 +213,17 @@ export const EdgeForm = withStyles(styles)(
               onDeselect={() => setSource(undefined)}
             />
           </Form.Item>
-          <Form.Item label="Target">
+          <Form.Item
+            label={
+              <Typography.Text
+                copyable={
+                  target !== undefined ? { text: target.id } : undefined
+                }
+              >
+                Target
+              </Typography.Text>
+            }
+          >
             <NodeSearchComponent
               sm={sm}
               value={target}
@@ -213,7 +231,19 @@ export const EdgeForm = withStyles(styles)(
               onDeselect={() => setTarget(undefined)}
             />
           </Form.Item>
-          <Form.Item label="Predicate">
+          <Form.Item
+            label={
+              <Typography.Text
+                copyable={
+                  uri !== undefined
+                    ? { text: propertyStore.getPropertyByURI(uri)?.id }
+                    : undefined
+                }
+              >
+                Predicate
+              </Typography.Text>
+            }
+          >
             <OntPropSearchComponent
               value={
                 uri !== undefined
