@@ -1,5 +1,5 @@
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { Button, PageHeader, Space } from "antd";
+import { Button, PageHeader, Space, Tooltip } from "antd";
 import _ from "lodash";
 import { observer } from "mobx-react";
 import React, { useEffect, useMemo, useState } from "react";
@@ -333,9 +333,18 @@ const TableNavBar = (props: {
       title={
         <Space>
           <span style={{ fontWeight: 500 }}>Table </span>
-          <span style={{ color: "#237804", textDecoration: "underline" }}>
-            {props.table.name}
-          </span>
+          <AutoHideTooltip title="copied" ms={500}>
+            <span
+              style={{
+                color: "#237804",
+                textDecoration: "underline",
+                cursor: "pointer",
+              }}
+              onClick={() => navigator.clipboard.writeText(props.table.name)}
+            >
+              {props.table.name}
+            </span>
+          </AutoHideTooltip>
         </Space>
       }
       subTitle={
@@ -348,5 +357,32 @@ const TableNavBar = (props: {
       }
       extra={props.btns}
     />
+  );
+};
+
+const AutoHideTooltip: React.FC<{ title: string; ms: number }> = ({
+  children,
+  title,
+  ms,
+}) => {
+  const [visible, setVisible] = useState(false);
+  const autoHide = (visible: boolean) => {
+    if (visible) {
+      setVisible(true);
+      setTimeout(() => {
+        setVisible(false);
+      }, ms);
+    }
+  };
+
+  return (
+    <Tooltip
+      title={title}
+      visible={visible}
+      onVisibleChange={autoHide}
+      trigger="click"
+    >
+      {children}
+    </Tooltip>
   );
 };
