@@ -1,0 +1,80 @@
+import time
+from flask_peewee_restful.custom_fields import ListDataClassField
+import orjson
+from dataclasses import dataclass
+from typing import Dict, List, Literal, Union
+from peewee import IntegerField, TimestampField
+from playhouse.sqlite_ext import JSONField
+from smc.models.base import BaseModel, BlobField
+from smc.models.table import Link
+
+
+@dataclass
+class CSVParserOpts:
+    format: Literal["csv"] = "csv"
+    delimiter: str = ","
+    # whether the first row in header
+    first_row_is_header: bool = True
+
+
+@dataclass
+class JSONParserOpts:
+    format: Literal["json"] = "json"
+
+
+ParserOpts = Union[CSVParserOpts, JSONParserOpts]
+
+
+def ser_parsing_args(pyvalue: ParserOpts):
+    if isinstance(pyvalue, CSVParserOpts):
+        return orjson.dumps({"format": "csv", "delimiter": pyvalue.delimiter})
+    else:
+        assert isinstance(pyvalue, JSONParserOpts)
+        return orjson.dumps({"format": "json"})
+
+
+def deser_parsing_args(dbvalue: bytes):
+    value = orjson.loads(dbvalue)
+    if value["format"] == "csv":
+        return CSVParserOpts(delimiter=value["delimiter"])
+    else:
+        return JSONParserOpts(format=value["format"])
+
+
+@dataclass
+class RawTable:
+    name: str
+    header: List[str]
+    rows: List[List[Union[str, int, float]]]
+    links: Dict[str, List[Link]]
+
+
+class UploadingTable(BaseModel):
+    """For storing temporary tables before moving to permanent storage"""
+
+    # fmt: off
+    timestamp = TimestampField(default=time.time_ns)
+    parser_opts = BlobField(serialize=ser_parsing_args, deserialize=deser_parsing_args)
+    tables = ListDataClassField(RawTable)
+    # fmt: on
+
+    @classmethod
+    def create_table(cls, safe=True, **options):
+        """Create this table in the underlying database."""
+        super(UploadingTable, cls).create_table(safe, **options)
+        tbl_name = cls._meta.table_name
+
+        # define TTL of a record (e.g. give user 5 minutes to complete the process)
+        TTL = "5 minutes"
+        trigger = f"""
+        CREATE TRIGGER IF NOT EXISTS {tbl_name}_delete_expired_rows_trigger AFTER INSERT ON {tbl_name}
+        BEGIN
+            DELETE FROM {tbl_name} WHERE timestamp < Datetime('now', '-{TTL}');
+        END
+        """
+        # execute the following SQL to create trigger, drop the table if it fails
+        try:
+            cls._meta.database.execute_sql(trigger)
+        except:
+            cls.drop_table(safe)
+            raise

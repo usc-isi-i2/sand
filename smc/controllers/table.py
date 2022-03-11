@@ -19,7 +19,7 @@ from smc.serializer import (
 )
 import sm.outputs as O
 from smc.plugins.wikidata import DEFAULT_ONT_CLASSES, DEFAULT_ONT_PROPS
-from flask import json, jsonify, request
+from flask import json, jsonify, request, make_response
 from peewee import Model as PeeweeModel, DoesNotExist, fn
 
 table_bp = generate_api(

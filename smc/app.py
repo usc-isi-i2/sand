@@ -17,12 +17,15 @@ from smc.serializer import (
 import sm.outputs as O
 from smc.plugins.wikidata import DEFAULT_ONT_CLASSES, DEFAULT_ONT_PROPS
 from smc.controllers.table import table_bp
+from smc.controllers.project import project_bp
+from smc.controllers.assistant import assistant_bp
 
 
 app = generate_app(
     [
         table_bp,
-        generate_api(Project),
+        project_bp,
+        assistant_bp,
         generate_api(TableRow),
         generate_api(
             SemanticModel,
@@ -52,3 +55,5 @@ app = generate_app(
     ],
     os.path.dirname(__file__),
 )
+
+app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # maximum upload of 16 MB

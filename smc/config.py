@@ -36,3 +36,8 @@ DAO_SETTINGS = {
         },
     },
 }
+
+ASSISTANTS = {
+    # "grams": "smc.plugins.grams.GRAMSAssistant",
+    "mtab": "smc.plugins.mtab.MTabAssistant"
+}

@@ -20,7 +20,7 @@ from smc.models.project import Project
 
 @dataclass
 class CandidateEntity:
-    entity: str
+    entity: str  # entity id
     probability: float
 
 
@@ -28,7 +28,7 @@ class CandidateEntity:
 class Link:
     start: int
     end: int
-    url: str
+    url: Optional[str]  # none when there is no link, and the entity is not mapped yet
     entity: Optional[str]  # entity id
     candidate_entities: List[CandidateEntity]
 
@@ -93,9 +93,9 @@ class TableRow(BaseModel):
                 newlinks = []
                 for link in links:
                     link = asdict(link)
-                    link["candidate_entities"] = [
-                        cent._asdict() for cent in link["candidate_entities"]
-                    ]
+                    # link["candidate_entities"] = [
+                    #     cent._asdict() for cent in link["candidate_entities"]
+                    # ]
                     newlinks.append(link)
                 dlinks[ci] = newlinks
 

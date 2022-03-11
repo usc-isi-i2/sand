@@ -14,14 +14,15 @@ smc = 'smc.cli:cli'
 [tool.poetry.dependencies]
 python = "^3.8"
 kgdata = "~1.6.0"
-sm-grams = "~1.5.0"
-sem-desc = "~3.0.0"
+sm-grams = "~1.6.0"
+sem-desc = "~3.2.0"
 peewee = "^3.14.4"
 Flask = "^2.0.2"
 python-dotenv = ">=0.19.0"
 tornado = "^6.1"
 flask-peewee-restful = "^1.0.6"
 loguru = "^0.5.3"
+orjson = "^3.6.4"
 
 [tool.poetry.dev-dependencies]
 

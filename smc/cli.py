@@ -11,8 +11,15 @@ from tornado.wsgi import WSGIContainer
 from tqdm.auto import tqdm
 
 from smc.config import DAO_SETTINGS
-from smc.models import Project, SemanticModel, Table, TableRow, db as dbconn, init_db
-from smc.plugins.grams import convert_linked_table
+from smc.models import (
+    Project,
+    SemanticModel,
+    Table,
+    TableRow,
+    db as dbconn,
+    init_db,
+)
+from smc.plugins.grams_plugin import convert_linked_table
 
 
 @click.command()
@@ -22,7 +29,7 @@ def init(db):
     init_db(db)
     dbconn.create_tables([Project, Table, TableRow, SemanticModel], safe=True)
     if Project.select().where(Project.name == "default").count() == 0:
-        Project(name="default", description="The default project").save()
+        Project(name="Default", description="The default project").save()
 
 
 @click.command()
