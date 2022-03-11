@@ -5,14 +5,18 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useStores } from "../../../models";
 import {
   ClassNode,
+  DataNode,
   LiteralNode,
   SemanticModel,
+  SMEdge,
   SMNode,
   SMNodeType,
 } from "../../../models/sm";
+import { NodeSearchComponent, SearchValue } from "../NodeSearchComponent";
 import {
   EntitySearchComponent,
   OntClassSearchComponent,
+  OntPropSearchComponent,
 } from "../OntSearchComponent";
 
 const styles = {} as const;
@@ -82,7 +86,7 @@ export const ClassNodeSubForm = observer(
     };
 
     return (
-      <React.Fragment>
+      <>
         <Form.Item
           label={
             <Typography.Text
@@ -112,7 +116,7 @@ export const ClassNodeSubForm = observer(
             onChange={(val) => setApproximation(val)}
           />
         </Form.Item>
-        <Form.Item label="Button">
+        <Form.Item label="&nbsp;" colon={false}>
           <Space>
             <Button
               type="primary"
@@ -128,7 +132,7 @@ export const ClassNodeSubForm = observer(
             ) : null}
           </Space>
         </Form.Item>
-      </React.Fragment>
+      </>
     );
   }
 );
@@ -209,7 +213,7 @@ export const LiteralNodeSubForm = observer(
     };
 
     return (
-      <React.Fragment>
+      <>
         <Form.Item
           label={
             <Typography.Text
@@ -233,7 +237,7 @@ export const LiteralNodeSubForm = observer(
             onChange={(val) => setIsInContext(val)}
           />
         </Form.Item>
-        <Form.Item label="Button">
+        <Form.Item label="&nbsp;" colon={false}>
           <Space>
             <Button
               type="primary"
@@ -249,7 +253,160 @@ export const LiteralNodeSubForm = observer(
             ) : null}
           </Space>
         </Form.Item>
-      </React.Fragment>
+      </>
+    );
+  }
+);
+
+export const DataNodeSubForm = observer(
+  ({
+    sm,
+    node,
+    inedge,
+    onDone,
+  }: {
+    sm: SemanticModel;
+    node: DataNode;
+    inedge?: SMEdge;
+    onDone: () => void;
+  }) => {
+    const { classStore, propertyStore } = useStores();
+    const [source, setSource] = useState<SearchValue | undefined>(
+      inedge !== undefined
+        ? {
+            type: sm.graph.node(inedge.source).nodetype,
+            id: inedge.source,
+          }
+        : undefined
+    );
+    const [uri, setURI] = useState<string | undefined>(inedge?.uri);
+    const [approximation, setApproximation] = useState(false);
+
+    const onSave = () => {
+      if (source === undefined || uri === undefined) return;
+
+      const prop = propertyStore.getPropertyByURI(uri)!;
+      let sourceId;
+
+      if (source.type === "class") {
+        const cls = classStore.get(source.id)!;
+        sourceId = sm.graph.nextNodeId();
+        sm.graph.addClassNode({
+          id: sourceId,
+          uri: cls.uri,
+          label: cls.readableLabel,
+          approximation: false,
+          nodetype: "class_node",
+        });
+      } else {
+        sourceId = source.id;
+      }
+
+      const newEdge = {
+        source: sourceId,
+        target: node.id,
+        uri: prop.uri,
+        approximation,
+        label: prop.readableLabel,
+      };
+      if (inedge !== undefined) {
+        if (inedge.source === sourceId) {
+          sm.graph.updateEdge(inedge.source, inedge.target, newEdge);
+        } else {
+          sm.graph.removeEdge(inedge.source, inedge.target);
+          sm.graph.addEdge(newEdge);
+        }
+      } else {
+        sm.graph.addEdge(newEdge);
+      }
+      onDone();
+    };
+
+    const isModified = () => {
+      return (
+        source?.id !== inedge?.source ||
+        uri !== inedge?.uri ||
+        approximation !== inedge?.approximation
+      );
+    };
+
+    const onDelete = () => {
+      if (inedge === undefined) return;
+      sm.graph.removeEdge(inedge.source, inedge.target);
+      onDone();
+    };
+
+    return (
+      <>
+        <Form.Item
+          label={
+            <Typography.Text
+              copyable={source !== undefined ? { text: source.id } : undefined}
+            >
+              Source
+            </Typography.Text>
+          }
+        >
+          <NodeSearchComponent
+            sm={sm}
+            value={source}
+            onSelect={setSource}
+            onDeselect={() => setSource(undefined)}
+          />
+        </Form.Item>
+        <Form.Item
+          label={
+            <Typography.Text
+              copyable={
+                uri !== undefined
+                  ? { text: propertyStore.getPropertyByURI(uri)?.id }
+                  : undefined
+              }
+            >
+              Predicate
+            </Typography.Text>
+          }
+        >
+          <OntPropSearchComponent
+            value={
+              uri !== undefined
+                ? propertyStore.getPropertyByURI(uri)?.id
+                : undefined
+            }
+            onSelect={(id) => setURI(propertyStore.get(id)?.uri)}
+            onDeselect={(value) => setURI(undefined)}
+          />
+        </Form.Item>
+        <Form.Item label="Target">
+          <Typography.Text>
+            {node.label} ({node.columnIndex})
+          </Typography.Text>
+        </Form.Item>
+        <Form.Item label="Approximation">
+          <Switch
+            checked={approximation}
+            onChange={(val) => setApproximation(val)}
+          />
+        </Form.Item>
+        <Form.Item label="&nbsp;" colon={false}>
+          <Space>
+            <Button
+              type="primary"
+              onClick={onSave}
+              disabled={
+                source === undefined || uri === undefined || !isModified()
+              }
+            >
+              Save
+            </Button>
+            {inedge !== undefined ? (
+              <Button type="primary" danger={true} onClick={onDelete}>
+                delete
+              </Button>
+            ) : null}
+          </Space>
+        </Form.Item>
+      </>
     );
   }
 );
@@ -261,6 +418,17 @@ export const NodeForm = withStyles(styles)(
         node?.nodetype || "class_node"
       );
       const onDone = () => Modal.destroyAll();
+
+      if (node !== undefined && node.nodetype === "data_node") {
+        if (sm.graph.incomingEdges(node.id).length > 1) {
+          return (
+            <p>
+              This form can't be used for data node that has more than one
+              incoming edge. Please click on individual edge and edit it there
+            </p>
+          );
+        }
+      }
 
       return (
         <Form
@@ -287,10 +455,17 @@ export const NodeForm = withStyles(styles)(
               node={node?.nodetype === "class_node" ? node : undefined}
               onDone={onDone}
             />
-          ) : (
+          ) : nodetype === "literal_node" ? (
             <LiteralNodeSubForm
               sm={sm}
               node={node?.nodetype === "literal_node" ? node : undefined}
+              onDone={onDone}
+            />
+          ) : (
+            <DataNodeSubForm
+              sm={sm}
+              node={node as DataNode}
+              inedge={sm.graph.incomingEdges(node!.id)[0]}
               onDone={onDone}
             />
           )}

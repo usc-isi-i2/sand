@@ -1,8 +1,8 @@
-import ProTable from "@ant-design/pro-table";
+import ProTable, { ActionType } from "@ant-design/pro-table";
 import { withStyles, WithStyles } from "@material-ui/styles";
 import { Descriptions, Typography } from "antd";
 import { toJS } from "mobx";
-import React from "react";
+import React, { useRef, forwardRef, useImperativeHandle } from "react";
 import { ExternalLink } from "rma-baseapp";
 import { isLineBreak, LineBreak, Text } from "../../models/table/TableContext";
 import {
@@ -19,88 +19,108 @@ export const styles = {
   table: tableStyles,
 };
 
+export interface TableComponentFunc {
+  reload: () => void;
+}
+
 export const TableComponent = withStyles(styles)(
-  ({
-    table,
-    query,
-    classes,
-    toolBarRender,
-    showRowIndex = false,
-  }: {
-    table: RTable.Table;
-    query: (limit: number, offset: number) => Promise<RTable.Row[]>;
-    toolBarRender?: false;
-    showRowIndex?: boolean;
-  } & WithStyles<typeof styles>) => {
-    const columns = table.columns.map((col, columnIndex) => ({
-      dataIndex: ["row", columnIndex, "value"],
-      title: col,
-      render: ((value: string, record: RTable.Row) => {
-        return (
-          <CellComponent cell={value} record={record} index={columnIndex} />
-        );
-      }) as any,
-    }));
+  forwardRef(
+    (
+      {
+        table,
+        query,
+        classes,
+        toolBarRender,
+        showRowIndex = false,
+      }: {
+        table: RTable.Table;
+        query: (limit: number, offset: number) => Promise<RTable.Row[]>;
+        toolBarRender?: false;
+        showRowIndex?: boolean;
+      } & WithStyles<typeof styles>,
+      ref
+    ) => {
+      const actionRef = useRef<ActionType>();
+      useImperativeHandle(
+        ref,
+        (): TableComponentFunc => ({
+          reload: () => {
+            actionRef.current?.reload();
+          },
+        })
+      );
 
-    if (showRowIndex) {
-      columns.splice(0, 0, {
-        title: (
-          <Typography.Text type="secondary" disabled={true}>
-            #
-          </Typography.Text>
-        ),
-        dataIndex: "index",
-      } as any);
+      const columns = table.columns.map((col, columnIndex) => ({
+        dataIndex: ["row", columnIndex, "value"],
+        title: col,
+        render: ((value: string, record: RTable.Row) => {
+          return (
+            <CellComponent cell={value} record={record} index={columnIndex} />
+          );
+        }) as any,
+      }));
+
+      if (showRowIndex) {
+        columns.splice(0, 0, {
+          title: (
+            <Typography.Text type="secondary" disabled={true}>
+              #
+            </Typography.Text>
+          ),
+          dataIndex: "index",
+        } as any);
+      }
+
+      return (
+        <>
+          <ProTable
+            actionRef={actionRef}
+            className={classes.table}
+            defaultSize="small"
+            bordered={true}
+            request={async (params, sort, filter) => {
+              let records = await query(
+                params.pageSize!,
+                (params.current! - 1) * params.pageSize!
+              );
+              return {
+                data: records,
+                success: true,
+                total: table.size,
+              };
+            }}
+            search={false}
+            pagination={{
+              pageSize: 5,
+              pageSizeOptions: [
+                "5",
+                "10",
+                "20",
+                "50",
+                "100",
+                "200",
+                "500",
+                "1000",
+              ],
+            }}
+            headerTitle={
+              table.context.webpage !== undefined ? (
+                <ExternalLink href={table.context.webpage} openInNewPage={true}>
+                  {table.name}
+                </ExternalLink>
+              ) : (
+                table.name
+              )
+            }
+            toolBarRender={toolBarRender}
+            rowKey="index"
+            columns={columns}
+          />
+          <TableInformation table={table} />
+        </>
+      );
     }
-
-    return (
-      <React.Fragment>
-        <ProTable
-          className={classes.table}
-          defaultSize="small"
-          bordered={true}
-          request={async (params, sort, filter) => {
-            let records = await query(
-              params.pageSize!,
-              (params.current! - 1) * params.pageSize!
-            );
-            return {
-              data: records,
-              success: true,
-              total: table.size,
-            };
-          }}
-          search={false}
-          pagination={{
-            pageSize: 5,
-            pageSizeOptions: [
-              "5",
-              "10",
-              "20",
-              "50",
-              "100",
-              "200",
-              "500",
-              "1000",
-            ],
-          }}
-          headerTitle={
-            table.context.webpage !== undefined ? (
-              <ExternalLink href={table.context.webpage} openInNewPage={true}>
-                {table.name}
-              </ExternalLink>
-            ) : (
-              table.name
-            )
-          }
-          toolBarRender={toolBarRender}
-          rowKey="index"
-          columns={columns}
-        />
-        <TableInformation table={table} />
-      </React.Fragment>
-    );
-  }
+  )
 );
 
 export const TableInformation: React.FunctionComponent<{

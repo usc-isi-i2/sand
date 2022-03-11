@@ -1,4 +1,4 @@
-import { Project, ProjectStore } from "./Project";
+import { Project, ProjectStore } from "./project";
 import { createContext } from "react";
 
 import React from "react";
@@ -14,16 +14,27 @@ import {
 import { Entity, EntityStore } from "./entity";
 import { PropertyStore } from "./ontology/PropertyStore";
 import { ClassStore } from "./ontology/ClassStore";
+import { AssistantService } from "./AssistantService";
+
+const tableStore = new TableStore();
+const semanticModelStore = new SemanticModelStore();
+const tableRowStore = new TableRowStore();
 
 export const stores = {
   projectStore: new ProjectStore(),
-  tableStore: new TableStore(),
-  tableRowStore: new TableRowStore(),
-  semanticModelStore: new SemanticModelStore(),
+  tableStore,
+  tableRowStore,
+  semanticModelStore,
   entityStore: new EntityStore(),
   propertyStore: new PropertyStore(),
   classStore: new ClassStore(),
+  assistantService: new AssistantService(
+    tableStore,
+    tableRowStore,
+    semanticModelStore
+  ),
 };
+
 (window as any)._stores = stores;
 export type IStore = Readonly<typeof stores>;
 

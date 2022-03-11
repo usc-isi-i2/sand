@@ -23,7 +23,7 @@ export interface TableRow extends Record<number> {
 export interface Link {
   start: number;
   end: number;
-  url: string;
+  url?: string;
   entityId?: string;
   candidateEntities: { entityId: string; probability: number }[];
 }

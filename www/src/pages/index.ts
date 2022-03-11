@@ -1,4 +1,4 @@
-export * from "./HomePage";
-export * from "./ProjectPage";
+export * from "./home/HomePage";
+export * from "./project/ProjectPage";
 export * from "./table/TablePage";
 export * from "./SettingPage";

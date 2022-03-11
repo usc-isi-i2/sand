@@ -28,6 +28,9 @@ const styles = {
   },
 };
 
+/**
+ * Component to help select candidate entity for a given cell.
+ */
 export const CandidateEntityListComponent = withStyles(styles)(
   ({
     record,
@@ -41,6 +44,16 @@ export const CandidateEntityListComponent = withStyles(styles)(
   } & WithStyles<typeof styles>) => {
     const [showAllCandidateModals, setShowAllCandidateModals] = useState(false);
 
+    const singleUpdate = (entityId: string) => {
+      return (select: boolean) => {
+        if (select) {
+          record.links[index][0].entityId = entityId;
+        }
+      };
+    };
+
+    const selectMultiple = () => {};
+
     const links = record.links[index] || [];
     const candidateLst = [];
     if (links.length > 0) {
@@ -53,7 +66,10 @@ export const CandidateEntityListComponent = withStyles(styles)(
         candidateLst.push(
           <div key={candidateEntity.entityId}>
             <Space size={4}>
-              <CheckboxIcon icon={faCheck} />
+              <CheckboxIcon
+                icon={faCheck}
+                onChange={singleUpdate(candidateEntity.entityId)}
+              />
               <CheckboxIcon icon={faCheckDouble} />
               <FetchEntityComponent
                 entityId={candidateEntity.entityId}

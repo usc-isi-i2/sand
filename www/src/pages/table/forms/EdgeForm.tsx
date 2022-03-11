@@ -260,7 +260,7 @@ export const EdgeForm = withStyles(styles)(
               onChange={(val) => setApproximation(val)}
             />
           </Form.Item>
-          <Form.Item label="Button">
+          <Form.Item label="&nbsp;" colon={false}>
             <Space>
               <Button
                 type="primary"

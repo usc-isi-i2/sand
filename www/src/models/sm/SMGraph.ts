@@ -141,6 +141,14 @@ export class SMGraph {
     });
   }
 
+  /** Whether this graph is just containing all data nodes and no edges (it hasn't been modeled) */
+  isEmpty = () => {
+    return (
+      this.edges.length == 0 &&
+      this.nodes.every((node) => node.nodetype === "data_node")
+    );
+  };
+
   clone = () => {
     const record = this.toJS();
     return new SMGraph(this.id, record.nodes, record.edges);

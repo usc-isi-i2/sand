@@ -2,7 +2,7 @@ import { gold, green, purple, yellow } from "@ant-design/colors";
 import { withStyles, WithStyles } from "@material-ui/styles";
 import { Button, Divider, Popconfirm, Space } from "antd";
 import { observer } from "mobx-react";
-import React, { useMemo, useRef, useState } from "react";
+import React, { ReactElement, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import {
   GraphComponent,
@@ -19,6 +19,8 @@ import {
 } from "../../models";
 import { SMNode } from "../../models/sm";
 import { openForm } from "./forms";
+import { ReactComponent } from "rma-baseapp";
+import { toJS } from "mobx";
 
 const styles = {
   hide: {
@@ -40,15 +42,21 @@ const styles = {
 
 export const SemanticModelComponent = withStyles(styles)(
   observer(
-    ({ classes, table }: { table: Table } & WithStyles<typeof styles>) => {
+    ({
+      classes,
+      table,
+      leftMenu,
+    }: { table: Table; leftMenu: ReactElement } & WithStyles<
+      typeof styles
+    >) => {
       const graphRef = useRef<GraphComponentFunc | undefined>(undefined);
       const [currentIndex, setCurrentIndex] = useState(0);
-      const { semanticModelStore } = useStores();
+      const { semanticModelStore, assistantService } = useStores();
       const sms = semanticModelStore.findByTable(table.id);
-      const drafts = semanticModelStore.getDraftsByTable(table);
+      const drafts = semanticModelStore.getCreateDraftsByTable(table);
       if (currentIndex >= sms.length + drafts.length) {
         // there is no semantic model & no draft for this table, create a new draft
-        const id = semanticModelStore.getNewDraftId(table);
+        const id = semanticModelStore.getNewCreateDraftId(table);
         const draft = DraftSemanticModel.getDefaultDraftSemanticModel(
           id,
           `sm-${sms.length}`,
@@ -126,7 +134,7 @@ export const SemanticModelComponent = withStyles(styles)(
 
       // add model
       const cloneNewModel = () => {
-        const id = semanticModelStore.getNewDraftId(table);
+        const id = semanticModelStore.getNewCreateDraftId(table);
         const nSms = sms.length + drafts.length;
         const draft = DraftSemanticModel.getDefaultDraftSemanticModel(
           id,
@@ -248,6 +256,7 @@ export const SemanticModelComponent = withStyles(styles)(
             <Button size="small" onClick={() => openForm({ type: "edge", sm })}>
               Add edge
             </Button>
+            {leftMenu}
           </Space>
           <GraphComponent
             ref={graphRef}

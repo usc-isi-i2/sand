@@ -2,11 +2,12 @@ import { WithStyles, withStyles } from "@material-ui/styles";
 import { Button, PageHeader, Space, Tooltip } from "antd";
 import _ from "lodash";
 import { observer } from "mobx-react";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { history, LoadingPage, NotFoundPage } from "rma-baseapp";
 import { TableComponent } from "../../components/table";
 import * as RTable from "../../components/table/RelationalTable";
+import { TableComponentFunc } from "../../components/table/TableComponent";
 import {
   Project,
   Table,
@@ -36,15 +37,21 @@ const styles = {
 export const TablePage = withStyles(styles)(
   observer(({ classes }: WithStyles<typeof styles>) => {
     // use stores
-    const { projectStore, tableStore, tableRowStore, semanticModelStore } =
-      useStores();
-
+    const {
+      projectStore,
+      tableStore,
+      tableRowStore,
+      semanticModelStore,
+      assistantService,
+    } = useStores();
+    const [hasFetchSemanticModel, setHashFetchSemanticModel] = useState(false);
     // parse necessary route parameters
     const tableId = routes.table.useURLParams()!.tableId;
     const { navState, toNextTable, toPreviousTable } = useTableNavigation(
       tableStore,
       tableId
     );
+    const tableRef = useRef<TableComponentFunc>();
 
     useEffect(() => {
       // fetch the table
@@ -56,13 +63,15 @@ export const TablePage = withStyles(styles)(
 
       // fetch its semantic model
       if (!semanticModelStore.hasByTable(tableId)) {
-        semanticModelStore.fetch({
-          limit: 1000,
-          offset: 0,
-          conditions: {
-            table: tableId,
-          },
-        });
+        semanticModelStore
+          .fetch({
+            limit: 1000,
+            offset: 0,
+            conditions: {
+              table: tableId,
+            },
+          })
+          .then(() => setHashFetchSemanticModel(true));
       }
     }, [tableStore, projectStore, semanticModelStore, tableId]);
 
@@ -98,19 +107,34 @@ export const TablePage = withStyles(styles)(
     }
 
     let semComponent = null;
-    if (!semanticModelStore.hasByTable(tableId)) {
+    if (!semanticModelStore.hasByTable(tableId) && !hasFetchSemanticModel) {
       semComponent = <LoadingPage bordered={true} />;
     } else {
-      semComponent = <SemanticModelComponent key={tableId} table={table} />;
+      semComponent = (
+        <SemanticModelComponent
+          key={tableId}
+          table={table}
+          leftMenu={
+            <>
+              <Button
+                size="small"
+                onClick={() => {
+                  assistantService.predict(table).then(() => {
+                    tableRef.current?.reload();
+                  });
+                }}
+              >
+                Predict
+              </Button>
+            </>
+          }
+        />
+      );
     }
 
     const queryRow = async (limit: number, offset: number) => {
-      let result = await tableRowStore.fetch({
-        limit,
-        offset,
-        conditions: { table: table.id },
-      });
-      return result.records.map((row) => ({
+      let records = await tableRowStore.fetchByTable(table, offset, limit);
+      return records.map((row) => ({
         index: row.index,
         row: row.row.map((v) => ({ value: v })),
         links: row.links,
@@ -152,6 +176,7 @@ export const TablePage = withStyles(styles)(
           <Space direction="vertical" size={8}>
             {semComponent}
             <TableComponent
+              ref={tableRef}
               key={tableId}
               toolBarRender={false}
               table={rtable!}

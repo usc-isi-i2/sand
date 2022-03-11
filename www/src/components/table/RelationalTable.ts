@@ -43,7 +43,7 @@ export interface Cell {
 export interface Link {
   start: number;
   end: number;
-  url: string;
+  url?: string;
   entityId?: URI;
   candidateEntities: { entityId: URI; probability: number }[];
 }

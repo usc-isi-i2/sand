@@ -109,7 +109,7 @@ export class SemanticModelStore extends CRUDStore<
   }
 
   /** Generate new draft id */
-  getNewDraftId = (table: Table): string => {
+  getNewCreateDraftId = (table: Table): string => {
     let i = 0;
     while (true) {
       const id = `draft-${i}:${table.id}`;
@@ -123,7 +123,7 @@ export class SemanticModelStore extends CRUDStore<
   /** Generate new semantic model name */
   getNewSemanticModelName(table: Table): string {
     const sms = this.findByTable(table.id);
-    const drafts = this.getDraftsByTable(table);
+    const drafts = this.getCreateDraftsByTable(table);
 
     let idx = -1;
     for (const sm of sms.concat(drafts)) {
@@ -137,17 +137,12 @@ export class SemanticModelStore extends CRUDStore<
   }
 
   /** Get all drafts of a table */
-  getDraftsByTable(table: Table): DraftSemanticModel[] {
+  getCreateDraftsByTable(table: Table): DraftSemanticModel[] {
     const drafts = [];
-    let i = 0;
-    while (true) {
-      const id = `draft-${i}:${table.id}`;
-      const draft = this.getCreateDraft(id);
-      if (draft === undefined) {
-        break;
+    for (const draft of this.createDrafts.values()) {
+      if (draft.table == table.id) {
+        drafts.push(draft);
       }
-      drafts.push(draft);
-      i++;
     }
     return drafts;
   }
