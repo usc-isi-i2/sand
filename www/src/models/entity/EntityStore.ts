@@ -3,21 +3,13 @@ import { makeObservable, observable } from "mobx";
 import { RStore } from "rma-baseapp";
 import { SERVER } from "../../env";
 import { Entity } from "./Entity";
-import { EntitySettings } from "./EntitySettings";
 
 export class EntityStore extends RStore<string, Entity> {
-  public settings: EntitySettings;
-
   constructor() {
     super(`${SERVER}/api/entities`, undefined, false);
-    this.settings = new EntitySettings();
-
-    makeObservable(this, {
-      settings: observable,
-    });
   }
 
-  public deserialize = (record: any): Entity => {
+  public deserialize(record: any): Entity {
     record.readableLabel = record.readable_label;
     delete record.readable_label;
     for (const stmts of Object.values(record.properties)) {
@@ -27,5 +19,5 @@ export class EntityStore extends RStore<string, Entity> {
       }
     }
     return record;
-  };
+  }
 }

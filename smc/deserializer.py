@@ -54,7 +54,6 @@ def deserialize_graph(value) -> O.SemanticModel:
                 )
 
             n = O.ClassNode(
-                # id=node["id"],
                 abs_uri=node["uri"],
                 rel_uri=get_rel_uri(node["uri"]),
                 approximation=node["approximation"],

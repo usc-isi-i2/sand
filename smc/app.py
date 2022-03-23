@@ -1,32 +1,32 @@
 import os
 
-from flask_peewee_restful import generate_readonly_api_4dict, generate_api
-from flask_peewee_restful import generate_app
-from flask_peewee_restful.deserializer import deserialize_dict, generate_deserializer
-from grams.inputs.context import Attribute
+import sm.outputs as O
+from flask_peewee_restful import generate_api, generate_app, generate_readonly_api_4dict
 from hugedict.chained_mapping import ChainedMapping
+from sm.misc.funcs import import_attr
+
+from smc.config import SETTINGS
+from smc.controllers.assistant import assistant_bp
+from smc.controllers.project import project_bp
+from smc.controllers.table import table_bp, table_row_bp
+from smc.controllers.settings import setting_bp
 from smc.deserializer import deserialize_graph
-from smc.models import SemanticModel, EntityAR, Project, Table, TableRow
+from smc.models import EntityAR, SemanticModel
 from smc.models.ontology import OntClass, OntClassAR, OntProperty, OntPropertyAR
 from smc.serializer import (
+    batch_serialize_sms,
     serialize_class,
     serialize_entity,
-    batch_serialize_sms,
     serialize_property,
 )
-import sm.outputs as O
-from smc.plugins.wikidata import DEFAULT_ONT_CLASSES, DEFAULT_ONT_PROPS
-from smc.controllers.table import table_bp
-from smc.controllers.project import project_bp
-from smc.controllers.assistant import assistant_bp
-
 
 app = generate_app(
     [
         table_bp,
         project_bp,
         assistant_bp,
-        generate_api(TableRow),
+        table_row_bp,
+        setting_bp,
         generate_api(
             SemanticModel,
             deserializers={"data": deserialize_graph},
@@ -35,12 +35,16 @@ app = generate_app(
         generate_readonly_api_4dict(
             "entities",
             serialize=serialize_entity,
-            id2ent=EntityAR(),
+            id2ent=ChainedMapping(
+                EntityAR(), import_attr(SETTINGS["entity"]["default"])
+            ),
         ),
         generate_readonly_api_4dict(
             "classes",
             serialize=serialize_class,
-            id2ent=ChainedMapping(OntClassAR(), DEFAULT_ONT_CLASSES),
+            id2ent=ChainedMapping(
+                OntClassAR(), import_attr(SETTINGS["ont_classes"]["default"])
+            ),
             unique_field_funcs={"uri": OntClass.uri2id},
         ),
         generate_readonly_api_4dict(
@@ -48,7 +52,7 @@ app = generate_app(
             serialize=serialize_property,
             id2ent=ChainedMapping(
                 OntPropertyAR(),
-                DEFAULT_ONT_PROPS,
+                import_attr(SETTINGS["ont_props"]["default"]),
             ),
             unique_field_funcs={"uri": OntProperty.uri2id},
         ),

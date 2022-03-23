@@ -3,7 +3,7 @@ import { observer } from "mobx-react";
 import React, { useEffect } from "react";
 import { LoadingPage } from "rma-baseapp";
 import { useStores } from "../../models";
-import { EntitySettings } from "../../models/entity";
+import { EntitySettings } from "../../models";
 import { Entity } from "./Entity";
 
 export const FetchEntityComponent = observer(
@@ -20,7 +20,7 @@ export const FetchEntityComponent = observer(
     renderLoading?: () => React.ReactElement;
     renderNotFound?: () => React.ReactElement;
   }) => {
-    const { entityStore } = useStores();
+    const { entityStore, uiSettings } = useStores();
 
     useEffect(() => {
       entityStore.batch.fetchById(entityId);
@@ -53,6 +53,6 @@ export const FetchEntityComponent = observer(
       );
     }
 
-    return render(entity, entityStore.settings);
+    return render(entity, uiSettings.entity);
   }
 );

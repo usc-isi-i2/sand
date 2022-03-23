@@ -1,7 +1,7 @@
 import { withStyles, WithStyles } from "@material-ui/styles";
 import { Checkbox, Select } from "antd";
 import { observer } from "mobx-react";
-import { forwardRef, useImperativeHandle, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Entity, ID2Prop } from "./Entity";
 
 const styles = {

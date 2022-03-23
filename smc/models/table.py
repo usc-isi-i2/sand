@@ -20,7 +20,7 @@ from smc.models.project import Project
 
 @dataclass
 class CandidateEntity:
-    entity: str  # entity id
+    entity_id: str  # entity id, can't be NIL_ENTITY
     probability: float
 
 
@@ -28,8 +28,9 @@ class CandidateEntity:
 class Link:
     start: int
     end: int
-    url: Optional[str]  # none when there is no link, and the entity is not mapped yet
-    entity: Optional[str]  # entity id
+    # none when the entity is not mapped yet, if there is no entity, use NIL_ENTITY
+    url: Optional[str]
+    entity_id: Optional[str]  # entity id
     candidate_entities: List[CandidateEntity]
 
     @staticmethod
@@ -85,6 +86,9 @@ class TableRow(BaseModel):
     row: List[Union[str, float]] = JSONField(json_dumps=orjson.dumps, json_loads=orjson.loads)  # type: ignore
     links: Dict[str, List[Link]] = Dict2ListDataClassField(Link)  # type: ignore
     # fmt: on
+
+    class Meta:
+        indexes = ((("table", "index"), True),)
 
     def to_dict(self):
         dlinks = {}

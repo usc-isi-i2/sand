@@ -23,7 +23,7 @@ export const InlineEntityComponent = ({
 
   return (
     <ExternalLink
-      href={Entity.id2uri(entity.id)}
+      href={entity.uri}
       openInNewPage={true}
       onCtrlClick={onCtrlClick}
       {...restprops}

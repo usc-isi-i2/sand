@@ -6,7 +6,7 @@ import { Entity, useEntityProperties } from "./Entity";
 import { PropertyComponent } from "./PropertyComponent";
 import { PropertyFilterComponent } from "./PropertyFilterComponent";
 import { useState } from "react";
-import { EntitySettings } from "../../models/entity";
+import { EntitySettings } from "../../models";
 import { observer } from "mobx-react";
 const styles = {
   root: {
@@ -42,7 +42,7 @@ export const PageEntityComponent = withStyles(styles)(
             />
           </Space>
           <h2>
-            <ExternalLink href={Entity.id2uri(entity.id)} openInNewPage={true}>
+            <ExternalLink href={entity.uri} openInNewPage={true}>
               {entity.label.lang2value[entity.label.lang]}
             </ExternalLink>
             &nbsp;

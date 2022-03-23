@@ -3,7 +3,7 @@ import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import { Popover, Typography } from "antd";
 import React from "react";
 import { ExternalLink } from "rma-baseapp";
-import { EntitySettings } from "../../models/entity";
+import { EntitySettings } from "../../models";
 import { Entity, useEntityProperties } from "./Entity";
 import { openPageEntityComponent } from "./PageEntityComponent";
 import { PropertyComponent } from "./PropertyComponent";
@@ -41,7 +41,7 @@ export const PopoverEntityComponent = withStyles(styles)(
     const content = (
       <div {...restprops} className={`${classes.root} ${restprops.className}`}>
         <h2>
-          <ExternalLink href={Entity.id2uri(entity.id)} openInNewPage={true}>
+          <ExternalLink href={entity.uri} openInNewPage={true}>
             {entity.label.lang2value[entity.label.lang]}
           </ExternalLink>
           &nbsp;

@@ -9,7 +9,7 @@ FROM_SITEPACKAGES = _ROOT_DIR.name == "site-packages"
 
 CACHE_SIZE = 10240
 
-DAO_SETTINGS = {
+SETTINGS = {
     "entity": {
         "constructor": "smc.plugins.wikidata.get_qnode_db",
         "uri2id": "grams.algorithm.wdont.WDOnt.get_qnode_id",
@@ -18,6 +18,16 @@ DAO_SETTINGS = {
             "dbfile": "/tmp/qnodes.db",
             "proxy": True,
         },
+        # extra entities
+        "default": "smc.models.entity.DEFAULT_ENTITY",
+        # mapping from entity's namespace to the property id that will be used to indicate `instance_of` relationship
+        "instanceof": {
+            "http://www.wikidata.org": "P31",
+        },
+        # id of an nil entity
+        "nil": "drepr:nil",
+        # template for new entity uri
+        "new_entity_template": "http://www.wikidata.org/entity/{id}",
     },
     "ont_classes": {
         "constructor": "smc.plugins.wikidata.get_ontclass_db",
@@ -26,6 +36,8 @@ DAO_SETTINGS = {
             "dbfile": "/tmp/wdclasses.db",
             "proxy": True,
         },
+        # extra classes
+        "default": "smc.plugins.wikidata.WD_ONT_CLASSES",
     },
     "ont_props": {
         "constructor": "smc.plugins.wikidata.get_ontprop_db",
@@ -34,10 +46,20 @@ DAO_SETTINGS = {
             "dbfile": "/tmp/wdprops.db",
             "proxy": True,
         },
+        # extra props
+        "default": "smc.models.ontology.DEFAULT_ONT_PROPS",
     },
-}
-
-ASSISTANTS = {
-    # "grams": "smc.plugins.grams.GRAMSAssistant",
-    "mtab": "smc.plugins.mtab.MTabAssistant"
+    "semantic_model": {
+        # list of properties' uris that when a column is tagged with one of them, the column is an entity column
+        "identifiers": [
+            "http://www.w3.org/2000/01/rdf-schema#label",
+        ],
+        # list of uri of classes that are used as intermediate nodes to represent n-ary relationships, e.g., wikidata's statement
+        "statements": ["http://wikiba.se/ontology#Statement"],
+    },
+    "assistants": {
+        # list of assistants' names and their models
+        # "grams": "smc.plugins.grams.GRAMSAssistant",
+        "mtab": "smc.plugins.mtab.MTabAssistant",
+    },
 }

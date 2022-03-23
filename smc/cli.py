@@ -10,7 +10,7 @@ from tornado.ioloop import IOLoop
 from tornado.wsgi import WSGIContainer
 from tqdm.auto import tqdm
 
-from smc.config import DAO_SETTINGS
+from smc.config import SETTINGS
 from smc.models import (
     Project,
     SemanticModel,
@@ -62,7 +62,7 @@ def start(
     init_db(db)
 
     if externaldb.strip() != "":
-        for cfg in DAO_SETTINGS.values():
+        for cfg in [SETTINGS[k] for k in ["entity", "ont_classes", "ont_props"]]:
             cfg["args"]["dbfile"] = os.path.join(
                 externaldb, Path(cfg["args"]["dbfile"]).name
             )

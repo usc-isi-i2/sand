@@ -1,0 +1,227 @@
+import { faFilter } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  Button,
+  Checkbox,
+  Dropdown,
+  Menu,
+  Space,
+  Tree,
+  TreeProps,
+  Typography,
+} from "antd";
+import { FilterRowByTypes } from "./filters/TypeTreeFilter";
+import { Table, useStores } from "../../models";
+import { ReactNode, useEffect, useState } from "react";
+import { MailOutlined, AppstoreOutlined } from "@ant-design/icons";
+import { Class } from "../../models/ontology/ClassStore";
+import { FetchEntityComponent, PopoverEntityComponent } from "../../components";
+
+export const TableColumnFilter = ({
+  table,
+  columnIndex,
+}: {
+  table: Table;
+  columnIndex: number;
+}) => {
+  const [menu, setMenu] = useState("by-type");
+  const { assistantService, semanticModelStore, classStore } = useStores();
+  const [typeTree, setTypeTree] = useState<{ [id: string]: Set<string> }>({});
+  const [classes, setClasses] = useState<{
+    [id: string]: { title: string; key: string };
+  }>({});
+
+  useEffect(() => {
+    if (menu !== "by-type") {
+      return;
+    }
+
+    assistantService.getColumnTypes(table, columnIndex).then((tree) => {
+      // the order is matter
+      const classes = Object.fromEntries(
+        Object.keys(tree)
+          .map((id) => classStore.get(id))
+          .filter((c) => c !== null && c !== undefined)
+          .map((c) => [
+            c!.id,
+            {
+              title: c!.readableLabel,
+              key: c!.id,
+            },
+          ])
+      );
+      setClasses(classes);
+      setTypeTree(tree);
+    });
+  }, [menu]);
+
+  let component = null;
+  if (menu === "by-type") {
+    component = (
+      <TreeComponent
+        key={`${table.id} ${columnIndex}`}
+        nodes={classes}
+        checkable={true}
+        autoExpandParent={true}
+        defaultExpandAll={true}
+        p2cs={typeTree}
+      />
+    );
+  }
+
+  return (
+    <div style={{ minWidth: 300, padding: 8 }}>
+      {/* <Menu
+        mode="horizontal"
+        selectedKeys={[menu]}
+        onClick={(e) => setMenu(e.key)}
+        style={{ minWidth: 300 }}
+      >
+        <Menu.Item key="by-type">By Type</Menu.Item>
+        <Menu.Item key="by-prop">By Property</Menu.Item>
+      </Menu> */}
+      <Space style={{ width: "100%" }} direction="vertical">
+        <Typography.Text type="secondary" strong={true}>
+          Filter
+        </Typography.Text>
+        {component}
+      </Space>
+    </div>
+  );
+};
+
+interface TreeData {
+  title: ReactNode;
+  key: string;
+  children: TreeData[];
+}
+
+/** Render a tree from the mappings */
+export const TreeComponent = ({
+  p2cs,
+  nodes,
+  ...restProps
+}: {
+  p2cs: { [parent: string]: Set<string> };
+  nodes: { [id: string]: { title: string; key: string } };
+} & React.PropsWithChildren<TreeProps<any>>) => {
+  const [treeData, setTreeData] = useState<TreeData[]>([]);
+
+  const travel = (
+    parentId: string | undefined,
+    nodeId: string,
+    p2cs: { [parent: string]: Set<string> },
+    visited: Set<string>,
+    output: TreeData[]
+  ) => {
+    const node = nodes[nodeId] || { title: nodeId, key: nodeId };
+    const unknown = nodes[nodeId] === undefined;
+
+    if (visited.has(nodeId)) {
+      const key = `${node.key} ${parentId}`;
+      output.push({
+        title: <TreeNode node={node} visited={false} unknown={unknown} />,
+        key,
+        children: [],
+      });
+      return;
+    }
+
+    visited.add(nodeId);
+    const child = {
+      title: <TreeNode node={node} visited={false} unknown={unknown} />,
+      key: node.key,
+      children: [],
+    };
+    output.push(child);
+    for (const cid of p2cs[nodeId]) {
+      travel(nodeId, cid, p2cs, visited, child.children);
+    }
+  };
+
+  useEffect(() => {
+    const roots = new Set(Object.keys(p2cs));
+    for (const [parent, children] of Object.entries(p2cs)) {
+      for (const child of children) {
+        roots.delete(child);
+      }
+    }
+    const visited = new Set<string>();
+    const treeData: TreeData[] = [];
+
+    if (roots.size > 0) {
+      for (const root of roots) {
+        travel(undefined, root, p2cs, visited, treeData);
+      }
+    }
+
+    // visit the remaining nodes, they have cycles, just pick one
+    for (const node in p2cs) {
+      if (!visited.has(node)) {
+        travel(undefined, node, p2cs, visited, treeData);
+      }
+    }
+
+    setTreeData(treeData);
+  }, [p2cs]);
+
+  return (
+    <Tree
+      key={treeData.length}
+      {...restProps}
+      treeData={treeData}
+      defaultExpandAll={true}
+    />
+  );
+};
+
+export const TreeNode = ({
+  node,
+  visited,
+  unknown,
+}: {
+  node: { title: string; key: string };
+  visited: boolean;
+  unknown: boolean;
+}) => {
+  const { entityStore } = useStores();
+  const [include, setInclude] = useState(true);
+
+  return (
+    <Space>
+      {node.title}
+      <FetchEntityComponent
+        entityId={node.key}
+        render={(entity, settings) => (
+          <PopoverEntityComponent
+            entity={entity}
+            zIndex={500}
+            settings={settings}
+          >
+            {node.title}
+          </PopoverEntityComponent>
+        )}
+        renderNotFound={() => (
+          <Typography.Text type="secondary">{node.title}</Typography.Text>
+        )}
+      />
+
+      {unknown ? (
+        <Typography.Text type="secondary">(unknown)</Typography.Text>
+      ) : null}
+      {visited ? (
+        <Typography.Text type="secondary">(visited)</Typography.Text>
+      ) : null}
+      <Typography.Text type="secondary">
+        (&nbsp;{include ? "include" : "exclude"}{" "}
+        <Checkbox
+          checked={include}
+          onChange={(e) => {
+            setInclude(e.target.checked);
+          }}
+        />
+        &nbsp;)
+      </Typography.Text>
+    </Space>
+  );
+};

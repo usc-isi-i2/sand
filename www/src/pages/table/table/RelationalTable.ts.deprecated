@@ -1,0 +1,49 @@
+import { ContentHierarchy } from "../../../models/table";
+
+export type URI = string;
+
+/**
+ * Representing a table, this will need list of table rows to be completed
+ */
+export interface Table {
+  name: string;
+  description: string;
+  columns: string[];
+  // number of rows in the table
+  size: number;
+  // surrounding context of a table
+  context: {
+    webpage?: string;
+    title?: string;
+    entityId?: string;
+    contentHierarchy?: ContentHierarchy[];
+  };
+}
+
+/**
+ * Row in a table
+ */
+export interface Row {
+  index: number;
+  row: Cell[];
+  // mapping from column index to list of links. note that because of JS, the index in string and number does not matter
+  links: { [columnIndex: string | number]: Link[] };
+}
+
+/**
+ * Cell in a table
+ */
+export interface Cell {
+  value: string | number;
+}
+
+/**
+ * Representing a link in a table cell
+ */
+export interface Link {
+  start: number;
+  end: number;
+  url?: string;
+  entityId?: URI;
+  candidateEntities: { entityId: URI; probability: number }[];
+}

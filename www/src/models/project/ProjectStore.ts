@@ -54,9 +54,9 @@ export class ProjectStore extends CRUDStore<
     return resp.data.table_ids;
   };
 
-  public deserialize = (record: any): Project => {
+  public deserialize(record: any): Project {
     return new Project(record.id, record.name, record.description);
-  };
+  }
 
   public serializeUpdateDraft(record: DraftUpdateProject): object {
     return {

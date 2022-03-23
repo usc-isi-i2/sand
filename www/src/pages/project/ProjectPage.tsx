@@ -1,7 +1,7 @@
 import { EditOutlined } from "@ant-design/icons";
 import ProTable, { ActionType } from "@ant-design/pro-table";
 import { withStyles, WithStyles } from "@material-ui/styles";
-import { Button, Modal, Typography } from "antd";
+import { Button, Modal, Popconfirm, Typography } from "antd";
 import _ from "lodash";
 import { observer } from "mobx-react";
 import React, { useEffect, useRef } from "react";
@@ -66,6 +66,27 @@ export const ProjectPage = withStyles(styles)(
         },
       },
       { dataIndex: "description", title: "description" },
+      {
+        dataIndex: "id",
+        title: "action",
+        renderText: (_: string, tbl: ReturnType<typeof table2row>) => {
+          return (
+            <Popconfirm
+              title="Are you sure to delete this table?"
+              onConfirm={() => {
+                tableStore.delete(tbl.id);
+                actionRef.current?.reload();
+              }}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="primary" danger={true} size="small">
+                Delete
+              </Button>
+            </Popconfirm>
+          );
+        },
+      },
     ];
 
     return (

@@ -9,26 +9,24 @@ const styles = {};
 
 export const EntitySettingComponent = withStyles(styles)(
   observer(({ classes }: {} & WithStyles<typeof styles>) => {
-    const { entityStore } = useStores();
+    const { uiSettings } = useStores();
 
     return (
       <Descriptions title="Entity Settings" size="small" column={1}>
         <Descriptions.Item label="Properties (full view)">
           <OntPropSearchComponent
             mode="multiple"
-            value={entityStore.settings.showedPropsInFullView}
-            onSelect={entityStore.settings.addShowedPropsInFullView}
-            onDeselect={entityStore.settings.removeShowedPropsInFullView}
+            value={uiSettings.entity.showedPropsInFullView}
+            onSelect={uiSettings.entity.addShowedPropsInFullView}
+            onDeselect={uiSettings.entity.removeShowedPropsInFullView}
           />
         </Descriptions.Item>
         <Descriptions.Item label="Properties (popover view)">
           <OntPropSearchComponent
             mode="multiple"
-            value={entityStore.settings.showedPropsInPopoverView}
-            onSelect={entityStore.settings.addShowedPropsInPopoverView as any}
-            onDeselect={
-              entityStore.settings.removeShowedPropsInPopoverView as any
-            }
+            value={uiSettings.entity.showedPropsInPopoverView}
+            onSelect={uiSettings.entity.addShowedPropsInPopoverView as any}
+            onDeselect={uiSettings.entity.removeShowedPropsInPopoverView as any}
           />
         </Descriptions.Item>
       </Descriptions>

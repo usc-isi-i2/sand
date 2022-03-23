@@ -1,8 +1,8 @@
+import { SimpleCRUDStore, SingleKeyIndex } from "rma-baseapp";
 import { SERVER } from "../../env";
-import { SingleKeyIndex, RStore } from "rma-baseapp";
 import { Table } from "./Table";
 
-export class TableStore extends RStore<number, Table> {
+export class TableStore extends SimpleCRUDStore<number, Table> {
   constructor() {
     super(`${SERVER}/api/table`, undefined, false, [
       new SingleKeyIndex("project"),
@@ -26,16 +26,17 @@ export class TableStore extends RStore<number, Table> {
     );
   };
 
-  public deserialize = (record: any): Table => {
+  public deserialize(record: any): Table {
     record.contextPage = record.context_page;
-    if (
-      record.contextPage !== null &&
-      record.contextPage !== undefined &&
-      record.contextPage.entity !== null
-    ) {
+    if (record.contextPage === null || record.contextPage === undefined) {
+      record.contextPage = {};
+    }
+
+    if (record.contextPage.entity !== null) {
       record.contextPage.entityId = record.contextPage.entity;
       delete record.contextPage.entity;
     }
+
     record.contextValues = record.context_values;
     if (record.context_tree !== undefined) {
       record.contextTree = record.context_tree.map((item: any) => {
@@ -63,7 +64,7 @@ export class TableStore extends RStore<number, Table> {
     delete record.context_values;
     delete record.context_page;
     return record;
-  };
+  }
 
   protected index(record: Table) {
     this.projectIndex.add(record);

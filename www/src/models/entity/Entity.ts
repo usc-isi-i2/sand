@@ -35,36 +35,6 @@ export class Entity {
       properties: observable,
     });
   }
-
-  /**
-   * Mapping from entity id to url to external KG
-   * @param entityId
-   */
-  static id2uri = (entityId: string): string => {
-    switch (entityId[0]) {
-      case "Q":
-        return `https://www.wikidata.org/wiki/${entityId}`;
-      case "P":
-        return `https://www.wikidata.org/wiki/Property:${entityId}`;
-      case "L":
-        return `https://www.wikidata.org/wiki/Lexeme:${entityId}`;
-      default:
-        return entityId;
-    }
-  };
-
-  static uri2id = (entityURI: string): string => {
-    if (entityURI.startsWith("https://www.wikidata.org/wiki/Property:")) {
-      return entityURI.slice("https://www.wikidata.org/wiki/Property:".length);
-    }
-    if (entityURI.startsWith("https://www.wikidata.org/wiki/Lexeme:")) {
-      return entityURI.slice("https://www.wikidata.org/wiki/Lexeme:".length);
-    }
-    if (entityURI.startsWith("https://www.wikidata.org/wiki/")) {
-      return entityURI.slice("https://www.wikidata.org/wiki/".length);
-    }
-    return entityURI;
-  };
 }
 
 export type MultiLingualString = {

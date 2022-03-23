@@ -1,14 +1,13 @@
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { Button, PageHeader, Space, Tooltip } from "antd";
+import { Button, PageHeader, Space } from "antd";
 import _ from "lodash";
 import { observer } from "mobx-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { history, LoadingPage, NotFoundPage } from "rma-baseapp";
-import { TableComponent } from "../../components/table";
-import * as RTable from "../../components/table/RelationalTable";
-import { TableComponentFunc } from "../../components/table/TableComponent";
+import { AutoHideTooltip } from "../../components/element";
 import {
+  DraftSemanticModel,
   Project,
   Table,
   TableStore as TableStoreType,
@@ -16,7 +15,15 @@ import {
 } from "../../models";
 import { routes } from "../../routes";
 import { EntitySettingComponent } from "./EntitySettingComponent";
-import { SemanticModelComponent } from "./SemanticModelComponent";
+import { MenuBar } from "./MenuBar";
+import {
+  SemanticModelComponent,
+  SemanticModelComponentFunc,
+} from "./SemanticModelComponent";
+import { TableComponent } from "./table";
+import { TableFilter } from "./table/filters/Filter";
+import { TableComponentFunc } from "./table/TableComponent";
+import { TableNavBar } from "./TableNavBar";
 
 // https://cssinjs.org/jss-plugin-nested?v=v10.8.0#use--to-reference-selector-of-the-parent-rule
 const styles = {
@@ -43,15 +50,15 @@ export const TablePage = withStyles(styles)(
       tableRowStore,
       semanticModelStore,
       assistantService,
+      classStore,
+      entityStore,
     } = useStores();
-    const [hasFetchSemanticModel, setHashFetchSemanticModel] = useState(false);
     // parse necessary route parameters
     const tableId = routes.table.useURLParams()!.tableId;
-    const { navState, toNextTable, toPreviousTable } = useTableNavigation(
-      tableStore,
-      tableId
-    );
+    const { sms, index, setIndex } = useSemanticModel(tableId);
+
     const tableRef = useRef<TableComponentFunc>();
+    const graphRef = useRef<SemanticModelComponentFunc>();
 
     useEffect(() => {
       // fetch the table
@@ -60,127 +67,68 @@ export const TablePage = withStyles(styles)(
           projectStore.fetchById(table.project);
         }
       });
-
-      // fetch its semantic model
-      if (!semanticModelStore.hasByTable(tableId)) {
-        semanticModelStore
-          .fetch({
-            limit: 1000,
-            offset: 0,
-            conditions: {
-              table: tableId,
-            },
-          })
-          .then(() => setHashFetchSemanticModel(true));
-      }
     }, [tableStore, projectStore, semanticModelStore, tableId]);
 
-    useHotkeys("b", toPreviousTable, [navState.version]);
-    useHotkeys("n", toNextTable, [navState.version]);
-
     const table = tableStore.get(tableId);
-    const rtable: RTable.Table | undefined = useMemo(() => {
-      const table = tableStore.get(tableId);
-      if (table === undefined || table === null) {
-        return undefined;
-      }
-
-      return {
-        name: table.name,
-        description: table.description,
-        columns: table.columns,
-        size: table.size,
-        context: {
-          webpage: table.contextPage?.url,
-          title: table.contextPage?.title,
-          entityId: table.contextPage?.entityId,
-          contentHierarchy: table.contextTree,
-        },
-      };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tableId, table !== undefined]);
 
     if (table === null) {
       return <NotFoundPage />;
-    } else if (table === undefined) {
+    } else if (table === undefined || sms.length === 0) {
+      // the table and sms is loading
       return <LoadingPage />;
     }
 
-    let semComponent = null;
-    if (!semanticModelStore.hasByTable(tableId) && !hasFetchSemanticModel) {
-      semComponent = <LoadingPage bordered={true} />;
-    } else {
-      semComponent = (
-        <SemanticModelComponent
-          key={tableId}
-          table={table}
-          leftMenu={
-            <>
-              <Button
-                size="small"
-                onClick={() => {
-                  assistantService.predict(table).then(() => {
-                    tableRef.current?.reload();
-                  });
-                }}
-              >
-                Predict
-              </Button>
-            </>
-          }
-        />
-      );
-    }
-
-    const queryRow = async (limit: number, offset: number) => {
-      let records = await tableRowStore.fetchByTable(table, offset, limit);
-      return records.map((row) => ({
-        index: row.index,
-        row: row.row.map((v) => ({ value: v })),
-        links: row.links,
-      }));
-    };
-
     return (
       <React.Fragment>
-        <TableNavBar
-          project={projectStore.get(table.project)}
-          table={table}
-          btns={[
-            <Button
-              key="prev"
-              onClick={toPreviousTable}
-              disabled={!navState.hasPrev}
-            >
-              Previous Table (B)
-            </Button>,
-            <Button
-              key="next"
-              onClick={toNextTable}
-              disabled={!navState.hasNext}
-            >
-              Next Table (N)
-            </Button>,
-          ]}
-          extraSubTitle={
-            <span className="ml-2">
-              Position:{" "}
-              <b>
-                {" "}
-                {navState.leftOffset + navState.tableIndex + 1}/{navState.total}
-              </b>
-            </span>
-          }
-        />
+        <TableNavBar project={projectStore.get(table.project)} table={table} />
         <div className={classes.container}>
           <Space direction="vertical" size={8}>
-            {semComponent}
+            <MenuBar
+              graphRef={graphRef}
+              tableRef={tableRef}
+              table={table}
+              semanticmodel={{ sms, index, setIndex }}
+            />
+            <SemanticModelComponent
+              ref={graphRef}
+              key={tableId}
+              table={table}
+              sm={sms[index]}
+            />
             <TableComponent
               ref={tableRef}
               key={tableId}
               toolBarRender={false}
-              table={rtable!}
-              query={queryRow}
+              table={table}
+              query={async (
+                limit: number,
+                offset: number,
+                filter: TableFilter
+              ) => {
+                if (!filter.hasFilter()) {
+                  const rows = await tableRowStore.fetchByTable(
+                    table,
+                    offset,
+                    limit
+                  );
+                  return { rows, total: table.size };
+                }
+
+                const allrows = await tableRowStore.fetchByTable(
+                  table,
+                  0,
+                  table.size
+                );
+                const rows = await filter.filter(
+                  allrows,
+                  entityStore,
+                  classStore
+                );
+                return {
+                  rows: rows.slice(offset, offset + limit),
+                  total: rows.length,
+                };
+              }}
               showRowIndex={true}
             />
             <EntitySettingComponent />
@@ -191,223 +139,51 @@ export const TablePage = withStyles(styles)(
   })
 );
 
-function useTableNavigation(TableStore: TableStoreType, tableId: number) {
-  const PREFETCH_LIMIT = 50;
-  const queryParams = routes.table.useQueryParams();
-  const b64query = queryParams === null ? "" : queryParams.query;
-  const tableQueryConditions = useMemo(
-    () => (b64query !== "" ? TableStore.decodeWhereQuery(b64query) : {}),
-    [TableStore, b64query]
-  );
-
-  // Note: assume that the list is always sorted by id (which the order which the table)
-  // is inserted into the DB
-  const [state, setState] = useState({
-    tableId: -1,
-    tableIndex: -1,
-    query: "",
-    records: [] as number[],
-    leftOffset: 0,
-    total: 0,
-    hasPrev: false,
-    hasNext: false,
-    allLeft: false,
-    allRight: false,
-    version: 0,
-  });
+function useSemanticModel(tableId: number) {
+  const { tableStore, semanticModelStore } = useStores();
+  const [hasFetchSemanticModel, setHasFetchSemanticModel] = useState(false);
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    const fn = async () => {
-      // we reinit the state whenever the query change, or table id is moved
-      // too far from the list (e.g., when users modify the URL)
-      const idx = _.sortedIndex(state.records, tableId);
-      const reinit = state.query !== b64query || state.records[idx] !== tableId;
-      let newState: Partial<typeof state>;
-
-      if (reinit) {
-        const [gtr, ltr] = await Promise.all([
-          TableStore.query({
-            limit: PREFETCH_LIMIT,
-            offset: 0,
-            fields: ["id"],
-            conditions: {
-              ...tableQueryConditions,
-              id: { op: "gte", value: tableId },
-            },
-          }),
-          TableStore.query({
-            limit: PREFETCH_LIMIT,
-            offset: 0,
-            fields: ["id"],
-            conditions: {
-              ...tableQueryConditions,
-              id: { op: "lt", value: tableId },
-            },
-          }),
-        ]);
-
-        const records = ltr.records
-          .map((tbl) => tbl.id)
-          .concat(gtr.records.map((tbl) => tbl.id));
-        newState = {
-          tableIndex: ltr.records.length,
-          records,
-          total: ltr.total + gtr.total,
-          leftOffset: ltr.total - ltr.records.length,
-          allLeft: ltr.total <= PREFETCH_LIMIT,
-          allRight: gtr.total <= PREFETCH_LIMIT,
-          hasPrev: ltr.records.length > 0,
-          hasNext: gtr.records.length > 1,
-        };
-      } else {
-        // only table id change, we fetch if it's near the boundary
-        if (idx === 0 && !state.allLeft) {
-          const ltr = await TableStore.query({
-            limit: PREFETCH_LIMIT,
-            offset: 0,
-            fields: ["id"],
-            conditions: {
-              ...tableQueryConditions,
-              id: { op: "lt", value: tableId },
-            },
-          });
-          newState = {
-            tableIndex: ltr.records.length,
-            leftOffset: ltr.total - ltr.records.length,
-            records: ltr.records.map((tbl) => tbl.id).concat(state.records),
-            allLeft: ltr.total <= PREFETCH_LIMIT,
-            hasPrev: ltr.records.length > 0,
-          };
-        } else if (idx === state.records.length - 1 && !state.allRight) {
-          const gtr = await TableStore.query({
-            limit: PREFETCH_LIMIT,
-            offset: 0,
-            fields: ["id"],
-            conditions: {
-              ...tableQueryConditions,
-              id: { op: "gt", value: tableId },
-            },
-          });
-          newState = {
-            tableIndex: idx,
-            records: state.records.concat(gtr.records.map((tbl) => tbl.id)),
-            allRight: gtr.total <= PREFETCH_LIMIT,
-            hasNext: gtr.records.length > 0,
-          };
-        } else {
-          newState = {
-            tableIndex: idx,
-            hasNext: idx < state.records.length - 1,
-            hasPrev: idx > 0,
-          };
-        }
-      }
-      setState({
-        ...state,
-        ...newState,
-        version: state.version + 1,
-        query: b64query,
-        tableId,
-      });
-    };
-    fn();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tableId, b64query]);
-
-  // open another table relative to the current table by some offset
-  const move = (offset: number) => {
-    if (tableId !== state.tableId) {
-      // they call the function too fast before the state is updated
-      return;
+    if (!semanticModelStore.hasByTable(tableId)) {
+      semanticModelStore
+        .fetch({
+          limit: 1000,
+          offset: 0,
+          conditions: {
+            table: tableId,
+          },
+        })
+        .then(() => setHasFetchSemanticModel(true));
     }
+  }, [semanticModelStore, tableId]);
 
-    const nextTableId = state.records[state.tableIndex + offset];
-    if (nextTableId !== undefined) {
-      routes.table.path({ tableId: nextTableId }, { query: b64query }).open();
-    }
-  };
+  const table = tableStore.get(tableId);
 
-  return {
-    // get id of the table relative to the current table by some offset
-    toPreviousTable: () => {
-      move(-1);
-    },
-    toNextTable: () => {
-      move(1);
-    },
-    navState: state,
-  };
+  if (
+    table === undefined ||
+    table === null ||
+    (!semanticModelStore.hasByTable(tableId) && !hasFetchSemanticModel)
+  ) {
+    // either the table does not exist, or the semantic model is not fetched
+    return { index, sms: [], setIndex };
+  }
+
+  const sms = semanticModelStore.findByTable(tableId);
+  const drafts = semanticModelStore.getCreateDraftsByTable(table);
+  if (index >= sms.length + drafts.length) {
+    // there is no semantic model & no draft for this table, create a new draft
+    const id = semanticModelStore.getNewCreateDraftId(table);
+    const draft = DraftSemanticModel.getDefaultDraftSemanticModel(
+      id,
+      `sm-${sms.length}`,
+      table
+    );
+    semanticModelStore.setCreateDraft(draft);
+    drafts.push(draft);
+  }
+
+  const sm = index < sms.length ? sms[index] : drafts[index - sms.length];
+
+  return { sms: sms.concat(drafts), index, setIndex };
 }
-
-const TableNavBar = (props: {
-  project: Project | null | undefined;
-  table: Table;
-  btns?: React.ReactNode[];
-  extraSubTitle?: React.ReactNode;
-}) => {
-  let project = props.project || new Project(0, "", "");
-  return (
-    <PageHeader
-      onBack={() =>
-        history.push(
-          routes.project.getURL({
-            projectId: props.table.project,
-          })
-        )
-      }
-      title={
-        <Space>
-          <span style={{ fontWeight: 500 }}>Table </span>
-          <AutoHideTooltip title="copied" ms={500}>
-            <span
-              style={{
-                color: "#237804",
-                textDecoration: "underline",
-                cursor: "pointer",
-              }}
-              onClick={() => navigator.clipboard.writeText(props.table.name)}
-            >
-              {props.table.name}
-            </span>
-          </AutoHideTooltip>
-        </Space>
-      }
-      subTitle={
-        <Space>
-          <span>
-            (Project <b>{project.name}</b>)
-          </span>
-          {props.extraSubTitle}
-        </Space>
-      }
-      extra={props.btns}
-    />
-  );
-};
-
-const AutoHideTooltip: React.FC<{ title: string; ms: number }> = ({
-  children,
-  title,
-  ms,
-}) => {
-  const [visible, setVisible] = useState(false);
-  const autoHide = (visible: boolean) => {
-    if (visible) {
-      setVisible(true);
-      setTimeout(() => {
-        setVisible(false);
-      }, ms);
-    }
-  };
-
-  return (
-    <Tooltip
-      title={title}
-      visible={visible}
-      onVisibleChange={autoHide}
-      trigger="click"
-    >
-      {children}
-    </Tooltip>
-  );
-};

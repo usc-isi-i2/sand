@@ -170,7 +170,7 @@ export class SemanticModelStore extends CRUDStore<
     return this.tableIndex.index.has(tableId);
   }
 
-  public deserialize = (record: any): SemanticModel => {
+  public deserialize(record: any): SemanticModel {
     const nodes: SMNode[] = record.data.nodes.map((node: any) => {
       const type: SMNodeType = node.type;
       delete node.type;
@@ -195,7 +195,7 @@ export class SemanticModelStore extends CRUDStore<
       graph,
       record.table
     );
-  };
+  }
 
   public serializeUpdateDraft(record: SemanticModel): object {
     record.version += 1;

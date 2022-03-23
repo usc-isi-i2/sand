@@ -43,9 +43,7 @@ export const ClassNodeSubForm = observer(
     // fetch class id associated with the node uri
     useEffect(() => {
       if (props.node === undefined) return;
-      if (classStore.getClassByURI(props.node.uri) !== undefined) return;
-
-      classStore.fetchOne({ conditions: { uri: props.node.uri } });
+      classStore.fetchIfMissingByURI(props.node.uri);
     }, [props.node?.uri]);
 
     const onSave = () => {

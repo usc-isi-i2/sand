@@ -6,9 +6,11 @@ import { useState } from "react";
 
 const styles = {
   checkboxIcon: {
-    padding: 1,
+    padding: "1px 2px",
     border: "1px solid",
     borderRadius: 2,
+    fontSize: 12,
+    marginBottom: -1,
   },
 };
 
@@ -32,7 +34,11 @@ export const CheckboxIcon = withStyles(styles)(
       if (selected !== undefined && onChange !== undefined) {
         return onChange(!selected);
       }
+
       setStateSelected(!stateSelected);
+      if (onChange !== undefined) {
+        onChange(!stateSelected);
+      }
     };
 
     const correctSelected = selected === undefined ? stateSelected : selected;

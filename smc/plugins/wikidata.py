@@ -7,7 +7,12 @@ from kgdata.wikidata.models import QNode, DataValue, WDClass, WDProperty
 from rdflib.namespace import RDFS
 from smc.models.base import StoreWrapper
 from smc.models.entity import Entity, Statement, Value
-from smc.models.ontology import OntClass, OntProperty
+from smc.models.ontology import (
+    DEFAULT_ONT_PROPS,
+    OntClass,
+    OntProperty,
+    DEFAULT_ONT_CLASSES,
+)
 
 
 @dataclass
@@ -16,11 +21,14 @@ class WrapperWDEntity(Entity):
     def readable_label(self):
         return f"{self.label} ({self.id})"
 
+    @property
+    def instanceof(self):
+        """Get the property representing the instanceof relation."""
+        return "P31"
+
 
 @dataclass
 class WrapperWDClass(OntClass):
-    id: str = ""
-
     @property
     def readable_label(self):
         return f"{self.label} ({self.id})"
@@ -28,8 +36,6 @@ class WrapperWDClass(OntClass):
 
 @dataclass
 class WrapperWDProperty(OntProperty):
-    id: str = ""
-
     @property
     def readable_label(self):
         return f"{self.label} ({self.id})"
@@ -86,10 +92,8 @@ def qnode_deser(qnode: QNode):
 
 
 def ont_class_deser(item: WDClass):
-    parents = [f"http://www.wikidata.org/entity/{p}" for p in item.parents]
-    parents_closure = {
-        f"http://www.wikidata.org/entity/{p}" for p in item.parents_closure
-    }
+    parents = item.parents
+    parents_closure = item.parents_closure
     return WrapperWDClass(
         id=item.id,
         uri=item.get_uri(),
@@ -102,10 +106,8 @@ def ont_class_deser(item: WDClass):
 
 
 def ont_prop_deser(item: WDProperty):
-    parents = [f"http://www.wikidata.org/entity/{p}" for p in item.parents]
-    parents_closure = {
-        f"http://www.wikidata.org/entity/{p}" for p in item.parents_closure
-    }
+    parents = item.parents
+    parents_closure = item.parents_closure
     return WrapperWDProperty(
         id=item.id,
         uri=item.get_uri(),
@@ -126,36 +128,16 @@ def wd_value_deser(val: DataValue):
         return Value(type=val.type, value=val.value)  # type: ignore
 
 
-def get_wdprop_id(uri: str):
-    return uri.replace(f"http://www.wikidata.org/prop/", "")
+def get_wdprop_id(uri_or_id: str):
+    return uri_or_id.replace(f"http://www.wikidata.org/prop/", "")
 
 
-def get_wdclass_id(uri: str):
-    return uri.replace(f"http://www.wikidata.org/entity/", "")
+def get_wdclass_id(uri_or_id: str):
+    return uri_or_id.replace(f"http://www.wikidata.org/entity/", "")
 
 
-@dataclass
-class _OntClass(OntClass):
-    id: str = ""
-
-
-@dataclass
-class _OntProperty(OntProperty):
-    id: str = ""
-
-
-DEFAULT_ONT_PROPS = {
-    "rdfs:label": _OntProperty(
-        id="rdfs:label",
-        uri=str(RDFS.label),
-        label="rdfs:label",
-        aliases=[],
-        description="",
-        parents=[],
-    )
-}
-DEFAULT_ONT_CLASSES = {
-    WDOnt.STATEMENT_REL_URI: _OntClass(
+WD_ONT_CLASSES = {
+    WDOnt.STATEMENT_REL_URI: OntClass(
         id=WDOnt.STATEMENT_REL_URI,
         uri=WDOnt.STATEMENT_URI,
         label=WDOnt.STATEMENT_REL_URI,
@@ -164,8 +146,9 @@ DEFAULT_ONT_CLASSES = {
         parents=[],
     )
 }
+WD_ONT_CLASSES.update(DEFAULT_ONT_CLASSES)
 INVERSE_DEFAULT_URI2ID = {
-    v.uri: k for k, v in chain(DEFAULT_ONT_PROPS.items(), DEFAULT_ONT_CLASSES.items())
+    v.uri: k for k, v in chain(DEFAULT_ONT_PROPS.items(), WD_ONT_CLASSES.items())
 }
 
 
@@ -183,9 +166,9 @@ def get_rel_uri(uri: str):
     if WDOnt.is_uri_statement(uri):
         return WDOnt.STATEMENT_REL_URI
     if WDOnt.is_uri_qnode(uri):
-        return WDOnt.get_qnode_rel_uri(uri)
+        return WDOnt.get_qnode_rel_uri(WDOnt.get_qnode_id(uri))
     if WDOnt.is_uri_property(uri):
-        return WDOnt.get_prop_rel_uri(uri)
+        return WDOnt.get_prop_rel_uri(WDOnt.get_prop_id(uri))
     if uri == str(RDFS.label):
         return "rdfs:label"
     return uri

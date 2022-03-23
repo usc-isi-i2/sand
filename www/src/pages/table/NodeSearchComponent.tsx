@@ -98,10 +98,10 @@ export const NodeSearchComponent = withStyles(styles)(
           showSearch={true}
           onSearch={onSearch}
           value={value === undefined ? undefined : `${value.type}:${value.id}`}
-          onSelect={(value, option) => {
+          onSelect={(value: any, option: SearchValue) => {
             onSelect({ type: option.type, id: option.id });
           }}
-          onDeselect={(value, option) => {
+          onDeselect={(value: any, option: SearchValue) => {
             onDeselect({ type: option.type, id: option.id });
           }}
         />

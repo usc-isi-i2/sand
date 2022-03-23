@@ -15,8 +15,14 @@ else
     DIR=$2
 fi
 
-python -m smc.cli init --db $DIR/data/home/databases/smc.db
+# python -m smc.cli init --db $DIR/data/home/databases/smc.db
+
+# python -m smc.cli start $FLAG \
+#     --db $DIR/data/home/databases/smc.db \
+#     --externaldb $DIR/data/home/databases
+
+python -m smc.cli init --db $DIR/data/home/smc-demo/smc.db
 
 python -m smc.cli start $FLAG \
-    --db $DIR/data/home/databases/smc.db \
-    --externaldb $DIR/data/home/databases
+    --db $DIR/data/home/smc-demo/smc.db \
+    --externaldb $DIR/data/home/smc-demo #--externaldb-proxy

@@ -16,10 +16,10 @@ def client():
         init_db(str(Path(tempdir) / "smc.db"))
 
         from smc.app import app
-        from smc.config import DAO_SETTINGS, _ROOT_DIR
+        from smc.config import SETTINGS, _ROOT_DIR
 
         externaldb = _ROOT_DIR / "../data/home/databases"
-        for cfg in DAO_SETTINGS.values():
+        for cfg in SETTINGS.values():
             cfg["args"]["dbfile"] = os.path.join(
                 externaldb, Path(cfg["args"]["dbfile"]).name
             )

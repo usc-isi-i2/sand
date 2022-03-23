@@ -15,7 +15,6 @@ from sm.misc.deser import (
     serialize_csv,
 )
 import sm.outputs as O
-from smc.config import ASSISTANTS
 from smc.controllers.assistant import Assistant
 from smc.models.base import init_db, db
 
@@ -115,12 +114,12 @@ class MTabAssistant(Assistant):
                         start=0,
                         end=len(str(rows[ri].row[ci])),
                         url=None,
-                        entity=None,
+                        entity_id=None,
                         candidate_entities=[],
                     )
                 ]
             rows[ri].links[str(ci)][0].candidate_entities.append(
-                CandidateEntity(entity=entid, probability=1.0)
+                CandidateEntity(entity_id=entid, probability=1.0)
             )
 
         return pred_sm, rows
@@ -169,9 +168,9 @@ class MTabAssistant(Assistant):
                 O.Edge(
                     source=cnode.id,
                     target=dnode.id,
-                    abs_uri=WDOnt.get_prop_uri("P31"),
-                    rel_uri=WDOnt.get_prop_rel_uri("P31"),
-                    readable_label="instance of (P31)",
+                    abs_uri=str(RDFS.label),
+                    rel_uri="rdfs:label",
+                    readable_label="rdfs:label",
                 )
             )
 

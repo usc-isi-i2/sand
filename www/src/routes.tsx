@@ -16,6 +16,7 @@ import {
   ProjectOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
+import { NoURLArgsPathDef } from "rma-baseapp/lib/esm/routing/route";
 
 /*************************************************************************************
  * Layouts of the application
@@ -60,10 +61,17 @@ export const routes = {
     querySchema: { query: "string" },
     pathDef: "/tables/:tableId",
   }),
-  tableExport: new NoQueryArgsPathDef({
+  tableExportModel: new PathDef({
     component: None,
     urlSchema: { tableId: "number" },
-    pathDef: "/api/table/:tableId/export?attachment=true",
+    querySchema: { attachment: "optionalboolean" },
+    pathDef: "/api/table/:tableId/export-models",
+  }),
+  tableExportData: new PathDef({
+    component: None,
+    urlSchema: { tableId: "number" },
+    querySchema: { attachment: "optionalboolean" },
+    pathDef: "/api/table/:tableId/export",
   }),
   settings: new NoArgsPathDef({
     component: SettingPage,

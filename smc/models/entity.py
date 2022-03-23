@@ -13,8 +13,12 @@ from kgdata.wikidata.models.qnode import (
     MultiLingualStringList,
 )
 
-from smc.config import DAO_SETTINGS
+from smc.config import SETTINGS
 from sm.misc.funcs import import_func
+
+
+# represent that there is no entity
+NIL_ENTITY = SETTINGS["entity"]["nil"]
 
 
 @dataclass
@@ -28,6 +32,11 @@ class Entity:
     @property
     def readable_label(self):
         return self.label
+
+    @property
+    def instanceof(self):
+        """Get the property representing the instanceof relation."""
+        raise NotImplementedError()
 
     @staticmethod
     def uri2id(uri: str) -> str:
@@ -67,15 +76,27 @@ class Value:
         DataValueMonolingualText,
     ]
 
+    def is_entity_id(self):
+        return self.type == "entityid"
+
 
 ENTITY_AR = None
+DEFAULT_ENTITY = {
+    NIL_ENTITY: Entity(
+        id=NIL_ENTITY,
+        label=MultiLingualString.en("NIL"),
+        aliases=MultiLingualStringList(lang2values={"en": []}, lang="en"),
+        description=MultiLingualString.en("the correct entity is absent in KG"),
+        properties={},
+    )
+}
 
 
 def EntityAR() -> Dict[str, Entity]:
     global ENTITY_AR
 
     if ENTITY_AR is None:
-        cfg = DAO_SETTINGS["entity"]
+        cfg = SETTINGS["entity"]
         func = import_func(cfg["constructor"])
         ENTITY_AR = func(**cfg["args"])
         Entity.uri2id = import_func(cfg["uri2id"])

@@ -1,5 +1,6 @@
 import { observable, toJS, action, makeObservable } from "mobx";
 import { Resource } from "../entity";
+import { appConfig } from "../settings";
 
 export interface ClassNode {
   id: string;
@@ -232,7 +233,7 @@ export class SMGraph {
   getClassIdOfColumnIndex = (columnIndex: number): string | undefined => {
     let inedges = this.incomingEdges(this.nodeByColumnIndex(columnIndex).id);
     for (let inedge of inedges) {
-      if (inedge.uri === "http://www.w3.org/2000/01/rdf-schema#label") {
+      if (appConfig.SEM_MODEL_IDENTS.has(inedge.uri)) {
         if (inedges.length > 1) {
           throw new Error(
             "Invalid semantic model. An entity column has two incoming edges"
@@ -250,7 +251,7 @@ export class SMGraph {
       let target = this.node(outedge.target);
       if (
         target.nodetype === "class_node" &&
-        target.uri === "http://wikiba.se/ontology#Statement"
+        appConfig.SEM_MODEL_STATEMENTS.has(target.uri)
       ) {
         for (let coutedge of this.outgoingEdges(outedge.target)) {
           outprops.push([outedge, coutedge]);
