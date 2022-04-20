@@ -1,4 +1,5 @@
-import { RStore, SingleKeyIndex, SingleKeyUniqueIndex } from "rma-baseapp";
+import { action, makeObservable, observable, runInAction } from "mobx";
+import { RStore, SingleKeyIndex, SingleKeyUniqueIndex } from "gena-app";
 import { SERVER } from "../../env";
 
 export interface Property {
@@ -12,6 +13,8 @@ export interface Property {
 }
 
 export class PropertyStore extends RStore<string, Property> {
+  public doesNotExistURIs = new Set<string>();
+
   constructor() {
     super(
       `${SERVER}/api/properties`,
@@ -19,6 +22,11 @@ export class PropertyStore extends RStore<string, Property> {
       false,
       [new SingleKeyUniqueIndex("uri")]
     );
+
+    makeObservable(this, {
+      doesNotExistURIs: observable,
+      fetchIfMissingByURI: action,
+    });
   }
 
   get uriIndex() {
@@ -29,4 +37,29 @@ export class PropertyStore extends RStore<string, Property> {
     const id = this.uriIndex.index.get(uri);
     return id !== undefined ? this.get(id)! : undefined;
   };
+
+  /**
+   * Fetch a property by URI if it is not in the store.
+   *
+   * @returns undefined if the URI does not exist in the database.
+   */
+  async fetchIfMissingByURI(uri: string): Promise<Property | undefined> {
+    if (this.doesNotExistURIs.has(uri)) {
+      return undefined;
+    }
+
+    const id = this.uriIndex.index.get(uri);
+    if (id === undefined) {
+      const record: Property | undefined = await this.fetchOne({
+        conditions: { uri },
+      });
+      if (record === undefined) {
+        runInAction(() => {
+          this.doesNotExistURIs.add(uri);
+        });
+      }
+      return record;
+    }
+    return this.get(id)!;
+  }
 }

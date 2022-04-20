@@ -15,14 +15,14 @@ else
     DIR=$2
 fi
 
-# python -m smc.cli init --db $DIR/data/home/databases/smc.db
+python -m sand.cli init --db $DIR/data/home/databases/sand.db
 
-# python -m smc.cli start $FLAG \
-#     --db $DIR/data/home/databases/smc.db \
-#     --externaldb $DIR/data/home/databases
+python -m sand.cli start $FLAG \
+    --db $DIR/data/home/databases/sand.db \
+    --externaldb $DIR/data/home/databases
 
-python -m smc.cli init --db $DIR/data/home/smc-demo/smc.db
+# python -m sand.cli init --db $DIR/data/home/sand-demo/sand.db
 
-python -m smc.cli start $FLAG \
-    --db $DIR/data/home/smc-demo/smc.db \
-    --externaldb $DIR/data/home/smc-demo #--externaldb-proxy
+# python -m sand.cli start $FLAG \
+#     --db $DIR/data/home/sand-demo/sand.db \
+#     --externaldb $DIR/data/home/sand-demo #--externaldb-proxy

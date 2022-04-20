@@ -55,7 +55,7 @@ export const SemanticModelComponent = withStyles(styles)(
         }: { table: Table; sm: SemanticModel } & WithStyles<typeof styles>,
         ref
       ) => {
-        const graphRef = useRef<GraphComponentFunc | undefined>(undefined);
+        const graphRef = useRef<GraphComponentFunc>();
 
         // expose the APIs for the control bar to call
         useImperativeHandle(

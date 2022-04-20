@@ -1,60 +1,66 @@
-import { Menu, Space, Typography } from "antd";
+import { Menu, Space, Tabs, Typography } from "antd";
+import { WithStyles, withStyles } from "@material-ui/styles";
 import { useEffect, useState } from "react";
-import { Table, useStores } from "../../models";
+import { Property, Table, useStores } from "../../models";
 import { Class } from "../../models/ontology/ClassStore";
 import { TypeTreeFilter } from "./table/filters";
 import { ColumnFilter } from "./table/filters/Filter";
+import { PropTreeFilter } from "./table/filters/PropTreeFilter";
 
-export const TableColumnFilter = ({
-  table,
-  columnIndex,
-  filter,
-}: {
-  table: Table;
-  columnIndex: number;
-  filter: ColumnFilter;
-}) => {
-  const [menu, setMenu] = useState("by-type");
-  const { assistantService, semanticModelStore, classStore } = useStores();
-  const [types, setTypes] = useState<{ [id: string]: Class }>({});
-  const [typeCfg, setTypeCfg] = useState({
-    includeNil: false,
-    includeUnlinked: false,
-  });
+const styles = {
+  tab: {
+    "& div.ant-tabs-nav": {
+      marginBottom: "8px !important",
+    },
+  },
+};
 
-  useEffect(() => {
-    if (menu !== "by-type") {
-      return;
-    }
-    assistantService.getColumnTypes(table, columnIndex, false).then(setTypes);
-  }, [menu]);
+export const TableColumnFilter = withStyles(styles)(
+  ({
+    table,
+    columnIndex,
+    filter,
+    classes,
+  }: {
+    table: Table;
+    columnIndex: number;
+    filter: ColumnFilter;
+  } & WithStyles<typeof styles>) => {
+    const [menu, setMenu] = useState("by-type");
+    const { assistantService, semanticModelStore, classStore } = useStores();
+    const [types, setTypes] = useState<{ [id: string]: Class }>({});
+    const [props, setProps] = useState<{ [id: string]: Property }>({});
+    const [typeCfg, setTypeCfg] = useState({
+      includeNil: false,
+      includeUnlinked: false,
+    });
 
-  let component = null;
-  if (menu === "by-type") {
-    component = (
-      <TypeTreeFilter
-        key={`${table.id} ${columnIndex}`}
-        types={types}
-        filter={filter}
-      />
+    useEffect(() => {
+      assistantService.getColumnTypes(table, columnIndex, false).then(setTypes);
+      // assistantService
+      //   .getColumnProperties(table, columnIndex, false)
+      //   .then(setProps);
+    }, [menu]);
+
+    return (
+      <div style={{ minWidth: 495, padding: 8 }}>
+        <Tabs className={classes.tab} defaultActiveKey="by-type" size={"small"}>
+          <Tabs.TabPane tab="Filter By Type" key="by-type">
+            <TypeTreeFilter
+              key={`${table.id} ${columnIndex}`}
+              types={types}
+              filter={filter}
+            />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Filter By Property" key="by-prop">
+            <PropTreeFilter
+              key={`${table.id} ${columnIndex}`}
+              properties={props}
+              filter={filter}
+            />
+          </Tabs.TabPane>
+        </Tabs>
+      </div>
     );
   }
-
-  return (
-    <div style={{ minWidth: 300, padding: 8 }}>
-      {/* <Menu
-        mode="horizontal"
-        selectedKeys={[menu]}
-        onClick={(e) => setMenu(e.key)}
-        style={{ minWidth: 300 }}
-      >
-        <Menu.Item key="by-type">Filter By Type</Menu.Item>
-        <Menu.Item key="by-prop">Filter By Property</Menu.Item>
-      </Menu> */}
-      <Space style={{ width: "100%" }} direction="vertical">
-        <Typography.Text strong={true}>Filter By Type</Typography.Text>
-        {component}
-      </Space>
-    </div>
-  );
-};
+);

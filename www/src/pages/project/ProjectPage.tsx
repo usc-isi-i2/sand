@@ -5,7 +5,7 @@ import { Button, Modal, Popconfirm, Typography } from "antd";
 import _ from "lodash";
 import { observer } from "mobx-react";
 import React, { useEffect, useRef } from "react";
-import { InternalLink, LoadingPage, NotFoundPage } from "rma-baseapp";
+import { InternalLink, LoadingComponent, NotFoundComponent } from "gena-app";
 import { Table, useStores } from "../../models";
 import { routes } from "../../routes";
 import { openUpdateProjectForm } from "./forms/UpdateProjectForm";
@@ -41,9 +41,9 @@ export const ProjectPage = withStyles(styles)(
 
     const project = projectStore.get(projectId);
     if (project === undefined) {
-      return <LoadingPage />;
+      return <LoadingComponent />;
     } else if (project === null) {
-      return <NotFoundPage />;
+      return <NotFoundComponent />;
     }
 
     const columns = [

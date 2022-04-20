@@ -42,7 +42,10 @@ export class StartsWithIndex<V> {
   }
 
   public static fromMapping<V>(mapping: { [prefix: string]: V }) {
-    const sortedPrefixes = Object.keys(mapping).sort().reverse();
+    // sorted in descending order by their length
+    const sortedPrefixes = Object.keys(mapping).sort(
+      (a, b) => b.length - a.length
+    );
     if (sortedPrefixes.length === 0) {
       throw new Error("Empty mapping");
     }
@@ -50,6 +53,20 @@ export class StartsWithIndex<V> {
     const fn = (prefixes: string[], start: number) => {
       const shortestPrefix = prefixes[prefixes.length - 1];
       const index = new StartsWithIndex<V>(start, shortestPrefix.length);
+
+      if (index.start === index.end) {
+        // we gonna have an empty key, but we must have more than one prefixes
+        index.index[""] = {
+          internalNode: false,
+          value: mapping[shortestPrefix],
+        };
+        const subindex = fn(prefixes.slice(0, -1), index.end);
+        for (const [key, node] of Object.entries(subindex.index)) {
+          index.index[key] = node;
+        }
+        return index;
+      }
+
       const tmp: { [key: string]: string[] } = {};
       for (const prefix of prefixes) {
         const key = prefix.substring(index.start, shortestPrefix.length);
@@ -59,17 +76,17 @@ export class StartsWithIndex<V> {
         tmp[key].push(prefix);
       }
 
-      for (const [key, prefixes] of Object.entries(tmp)) {
-        if (prefixes.length === 1) {
+      for (const [key, subprefixes] of Object.entries(tmp)) {
+        if (subprefixes.length === 1) {
           index.index[key] = {
             internalNode: false,
-            value: mapping[prefixes[0]],
+            value: mapping[subprefixes[0]],
           };
         } else {
           index.index[key] = {
             internalNode: true,
-            // prefixes are sorted in reverse order and tmp maintains the order
-            value: fn(prefixes, index.end),
+            // prefixes are sorted in descending order and tmp maintains the order
+            value: fn(subprefixes, index.end),
           };
         }
       }
@@ -83,12 +100,14 @@ export class StartsWithIndex<V> {
   get = (text: string): V | undefined => {
     const key = text.substring(this.start, this.end);
     const item = this.index[key];
-    if (item === undefined) {
-      return undefined;
+
+    if (item !== undefined) {
+      return item.internalNode ? item.value.get(text) : item.value;
     }
-    if (item.internalNode) {
-      return item.value.get(text);
-    }
-    return item.value;
+
+    // try empty key
+    return this.index[""] !== undefined
+      ? (this.index[""].value as V)
+      : undefined;
   };
 }

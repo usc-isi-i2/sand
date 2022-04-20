@@ -1,6 +1,6 @@
 import { withStyles, WithStyles } from "@material-ui/styles";
 import { Modal, Space, Typography } from "antd";
-import { ExternalLink } from "rma-baseapp";
+import { ExternalLink } from "gena-app";
 import { FetchEntityComponent } from "./FetchEntityComponent";
 import { Entity, useEntityProperties } from "./Entity";
 import { PropertyComponent } from "./PropertyComponent";

@@ -1,7 +1,7 @@
 from pathlib import Path
 import pytest, os, uuid, shutil
 
-from smc.models.base import init_db
+from sand.models.base import init_db
 
 
 @pytest.fixture()
@@ -15,8 +15,8 @@ def client():
         )
         init_db(str(Path(tempdir) / "smc.db"))
 
-        from smc.app import app
-        from smc.config import SETTINGS, _ROOT_DIR
+        from sand.app import app
+        from sand.config import SETTINGS, _ROOT_DIR
 
         externaldb = _ROOT_DIR / "../data/home/databases"
         for cfg in SETTINGS.values():

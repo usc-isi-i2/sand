@@ -6,7 +6,7 @@ import {
 } from "../../../components/entity";
 import { grey } from "@ant-design/colors";
 import { CandidateEntityListComponent } from "./CandidateEntityListComponent";
-import { ExternalLink } from "rma-baseapp";
+import { ExternalLink } from "gena-app";
 import { TableRow } from "../../../models/table";
 import { observer } from "mobx-react";
 import { useStores } from "../../../models";

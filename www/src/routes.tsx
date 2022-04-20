@@ -3,11 +3,11 @@ import {
   NoArgsPathDef,
   NoQueryArgsPathDef,
   applyLayout,
-} from "rma-baseapp";
+} from "gena-app";
 import { HomePage, ProjectPage, TablePage, SettingPage } from "./pages";
 
 import React from "react";
-import { LeftNavBar } from "rma-baseapp";
+import { LeftNavBar } from "./components/Navbar";
 import { Space } from "antd";
 import logo from "./logo.png";
 
@@ -16,7 +16,6 @@ import {
   ProjectOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
-import { NoURLArgsPathDef } from "rma-baseapp/lib/esm/routing/route";
 
 /*************************************************************************************
  * Layouts of the application

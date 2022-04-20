@@ -5,7 +5,7 @@ import {
   DraftUpdateRecord,
   DraftCreateRecord,
   CRUDStore,
-} from "rma-baseapp";
+} from "gena-app";
 
 export class Project implements Record<number> {
   id: number;

@@ -4,7 +4,7 @@ import _ from "lodash";
 import { observer } from "mobx-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { history, LoadingPage, NotFoundPage } from "rma-baseapp";
+import { history, LoadingComponent, NotFoundComponent } from "gena-app";
 import { AutoHideTooltip } from "../../components/element";
 import {
   DraftSemanticModel,
@@ -57,8 +57,8 @@ export const TablePage = withStyles(styles)(
     const tableId = routes.table.useURLParams()!.tableId;
     const { sms, index, setIndex } = useSemanticModel(tableId);
 
-    const tableRef = useRef<TableComponentFunc>();
-    const graphRef = useRef<SemanticModelComponentFunc>();
+    const tableRef = useRef<TableComponentFunc>(null);
+    const graphRef = useRef<SemanticModelComponentFunc>(null);
 
     useEffect(() => {
       // fetch the table
@@ -72,10 +72,10 @@ export const TablePage = withStyles(styles)(
     const table = tableStore.get(tableId);
 
     if (table === null) {
-      return <NotFoundPage />;
+      return <NotFoundComponent />;
     } else if (table === undefined || sms.length === 0) {
       // the table and sms is loading
-      return <LoadingPage />;
+      return <LoadingComponent />;
     }
 
     return (
@@ -91,13 +91,13 @@ export const TablePage = withStyles(styles)(
             />
             <SemanticModelComponent
               ref={graphRef}
-              key={tableId}
+              key={`sm-${tableId}`}
               table={table}
               sm={sms[index]}
             />
             <TableComponent
               ref={tableRef}
-              key={tableId}
+              key={`tbl-${tableId}`}
               toolBarRender={false}
               table={table}
               query={async (
@@ -141,10 +141,20 @@ export const TablePage = withStyles(styles)(
 
 function useSemanticModel(tableId: number) {
   const { tableStore, semanticModelStore } = useStores();
+  const [prevTableId, setPrevTableId] = useState(-1);
   const [hasFetchSemanticModel, setHasFetchSemanticModel] = useState(false);
   const [index, setIndex] = useState(0);
+  const isUpdatedState = prevTableId === -1 || tableId === prevTableId;
+
+  if (tableId !== prevTableId) {
+    // reset the internal state
+    setPrevTableId(tableId);
+    setHasFetchSemanticModel(false);
+    setIndex(0);
+  }
 
   useEffect(() => {
+    let mounted = true;
     if (!semanticModelStore.hasByTable(tableId)) {
       semanticModelStore
         .fetch({
@@ -154,23 +164,32 @@ function useSemanticModel(tableId: number) {
             table: tableId,
           },
         })
-        .then(() => setHasFetchSemanticModel(true));
+        .then(() => {
+          if (mounted) {
+            setHasFetchSemanticModel(true);
+          }
+        });
     }
+    return () => {
+      mounted = false;
+    };
   }, [semanticModelStore, tableId]);
 
   const table = tableStore.get(tableId);
 
   if (
+    !isUpdatedState ||
     table === undefined ||
     table === null ||
     (!semanticModelStore.hasByTable(tableId) && !hasFetchSemanticModel)
   ) {
-    // either the table does not exist, or the semantic model is not fetched
+    // either the table does not exist, the internal state is not updated, or the semantic model is not fetched
     return { index, sms: [], setIndex };
   }
 
   const sms = semanticModelStore.findByTable(tableId);
   const drafts = semanticModelStore.getCreateDraftsByTable(table);
+
   if (index >= sms.length + drafts.length) {
     // there is no semantic model & no draft for this table, create a new draft
     const id = semanticModelStore.getNewCreateDraftId(table);

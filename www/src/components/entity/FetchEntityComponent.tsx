@@ -1,7 +1,7 @@
 import { Result } from "antd";
 import { observer } from "mobx-react";
 import React, { useEffect } from "react";
-import { LoadingPage } from "rma-baseapp";
+import { LoadingComponent } from "gena-app";
 import { useStores } from "../../models";
 import { EntitySettings } from "../../models";
 import { Entity } from "./Entity";
@@ -33,7 +33,7 @@ export const FetchEntityComponent = observer(
         if (renderLoading !== undefined) {
           return renderLoading();
         }
-        return <LoadingPage />;
+        return <LoadingComponent />;
       }
 
       return <span>{entityId}</span>;

@@ -1,4 +1,4 @@
-import { SimpleCRUDStore, SingleKeyIndex } from "rma-baseapp";
+import { SimpleCRUDStore, SingleKeyIndex } from "gena-app";
 import { SERVER } from "../../env";
 import { Table } from "./Table";
 

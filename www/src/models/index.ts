@@ -1,5 +1,6 @@
 import React, { createContext } from "react";
-import { registerDefaultAxiosErrorHandler } from "rma-baseapp";
+import { message } from "antd";
+import { registerDefaultAxiosErrorHandler } from "gena-app";
 import { AssistantService } from "./AssistantService";
 import { Entity, EntityStore } from "./entity";
 import { ClassStore } from "./ontology/ClassStore";
@@ -19,6 +20,7 @@ const tableStore = new TableStore();
 const semanticModelStore = new SemanticModelStore();
 const tableRowStore = new TableRowStore();
 const classStore = new ClassStore();
+const propertyStore = new PropertyStore();
 const entityStore = new EntityStore();
 
 export const stores = {
@@ -27,19 +29,22 @@ export const stores = {
   tableRowStore,
   semanticModelStore,
   entityStore,
-  propertyStore: new PropertyStore(),
+  propertyStore,
   classStore,
   assistantService: new AssistantService(
     tableStore,
     tableRowStore,
     semanticModelStore,
     classStore,
+    propertyStore,
     entityStore
   ),
   uiSettings: new UISettings(),
 };
 
-registerDefaultAxiosErrorHandler();
+registerDefaultAxiosErrorHandler((error) => {
+  message.error("Error while talking with the server.", 5);
+});
 
 (window as any)._stores = stores;
 export type IStore = Readonly<typeof stores>;

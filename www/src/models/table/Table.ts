@@ -1,5 +1,5 @@
 import { makeObservable, observable } from "mobx";
-import { Record } from "rma-baseapp";
+import { Record } from "gena-app";
 import { DataValue } from "../entity/Entity";
 import { ContentHierarchy } from "./TableContext";
 

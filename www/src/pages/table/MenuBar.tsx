@@ -41,20 +41,40 @@ export const MenuBar = observer(
       index: number;
       setIndex: (index: number) => void;
     };
-    tableRef: React.MutableRefObject<TableComponentFunc | undefined>;
-    graphRef: React.MutableRefObject<SemanticModelComponentFunc | undefined>;
+    tableRef: React.MutableRefObject<TableComponentFunc | null>;
+    graphRef: React.MutableRefObject<SemanticModelComponentFunc | null>;
   }) => {
+    const [menuVisible, setMenuVisible] = useState(false);
+    const { semanticModelStore, assistantService, uiSettings } = useStores();
+
     useHotkeys(
       "c",
-      graphRef.current === undefined ? () => {} : graphRef.current.recenter,
-      [
-        graphRef.current !== undefined,
-        semanticmodel.sms[semanticmodel.index].id,
-      ]
+      graphRef.current === null ? () => {} : graphRef.current.recenter,
+      [graphRef.current, smUniqueIdent(semanticmodel.sms[semanticmodel.index])]
     );
-    const [menuVisible, setMenuVisible] = useState(false);
-    const { tableStore, semanticModelStore, assistantService, uiSettings } =
-      useStores();
+
+    {
+      const lstSmsKey = semanticmodel.sms.map(smUniqueIdent).join("---");
+      useHotkeys(
+        "shift+n",
+        () => {
+          if (semanticmodel.index < semanticmodel.sms.length - 1) {
+            semanticmodel.setIndex(semanticmodel.index + 1);
+          }
+        },
+        [table.id, semanticmodel.index, lstSmsKey]
+      );
+      useHotkeys(
+        "shift+b",
+        () => {
+          if (semanticmodel.index > 0) {
+            semanticmodel.setIndex(semanticmodel.index - 1);
+          }
+        },
+        [table.id, semanticmodel.index, lstSmsKey]
+      );
+    }
+
     const sm = semanticmodel.sms[semanticmodel.index];
 
     const funcs = {
@@ -265,3 +285,7 @@ export const MenuBar = observer(
     );
   }
 );
+
+function smUniqueIdent(sm: SemanticModel) {
+  return SemanticModel.isDraft(sm) ? sm.draftID : sm.id;
+}

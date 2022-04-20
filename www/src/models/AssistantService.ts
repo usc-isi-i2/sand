@@ -1,5 +1,5 @@
 import { SERVER } from "../env";
-import { RStore, Record } from "rma-baseapp";
+import { RStore, Record } from "gena-app";
 import { action, flow, makeObservable, observable } from "mobx";
 import { Table, TableRowStore, TableStore } from "../models/table";
 import { DraftSemanticModel, SemanticModelStore } from "./sm";
@@ -7,6 +7,7 @@ import axios, { AxiosResponse } from "axios";
 import { CancellablePromise } from "mobx/dist/api/flow";
 import { Entity, EntityStore } from "./entity";
 import { Class, ClassStore } from "./ontology/ClassStore";
+import { Property, PropertyStore } from "./ontology/PropertyStore";
 import { appConfig } from "./settings";
 
 interface AssistantRecord extends Record<number> {}
@@ -24,12 +25,14 @@ export class AssistantService extends RStore<number, AssistantRecord> {
   protected smStore: SemanticModelStore;
   protected entityStore: EntityStore;
   protected classStore: ClassStore;
+  protected propStore: PropertyStore;
 
   constructor(
     tableStore: TableStore,
     tableRowStore: TableRowStore,
     smStore: SemanticModelStore,
     classStore: ClassStore,
+    propStore: PropertyStore,
     entityStore: EntityStore
   ) {
     super(`${SERVER}/api/assistant`, undefined, false, []);
@@ -38,11 +41,13 @@ export class AssistantService extends RStore<number, AssistantRecord> {
     this.rows = tableRowStore;
     this.smStore = smStore;
     this.classStore = classStore;
+    this.propStore = propStore;
     this.entityStore = entityStore;
 
     makeObservable(this, {
       predict: action,
       getColumnTypes: action,
+      getColumnProperties: action,
       getColumnTypesServer: action,
     });
   }
@@ -166,6 +171,81 @@ export class AssistantService extends RStore<number, AssistantRecord> {
     }
 
     return classes;
+  }
+
+  /**
+   * Get properties of entities in the column. This algorithm is implemented in the client side
+   */
+  async getColumnProperties(
+    table: Table,
+    columnIndex: number,
+    includeCandidateEntities: boolean
+  ): Promise<{ [id: string]: Property }> {
+    const rows = await this.rows.fetchByTable(table, 0, table.size);
+
+    // fetch all entities
+    const entIds = new Set<string>();
+    for (const row of rows) {
+      for (const link of row.links[columnIndex] || []) {
+        if (
+          link.entityId !== undefined &&
+          link.entityId !== appConfig.NIL_ENTITY
+        ) {
+          entIds.add(link.entityId);
+        }
+
+        if (includeCandidateEntities) {
+          for (const candidate of link.candidateEntities) {
+            entIds.add(candidate.entityId);
+          }
+        }
+      }
+    }
+
+    const ents = await this.entityStore.fetchByIds(Array.from(entIds));
+
+    // fetch all properties from entities as well as from the semantic models
+    const propIds = new Set<string>();
+    for (const ent of Object.values(ents)) {
+      for (const [propId, stmts] of Object.entries(ent.properties)) {
+        propIds.add(propId);
+
+        for (const stmt of stmts) {
+          for (const qualId of stmt.qualifiersOrder) {
+            propIds.add(qualId);
+          }
+        }
+      }
+    }
+
+    const props = await this.propStore.fetchByIds(Array.from(propIds));
+
+    // add some properties from the semantic models
+    const sms = this.smStore
+      .findByTable(table.id)
+      .concat(this.smStore.getCreateDraftsByTable(table));
+    const additionalURIs: Set<string> = new Set();
+    for (const sm of sms) {
+      const classId = sm.graph.getClassIdOfColumnIndex(columnIndex);
+      if (classId !== undefined) {
+        const node = sm.graph.node(classId);
+        if (node.nodetype === "class_node") {
+          for (const edge of sm.graph.outgoingEdges(node.id)) {
+            additionalURIs.add(edge.uri);
+          }
+        }
+      }
+    }
+    for (const prop of await Promise.all(
+      Array.from(additionalURIs).map(
+        this.propStore.fetchIfMissingByURI.bind(this.propStore)
+      )
+    )) {
+      if (prop === undefined) continue;
+      props[prop.id] = prop;
+    }
+
+    return props;
   }
 
   /**

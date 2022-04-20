@@ -30,7 +30,7 @@ export const CollapsibleComponent = withStyles(styles)(
           {props.children}
           {btn}
         </Space>
-        <div className={visible ? "" : props.classes.hide}>
+        <div className={visible ? "gena-app" : props.classes.hide}>
           {props.collapsible}
         </div>
       </div>

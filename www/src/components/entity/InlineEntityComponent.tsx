@@ -1,4 +1,4 @@
-import { ExternalLink } from "rma-baseapp";
+import { ExternalLink } from "gena-app";
 import { Entity } from "./Entity";
 
 /**

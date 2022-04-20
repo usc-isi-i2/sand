@@ -5,7 +5,7 @@ import {
   DraftUpdateRecord,
   DraftCreateRecord,
   CRUDStore,
-} from "rma-baseapp";
+} from "gena-app";
 import { DraftCreateProject, DraftUpdateProject, Project } from "./Project";
 import { ParserOpts, UploadingTable } from "./ProjectUpload";
 import axios from "axios";

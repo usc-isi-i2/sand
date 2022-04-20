@@ -10,7 +10,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { ExternalLink } from "rma-baseapp";
+import { ExternalLink } from "gena-app";
 import {
   FetchEntityComponent,
   InlineEntityComponent,

@@ -1,7 +1,7 @@
 import { Avatar, Button, Col, List, Row, Typography } from "antd";
 import { observer } from "mobx-react";
 import React, { useEffect } from "react";
-import { InternalLink } from "rma-baseapp";
+import { InternalLink } from "gena-app";
 import { useStores } from "../../models";
 import { routes } from "../../routes";
 

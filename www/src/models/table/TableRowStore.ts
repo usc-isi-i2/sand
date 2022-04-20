@@ -4,7 +4,7 @@ import {
   PairKeysUniqueIndex,
   RStore,
   SimpleCRUDStore,
-} from "rma-baseapp";
+} from "gena-app";
 import { Link, Table, TableRow } from "./Table";
 import { action, makeObservable, flow } from "mobx";
 import { CancellablePromise } from "mobx/dist/api/flow";

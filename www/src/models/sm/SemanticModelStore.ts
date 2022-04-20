@@ -4,7 +4,7 @@ import {
   DraftUpdateRecord,
   Record,
   SingleKeyIndex,
-} from "rma-baseapp";
+} from "gena-app";
 import { SERVER } from "../../env";
 import { Table } from "../table";
 import { SMEdge, SMGraph, SMNode, SMNodeType } from "./SMGraph";

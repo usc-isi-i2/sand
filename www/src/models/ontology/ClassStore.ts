@@ -2,7 +2,7 @@ import { PropaneSharp } from "@mui/icons-material";
 import { flow } from "lodash";
 import { action, makeObservable, observable, runInAction } from "mobx";
 import { CancellablePromise } from "mobx/dist/internal";
-import { RStore, SingleKeyIndex, SingleKeyUniqueIndex } from "rma-baseapp";
+import { RStore, SingleKeyIndex, SingleKeyUniqueIndex } from "gena-app";
 import { SERVER } from "../../env";
 
 export interface Class {

@@ -1,4 +1,4 @@
-import { ExternalLink } from "rma-baseapp";
+import { ExternalLink } from "gena-app";
 import { Property } from "../../models";
 import { IncompleteProperty, isPropertyComplete } from "./Entity";
 

@@ -4,7 +4,7 @@ import { AutoHideTooltip } from "../../components";
 import { Table, Project, useStores } from "../../models";
 import { routes } from "../../routes";
 import _ from "lodash";
-import { history } from "rma-baseapp";
+import { history } from "gena-app";
 import { useHotkeys } from "react-hotkeys-hook";
 
 function useTableNavigation(tableId: number) {
@@ -34,6 +34,8 @@ function useTableNavigation(tableId: number) {
   });
 
   useEffect(() => {
+    let isMounted = true;
+
     const fn = async () => {
       // we reinit the state whenever the query change, or table id is moved
       // too far from the list (e.g., when users modify the URL)
@@ -119,15 +121,23 @@ function useTableNavigation(tableId: number) {
           };
         }
       }
-      setState({
-        ...state,
-        ...newState,
-        version: state.version + 1,
-        query: b64query,
-        tableId,
-      });
+
+      if (isMounted) {
+        setState({
+          ...state,
+          ...newState,
+          version: state.version + 1,
+          query: b64query,
+          tableId,
+        });
+      }
     };
+
     fn();
+
+    return () => {
+      isMounted = false;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tableId, b64query]);
 
@@ -167,8 +177,8 @@ export const TableNavBar = (props: {
     props.table.id
   );
 
-  useHotkeys("b", toPreviousTable, [navState.version]);
-  useHotkeys("n", toNextTable, [navState.version]);
+  useHotkeys("b", toPreviousTable, [props.table.id, navState.version]);
+  useHotkeys("n", toNextTable, [props.table.id, navState.version]);
 
   return (
     <PageHeader
