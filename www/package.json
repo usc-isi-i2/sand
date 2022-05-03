@@ -58,7 +58,7 @@
   },
   "scripts": {
     "start": "BROWSER=none react-scripts start",
-    "build": "python ./scripts/build.py ../smc/www",
+    "build": "python ./scripts/build.py ../sand/www",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "build:lib": "yarn compile && yarn compile:post",
