@@ -135,7 +135,7 @@ class MTabAssistant(Assistant):
         Args:
             columns: list of column names
             rels: list of (source column index, target column index, prop id not url)
-            types: a mapping from column index to QNode id (not url)
+            types: a mapping from column index to WDEntity id (not url)
         """
         sm = O.SemanticModel()
 

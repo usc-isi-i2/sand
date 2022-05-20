@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-import enum
-import importlib
 from dataclasses import dataclass
-from typing import Dict, List, Literal, Union, Optional
-from kgdata.wikidata.models.qnode import (
-    DataValueGlobeCoordinate,
-    DataValueMonolingualText,
-    DataValueQuantity,
-    DataValueTime,
+from typing import Dict, List, Literal, Union
+from kgdata.wikidata.models.wdvalue import (
+    ValueGlobeCoordinate,
+    ValueMonolingualText,
+    ValueQuantity,
+    ValueTime,
+)
+from kgdata.wikidata.models.multilingual import (
     MultiLingualString,
     MultiLingualStringList,
 )
@@ -70,10 +70,10 @@ class Value:
     ]
     value: Union[
         str,
-        DataValueGlobeCoordinate,
-        DataValueQuantity,
-        DataValueTime,
-        DataValueMonolingualText,
+        ValueGlobeCoordinate,
+        ValueQuantity,
+        ValueTime,
+        ValueMonolingualText,
     ]
 
     def is_entity_id(self):

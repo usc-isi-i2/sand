@@ -19,7 +19,7 @@ def serialize_property(prop: OntProperty):
         "aliases": prop.aliases,
         "description": prop.description,
         "parents": prop.parents,
-        "parents_closure": list(prop.parents_closure),
+        "ancestors": list(prop.ancestors),
     }
 
 
@@ -32,7 +32,7 @@ def serialize_class(cls: OntClass):
         "aliases": cls.aliases,
         "description": cls.description,
         "parents": cls.parents,
-        "parents_closure": list(cls.parents_closure),
+        "ancestors": list(cls.ancestors),
     }
 
 

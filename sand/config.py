@@ -11,11 +11,11 @@ CACHE_SIZE = 10240
 
 SETTINGS = {
     "entity": {
-        "constructor": "sand.plugins.wikidata.get_qnode_db",
-        "uri2id": "grams.algorithm.wdont.WDOnt.get_qnode_id",
-        "id2uri": "grams.algorithm.wdont.WDOnt.get_qnode_uri",
+        "constructor": "sand.plugins.wikidata.get_entity_db",
+        "uri2id": "grams.algorithm.wdont.WDOnt.get_entity_id",
+        "id2uri": "grams.algorithm.wdont.WDOnt.get_entity_uri",
         "args": {
-            "dbfile": "/tmp/qnodes.db",
+            "dbfile": "/tmp/wdentities.db",
             "proxy": True,
         },
         # extra entities

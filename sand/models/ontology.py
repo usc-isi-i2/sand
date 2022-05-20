@@ -14,7 +14,7 @@ class OntClass:
     aliases: List[str]
     description: str
     parents: List[str]
-    parents_closure: Set[str] = field(default_factory=set)
+    ancestors: Set[str] = field(default_factory=set)
 
     @property
     def readable_label(self):
@@ -36,7 +36,7 @@ class OntProperty:
     aliases: List[str]
     description: str
     parents: List[str]
-    parents_closure: Set[str] = field(default_factory=set)
+    ancestors: Set[str] = field(default_factory=set)
 
     @property
     def readable_label(self):

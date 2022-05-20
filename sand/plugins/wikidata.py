@@ -2,8 +2,7 @@ from dataclasses import dataclass
 from hugedict.misc import identity
 from itertools import chain
 from kgdata.wikidata import db
-from kgdata.wikidata.models import QNode, DataValue, WDClass, WDProperty
-from rdflib.namespace import RDFS
+from kgdata.wikidata.models import WDEntity, WDValue, WDClass, WDProperty
 from sm.namespaces.wikidata import WikidataNamespace
 from sand.models.base import StoreWrapper
 from sand.models.entity import Entity, Statement, Value
@@ -42,7 +41,7 @@ class WrapperWDProperty(OntProperty):
 
 
 def get_qnode_db(dbfile: str, proxy: bool):
-    store = db.get_qnode_db(dbfile, proxy=proxy, read_only=not proxy)
+    store = db.get_entity_db(dbfile, proxy=proxy, read_only=not proxy)
     return StoreWrapper(
         store,
         key_deser=identity,
@@ -66,7 +65,7 @@ def get_ontprop_db(dbfile: str, proxy: bool):
     )
 
 
-def qnode_deser(qnode: QNode):
+def qnode_deser(qnode: WDEntity):
     props = {}
     for pid, stmts in qnode.props.items():
         new_stmts = []
@@ -92,40 +91,36 @@ def qnode_deser(qnode: QNode):
 
 
 def ont_class_deser(item: WDClass):
-    parents = item.parents
-    parents_closure = item.parents_closure
     return WrapperWDClass(
         id=item.id,
-        uri=item.get_uri(),
+        uri=WikidataNamespace.get_entity_abs_uri(item.id),
         aliases=item.aliases,
         label=item.label,
         description=item.description,
-        parents=parents,
-        parents_closure=parents_closure,
+        parents=item.parents,
+        ancestors=item.ancestors,
     )
 
 
 def ont_prop_deser(item: WDProperty):
-    parents = item.parents
-    parents_closure = item.parents_closure
     return WrapperWDProperty(
         id=item.id,
-        uri=item.get_uri(),
+        uri=WikidataNamespace.get_entity_abs_uri(item.id),
         aliases=item.aliases,
         label=item.label,
         description=item.description,
-        parents=parents,
-        parents_closure=parents_closure,
+        parents=item.parents,
+        ancestors=item.ancestors,
     )
 
 
-def wd_value_deser(val: DataValue):
-    if val.is_entity_id():
+def wd_value_deser(val: WDValue):
+    if val.is_entity_id(val):
         return Value(type="entityid", value=val.as_entity_id())
-    elif val.is_string():
+    elif val.is_string(val):
         return Value(type="string", value=val.as_string())
     else:
-        return Value(type=val.type, value=val.value)  # type: ignore
+        return Value(type=val.type, value=val.value)
 
 
 def get_wdprop_id(uri_or_id: str):
