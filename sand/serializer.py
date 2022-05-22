@@ -41,9 +41,9 @@ def serialize_entity(ent: Entity):
         "id": ent.id,
         "uri": Entity.id2uri(ent.id),
         "readable_label": ent.readable_label,
-        "label": ent.label.serialize(),
-        "aliases": ent.aliases.serialize(),
-        "description": ent.description.serialize(),
+        "label": ent.label.to_dict(),
+        "aliases": ent.aliases.to_dict(),
+        "description": ent.description.to_dict(),
         "properties": {
             prop: [
                 {

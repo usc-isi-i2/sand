@@ -15,14 +15,14 @@ else
     DIR=$2
 fi
 
-python -m sand.cli init --db $DIR/data/home/databases/sand.db
+python -m sand init --db $DIR/data/home/databases/sand.db
 
-python -m sand.cli start $FLAG \
+python -m sand start $FLAG \
     --db $DIR/data/home/databases/sand.db \
     --externaldb $DIR/data/home/databases
 
-# python -m sand.cli init --db $DIR/data/home/sand-demo/sand.db
+# python -m sand init --db $DIR/data/home/sand-demo/sand.db
 
-# python -m sand.cli start $FLAG \
+# python -m sand start $FLAG \
 #     --db $DIR/data/home/sand-demo/sand.db \
 #     --externaldb $DIR/data/home/sand-demo #--externaldb-proxy

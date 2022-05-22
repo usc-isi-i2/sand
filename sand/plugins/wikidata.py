@@ -40,7 +40,7 @@ class WrapperWDProperty(OntProperty):
         return f"{self.label} ({self.id})"
 
 
-def get_qnode_db(dbfile: str, proxy: bool):
+def get_entity_db(dbfile: str, proxy: bool):
     store = db.get_entity_db(dbfile, proxy=proxy, read_only=not proxy)
     return StoreWrapper(
         store,
