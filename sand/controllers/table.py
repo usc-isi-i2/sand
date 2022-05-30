@@ -20,7 +20,7 @@ from sand.models import SemanticModel, EntityAR, Project, Table, TableRow
 from sand.models.entity import NIL_ENTITY, Entity
 from sand.models.ontology import OntClass, OntClassAR, OntProperty, OntPropertyAR
 from sand.models.table import CandidateEntity, Link
-from sand.plugins.drepr import export_csv_data
+from sand.plugins.drepr.relational2rdf import relational2rdf
 from sand.serializer import (
     get_label,
     serialize_class,
@@ -127,7 +127,7 @@ def export_data(id: int):
     rows: List[TableRow] = list(TableRow.select().where(TableRow.table == table))
 
     # export the data using drepr library
-    content = export_csv_data(table, rows, sm.data)
+    content = relational2rdf(table, rows, sm.data)
     resp = make_response(content)
     resp.headers["Content-Type"] = "text/ttl; charset=utf-8"
     if request.args.get("attachment", "false") == "true":

@@ -109,6 +109,7 @@ def ont_prop_deser(item: WDProperty):
         aliases=item.aliases,
         label=item.label,
         description=item.description,
+        datatype=item.datatype,
         parents=item.parents,
         ancestors=item.ancestors,
     )
@@ -124,11 +125,15 @@ def wd_value_deser(val: WDValue):
 
 
 def get_wdprop_id(uri_or_id: str):
-    return uri_or_id.replace(f"http://www.wikidata.org/prop/", "")
+    if uri_or_id.startswith("http"):
+        return uri_or_id.replace(f"http://www.wikidata.org/prop/", "")
+    return uri_or_id
 
 
 def get_wdclass_id(uri_or_id: str):
-    return uri_or_id.replace(f"http://www.wikidata.org/entity/", "")
+    if uri_or_id.startswith("http"):
+        return uri_or_id.replace(f"http://www.wikidata.org/entity/", "")
+    return uri_or_id
 
 
 wdns = WikidataNamespace.create()

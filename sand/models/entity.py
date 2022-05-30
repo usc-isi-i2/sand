@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Literal, Union
+from typing import Callable, Dict, List, Literal, Union
 from kgdata.wikidata.models.wdvalue import (
     ValueGlobeCoordinate,
     ValueMonolingualText,
@@ -92,6 +92,13 @@ DEFAULT_ENTITY = {
 }
 
 
+def check_nil(fn: Callable[[str], str]):
+    def wrapper(x: str) -> str:
+        return x if x != NIL_ENTITY else NIL_ENTITY
+
+    return wrapper
+
+
 def EntityAR() -> Dict[str, Entity]:
     global ENTITY_AR
 
@@ -99,7 +106,7 @@ def EntityAR() -> Dict[str, Entity]:
         cfg = SETTINGS["entity"]
         func = import_func(cfg["constructor"])
         ENTITY_AR = func(**cfg["args"])
-        Entity.uri2id = import_func(cfg["uri2id"])
-        Entity.id2uri = import_func(cfg["id2uri"])
+        Entity.uri2id = check_nil(import_func(cfg["uri2id"]))
+        Entity.id2uri = check_nil(import_func(cfg["id2uri"]))
 
     return ENTITY_AR

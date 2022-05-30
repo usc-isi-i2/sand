@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Mapping, Set
+from typing import Dict, List, Literal, Mapping, Set
 
 from rdflib import RDFS
 from sm.misc.funcs import import_func
@@ -28,11 +28,33 @@ class OntClass:
         )
 
 
+OntPropertyDataType = Literal[
+    "wikibase-lexeme",
+    "monolingualtext",
+    "wikibase-sense",
+    "url",
+    "wikibase-property",
+    "wikibase-form",
+    "external-id",
+    "time",
+    "commonsMedia",
+    "quantity",
+    "wikibase-item",
+    "musical-notation",
+    "tabular-data",
+    "string",
+    "math",
+    "geo-shape",
+    "globe-coordinate",
+]
+
+
 @dataclass
 class OntProperty:
     id: str
     uri: str
     label: str
+    datatype: OntPropertyDataType
     aliases: List[str]
     description: str
     parents: List[str]
@@ -59,6 +81,7 @@ DEFAULT_ONT_PROPS = {
         uri=str(RDFS.label),
         label="rdfs:label",
         aliases=[],
+        datatype="string",
         description="",
         parents=[],
     )
@@ -67,6 +90,7 @@ DEFAULT_ONT_CLASSES = {}
 
 
 def OntPropertyAR() -> Mapping[str, OntProperty]:
+    """Get a mapping from id (not url) to the ontology property"""
     global PROP_AR
 
     if PROP_AR is None:
@@ -79,6 +103,7 @@ def OntPropertyAR() -> Mapping[str, OntProperty]:
 
 
 def OntClassAR() -> Mapping[str, OntClass]:
+    """Get a mapping from id (not url) to the ontology class"""
     global CLASS_AR
 
     if CLASS_AR is None:
