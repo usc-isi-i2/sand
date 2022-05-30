@@ -150,6 +150,6 @@ def relational2rdf(table: Table, rows: List[TableRow], sm: O.SemanticModel):
         ds_model=create_dataset_model(table, sm),
         resources=resources,
         output=MemoryOutput(OutputFormat.TTL),
-        debug=True,
+        debug=False,
     )
     return content

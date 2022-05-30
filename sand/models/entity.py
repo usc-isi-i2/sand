@@ -94,7 +94,7 @@ DEFAULT_ENTITY = {
 
 def check_nil(fn: Callable[[str], str]):
     def wrapper(x: str) -> str:
-        return x if x != NIL_ENTITY else NIL_ENTITY
+        return fn(x) if x != NIL_ENTITY else NIL_ENTITY
 
     return wrapper
 
