@@ -41,8 +41,8 @@ export const UploadPhase1 = withStyles(styles)(
   } & WithStyles<typeof styles>) => {
     const { projectStore } = useStores();
 
-    const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
-      const file = e.dataTransfer.files[0];
+    const onChange = (props: any) => {
+      const file: File = props.file;
       projectStore.uploadTable(projectId, file).then((tbl) => {
         if (Array.isArray(tbl)) {
           throw new Error("Error");
@@ -56,7 +56,7 @@ export const UploadPhase1 = withStyles(styles)(
         <Upload.Dragger
           name="file"
           multiple={false}
-          onDrop={onDrop}
+          onChange={onChange}
           beforeUpload={() => false}
           className={classes.upload}
         >
