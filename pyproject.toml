@@ -15,9 +15,9 @@ sand = 'sand.cli:cli'
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
-kgdata = "^2.0.0"
+kgdata = "^2.2.1"
 sm-grams = "^2.0.0"
-sem-desc = "^3.4.2"
+sem-desc = "^3.5.1"
 peewee = "^3.14.4"
 Flask = "^2.0.2"
 python-dotenv = ">=0.19.0"
