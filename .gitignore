@@ -135,4 +135,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-smc.db
+sand.db
+poetry.lock
