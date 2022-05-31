@@ -61,5 +61,6 @@ SETTINGS = {
         # list of assistants' names and their models
         # "grams": "sand.plugins.grams.GRAMSAssistant",
         "mtab": "sand.plugins.mtab.MTabAssistant",
+        # "default": "mtab",
     },
 }

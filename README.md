@@ -1,10 +1,10 @@
-<h1 align="center">SMC</h1>
+<h1 align="center">SAND</h1>
 
 <div align="center">
 
-![PyPI](https://img.shields.io/pypi/v/sem-desc-curator)
+![PyPI](https://img.shields.io/pypi/v/web-sand)
 ![Python](https://img.shields.io/badge/python-v3.8+-blue.svg)
-[![GitHub Issues](https://img.shields.io/github/issues/binh-vu/smc.svg)](https://github.com/binh-vu/smc/issues)
+[![GitHub Issues](https://img.shields.io/github/issues/usc-isi-i2/sand.svg)](https://github.com/usc-isi-i2/sand/issues)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
@@ -17,15 +17,21 @@
 
 ## Introduction
 
-SMC is a library to annotate semantic descriptions of tables
+SAND is an application to annotate semantic descriptions of tables and (optionally) linked records in tables to a target knowledge graph, then it can automatically export the table data to RDF, JSON-LD, etc. It also does basic data cleaning automatically based on the annotated semantic descriptions. SAND is designed to be customizable: you can plug in a new semantic modeling algorithm (which generates a semantic description automatically) or different knowledge graphs as long as you have a suitable plugin implemented SAND's plugin interface.
+
+Moreover, SAND offers an internal KG browsing and table filtering so you can interactively browsing and modeling your tables.
+
+For a demo, please see: our [demo paper](./docs/paper.pdf), [demo video](https://github.com/usc-isi-i2/sand/wiki/Demo).
+
+<!-- For more documentation, please see [not available yet](). -->
 
 ## Installation
 
-Install from pip: `pip install -U sem-desc-curator`
+Install from pip: `pip install -U web-sand`
 
 ## Usage
 
-1. Start the webserver: `smc start -d <dbfile> --externaldb <folder_of_ent_and_ont_db>`
+1. Start the webserver: `sand start -d <dbfile> --externaldb <folder_of_ent_and_ont_db>`
 2. Open the URL: `http://localhost:5524`
 
 ## Development
