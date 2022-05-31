@@ -7,8 +7,10 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { history, LoadingComponent, NotFoundComponent } from "gena-app";
 import { AutoHideTooltip } from "../../components/element";
 import {
+  DataType,
   DraftSemanticModel,
   Project,
+  SemanticModel,
   Table,
   TableStore as TableStoreType,
   useStores,
@@ -24,6 +26,7 @@ import { TableComponent } from "./table";
 import { TableFilter } from "./table/filters/Filter";
 import { TableComponentFunc } from "./table/TableComponent";
 import { TableNavBar } from "./TableNavBar";
+import { appConfig } from "../../models/settings";
 
 // https://cssinjs.org/jss-plugin-nested?v=v10.8.0#use--to-reference-selector-of-the-parent-rule
 const styles = {
@@ -49,13 +52,14 @@ export const TablePage = withStyles(styles)(
       tableStore,
       tableRowStore,
       semanticModelStore,
-      assistantService,
       classStore,
       entityStore,
+      propertyStore,
     } = useStores();
     // parse necessary route parameters
     const tableId = routes.table.useURLParams()!.tableId;
     const { sms, index, setIndex } = useSemanticModel(tableId);
+    const sm = sms[index];
 
     const tableRef = useRef<TableComponentFunc>(null);
     const graphRef = useRef<SemanticModelComponentFunc>(null);
@@ -70,6 +74,51 @@ export const TablePage = withStyles(styles)(
     }, [tableStore, projectStore, semanticModelStore, tableId]);
 
     const table = tableStore.get(tableId);
+
+    // compute the datatype of each column
+    const column2datatype: (DataType[] | undefined)[] = useMemo(() => {
+      if (table === null || table === undefined) {
+        return [];
+      }
+
+      return table.columns.map((col, columnIndex) => {
+        if (sm === undefined) return undefined;
+
+        const node = sm.graph.nodeByColumnIndex(columnIndex);
+        const datatypes: Set<DataType> = new Set(
+          sm.graph.incomingEdges(node.id).map((inedge) => {
+            if (appConfig.SEM_MODEL_IDENTS.has(inedge.uri)) {
+              return "entity";
+            }
+            const prop = propertyStore.getPropertyByURI(inedge.uri);
+            if (prop === undefined) {
+              propertyStore.fetchIfMissingByURI(inedge.uri);
+              return "unknown";
+            }
+
+            return prop.datatype;
+          })
+        );
+
+        return Array.from(datatypes).sort();
+      });
+    }, [
+      // no run condition
+      table === null || table === undefined,
+      tableId,
+      sm !== undefined && SemanticModel.isDraft(sm) ? sm.draftID : null,
+      sm !== undefined ? sm.id : undefined,
+      sm !== undefined ? sm.graph.version : undefined,
+      // to trigger re-render when propertyStore finish fetching properties
+      sm !== undefined
+        ? sm.graph.edges.reduce(
+            (prevValue, edge) =>
+              prevValue +
+              (propertyStore.getPropertyByURI(edge.uri) !== undefined ? 1 : 0),
+            0
+          )
+        : undefined,
+    ]);
 
     if (table === null) {
       return <NotFoundComponent />;
@@ -93,13 +142,14 @@ export const TablePage = withStyles(styles)(
               ref={graphRef}
               key={`sm-${tableId}`}
               table={table}
-              sm={sms[index]}
+              sm={sm}
             />
             <TableComponent
               ref={tableRef}
               key={`tbl-${tableId}`}
               toolBarRender={false}
               table={table}
+              column2datatype={column2datatype}
               query={async (
                 limit: number,
                 offset: number,
@@ -201,8 +251,6 @@ function useSemanticModel(tableId: number) {
     semanticModelStore.setCreateDraft(draft);
     drafts.push(draft);
   }
-
-  const sm = index < sms.length ? sms[index] : drafts[index - sms.length];
 
   return { sms: sms.concat(drafts), index, setIndex };
 }

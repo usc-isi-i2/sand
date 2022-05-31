@@ -18,6 +18,14 @@ export class EntityStore extends RStore<string, Entity> {
         delete stmt.qualifiers_order;
       }
     }
-    return record;
+    return new Entity(
+      record.id,
+      record.uri,
+      record.label,
+      record.readableLabel,
+      record.aliases,
+      record.description,
+      record.properties
+    );
   }
 }

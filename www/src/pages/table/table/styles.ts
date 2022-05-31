@@ -16,4 +16,7 @@ export const tableStyles = {
   "& .ant-table-cell": {
     verticalAlign: "top",
   },
+  "& .column-datatype": {
+    fontWeight: "normal",
+  },
 };

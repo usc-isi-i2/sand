@@ -29,23 +29,14 @@ class OntClass:
 
 
 OntPropertyDataType = Literal[
-    "wikibase-lexeme",
     "monolingualtext",
-    "wikibase-sense",
     "url",
-    "wikibase-property",
-    "wikibase-form",
-    "external-id",
-    "time",
-    "commonsMedia",
-    "quantity",
-    "wikibase-item",
-    "musical-notation",
-    "tabular-data",
+    "entity",
+    "datetime",
+    "number",
     "string",
-    "math",
-    "geo-shape",
     "globe-coordinate",
+    "unknown"  # don't know the type yet
 ]
 
 

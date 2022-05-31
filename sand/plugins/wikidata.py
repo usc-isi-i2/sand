@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Mapping
 from hugedict.misc import identity
 from itertools import chain
 from kgdata.wikidata import db
@@ -11,7 +12,36 @@ from sand.models.ontology import (
     OntClass,
     OntProperty,
     DEFAULT_ONT_CLASSES,
+    OntPropertyDataType,
 )
+
+
+wdns = WikidataNamespace.create()
+WD_ONT_CLASSES = {
+    wdns.get_rel_uri(wdns.STATEMENT_URI): OntClass(
+        id=wdns.get_rel_uri(wdns.STATEMENT_URI),
+        uri=wdns.STATEMENT_URI,
+        label=wdns.get_rel_uri(wdns.STATEMENT_URI),
+        aliases=[],
+        description="",
+        parents=[],
+    )
+}
+WD_ONT_CLASSES.update(DEFAULT_ONT_CLASSES)
+INVERSE_DEFAULT_URI2ID = {
+    v.uri: k for k, v in chain(DEFAULT_ONT_PROPS.items(), WD_ONT_CLASSES.items())
+}
+
+WD_DATATYPE_MAPPING: Mapping[str, OntPropertyDataType] = {
+    "monolingualtext": "monolingualtext",
+    "url": "url",
+    "wikibase-item": "entity",
+    "external-id": "entity",
+    "time": "datetime",
+    "quantity": "number",
+    "string": "string",
+    "globe-coordinate": "globe-coordinate",
+}
 
 
 @dataclass
@@ -103,13 +133,14 @@ def ont_class_deser(item: WDClass):
 
 
 def ont_prop_deser(item: WDProperty):
+    global WD_DATATYPE_MAPPING
     return WrapperWDProperty(
         id=item.id,
-        uri=WikidataNamespace.get_entity_abs_uri(item.id),
+        uri=WikidataNamespace.get_prop_abs_uri(item.id),
         aliases=item.aliases,
         label=item.label,
         description=item.description,
-        datatype=item.datatype,
+        datatype=WD_DATATYPE_MAPPING[item.datatype] if item.datatype in WD_DATATYPE_MAPPING else "unknown",
         parents=item.parents,
         ancestors=item.ancestors,
     )
@@ -134,23 +165,6 @@ def get_wdclass_id(uri_or_id: str):
     if uri_or_id.startswith("http"):
         return uri_or_id.replace(f"http://www.wikidata.org/entity/", "")
     return uri_or_id
-
-
-wdns = WikidataNamespace.create()
-WD_ONT_CLASSES = {
-    wdns.get_rel_uri(wdns.STATEMENT_URI): OntClass(
-        id=wdns.get_rel_uri(wdns.STATEMENT_URI),
-        uri=wdns.STATEMENT_URI,
-        label=wdns.get_rel_uri(wdns.STATEMENT_URI),
-        aliases=[],
-        description="",
-        parents=[],
-    )
-}
-WD_ONT_CLASSES.update(DEFAULT_ONT_CLASSES)
-INVERSE_DEFAULT_URI2ID = {
-    v.uri: k for k, v in chain(DEFAULT_ONT_PROPS.items(), WD_ONT_CLASSES.items())
-}
 
 
 def uri2id(uri: str):

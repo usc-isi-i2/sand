@@ -15,6 +15,7 @@ import {
 } from "./sm";
 import { TableRowStore, TableStore } from "./table";
 import { UISettings, EntitySettings, TableSettings } from "./settings";
+import { toJS } from "mobx";
 
 const tableStore = new TableStore();
 const semanticModelStore = new SemanticModelStore();
@@ -47,6 +48,7 @@ registerDefaultAxiosErrorHandler((error) => {
 });
 
 (window as any)._stores = stores;
+(window as any).toJS = toJS;
 export type IStore = Readonly<typeof stores>;
 
 /** Init the stores with essential information (e.g., loading the ui settings) needed to run the app */
@@ -60,7 +62,7 @@ export function useStores(): IStore {
   return React.useContext(StoreContext);
 }
 
-export type { Property } from "./ontology/PropertyStore";
+export type { Property, DataType } from "./ontology/Property";
 export type { SMEdge, SMNode } from "./sm/SMGraph";
 export type { Table, TableRow } from "./table";
 export {

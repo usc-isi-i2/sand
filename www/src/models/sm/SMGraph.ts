@@ -165,14 +165,15 @@ export class SMGraph {
     this.nodes.filter(
       (node) => node.nodetype === "class_node" && node.uri === uri
     );
-  nodeByColumnIndex = (id: number) => this.nodes[this.column2nodeIndex[id]];
-  nodeByEntityId = (id: string) =>
+  nodeByColumnIndex = (id: number): DataNode =>
+    this.nodes[this.column2nodeIndex[id]] as DataNode;
+  nodeByEntityId = (id: string): LiteralNode =>
     this.nodes.filter(
       (node) =>
         node.nodetype === "literal_node" &&
         node.value.type === "entity-id" &&
         node.value.id === id
-    )[0];
+    )[0] as LiteralNode;
 
   edge = (source: string, target: string) =>
     this.edges.filter((e) => e.source === source && e.target === target)[0];

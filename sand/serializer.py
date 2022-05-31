@@ -18,6 +18,7 @@ def serialize_property(prop: OntProperty):
         "readable_label": prop.readable_label,
         "aliases": prop.aliases,
         "description": prop.description,
+        "datatype": prop.datatype,
         "parents": prop.parents,
         "ancestors": list(prop.ancestors),
     }

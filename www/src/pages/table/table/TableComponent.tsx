@@ -1,7 +1,7 @@
 import { SearchOutlined } from "@ant-design/icons";
 import ProTable, { ActionType } from "@ant-design/pro-table";
 import { withStyles, WithStyles } from "@material-ui/styles";
-import { Descriptions, Typography } from "antd";
+import { Descriptions, Tag, Typography } from "antd";
 import { toJS } from "mobx";
 import { observer } from "mobx-react";
 import React, {
@@ -23,10 +23,11 @@ import {
   LineBreak,
   Text,
 } from "../../../models/table/TableContext";
-import { TableColumnFilter } from "../TableColumn";
+import { TableColumnFilter } from "./TableColumn";
 import { CellComponent } from "./CellComponent";
 import { TableFilter } from "./filters/Filter";
 import { tableStyles } from "./styles";
+import { DataType, SemanticModel } from "../../../models";
 
 export const styles = {
   table: tableStyles,
@@ -46,6 +47,7 @@ export const TableComponent = withStyles(styles)(
           classes,
           toolBarRender,
           showRowIndex = false,
+          column2datatype,
         }: {
           table: Table;
           query: (
@@ -55,6 +57,7 @@ export const TableComponent = withStyles(styles)(
           ) => Promise<{ rows: TableRow[]; total: number }>;
           toolBarRender?: false;
           showRowIndex?: boolean;
+          column2datatype: (DataType[] | undefined)[];
         } & WithStyles<typeof styles>,
         ref
       ) => {
@@ -79,7 +82,29 @@ export const TableComponent = withStyles(styles)(
 
         const columns = table.columns.map((col, columnIndex) => ({
           dataIndex: ["row", columnIndex],
-          title: table.columns[columnIndex],
+          title: () => {
+            const dtypes = column2datatype[columnIndex];
+            if (
+              dtypes === undefined ||
+              (dtypes.length === 1 && dtypes[0] === "unknown")
+            ) {
+              // no datatype
+              return table.columns[columnIndex];
+            }
+
+            return (
+              <>
+                <div>{table.columns[columnIndex]}</div>
+                <div className="column-datatype">
+                  {dtypes.map((datatype) => (
+                    <Tag key={datatype} color="green">
+                      {datatype}
+                    </Tag>
+                  ))}
+                </div>
+              </>
+            );
+          },
           render: ((value: string, record: TableRow) => {
             return (
               <CellComponent cell={value} record={record} index={columnIndex} />

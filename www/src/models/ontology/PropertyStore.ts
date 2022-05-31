@@ -1,16 +1,7 @@
 import { action, makeObservable, observable, runInAction } from "mobx";
 import { RStore, SingleKeyIndex, SingleKeyUniqueIndex } from "gena-app";
 import { SERVER } from "../../env";
-
-export interface Property {
-  id: string;
-  uri: string;
-  label: string;
-  readableLabel: string;
-  aliases: string[];
-  description: string;
-  parents: string[];
-}
+import { Property } from "./Property";
 
 export class PropertyStore extends RStore<string, Property> {
   public doesNotExistURIs = new Set<string>();
@@ -61,5 +52,18 @@ export class PropertyStore extends RStore<string, Property> {
       return record;
     }
     return this.get(id)!;
+  }
+
+  public deserialize(record: any): Property {
+    return new Property(
+      record.id,
+      record.uri,
+      record.label,
+      record.readable_label,
+      record.aliases,
+      record.description,
+      record.datatype,
+      record.parents
+    );
   }
 }

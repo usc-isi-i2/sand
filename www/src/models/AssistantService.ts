@@ -7,7 +7,8 @@ import axios, { AxiosResponse } from "axios";
 import { CancellablePromise } from "mobx/dist/api/flow";
 import { Entity, EntityStore } from "./entity";
 import { Class, ClassStore } from "./ontology/ClassStore";
-import { Property, PropertyStore } from "./ontology/PropertyStore";
+import { PropertyStore } from "./ontology/PropertyStore";
+import { Property } from "./ontology/Property";
 import { appConfig } from "./settings";
 
 interface AssistantRecord extends Record<number> {}
