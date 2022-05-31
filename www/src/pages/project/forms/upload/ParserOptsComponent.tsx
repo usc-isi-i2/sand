@@ -50,7 +50,10 @@ export const escapeDelimiter = (delimiter?: string) => {
   }
 };
 
-export const ParserOptsForm = (props: { parserOpts: ParserOpts }) => {
+export const ParserOptsForm = (props: {
+  parserOpts: ParserOpts;
+  setParserOpts: (opts: ParserOpts) => void;
+}) => {
   const [form] = Form.useForm();
   let additionalProps;
 
@@ -60,9 +63,14 @@ export const ParserOptsForm = (props: { parserOpts: ParserOpts }) => {
     additionalProps = null;
   }
 
+  const updateOpts = () => {
+    props.setParserOpts(form.getFieldsValue());
+  };
+
   return (
     <Form
       layout="inline"
+      form={form}
       initialValues={{
         ...props.parserOpts,
         delimiter:
@@ -70,6 +78,7 @@ export const ParserOptsForm = (props: { parserOpts: ParserOpts }) => {
             ? escapeDelimiter(props.parserOpts.delimiter)
             : undefined,
       }}
+      onFinish={updateOpts}
     >
       <Form.Item name="format" label="File Type" rules={[{ required: true }]}>
         <Select

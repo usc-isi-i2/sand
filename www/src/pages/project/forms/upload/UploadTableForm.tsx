@@ -13,7 +13,11 @@ import {
 import { ModalStaticFunctions } from "antd/lib/modal/confirm";
 import React, { useState } from "react";
 import { useStores } from "../../../../models";
-import { Project, UploadingTable } from "../../../../models/project";
+import {
+  ParserOpts,
+  Project,
+  UploadingTable,
+} from "../../../../models/project";
 import { ParserOptsForm } from "./ParserOptsComponent";
 import { RawTableComponent } from "./RawTableComponent";
 
@@ -91,12 +95,14 @@ export const UploadPhase1 = withStyles(styles)(
 export const UploadPhase2 = withStyles(styles)(
   ({
     uploadingTable,
+    setParserOpts,
     classes,
     projectId,
     destroy,
     onDone,
   }: {
-    uploadingTable: { table: UploadingTable; file: File };
+    uploadingTable: { table: UploadingTable; file: File; version: number };
+    setParserOpts: (opts: ParserOpts) => void;
     destroy: () => void;
     onDone: () => void;
     projectId: number;
@@ -108,7 +114,12 @@ export const UploadPhase2 = withStyles(styles)(
     let tables;
 
     if (uploadingTable.table.tables.length == 1) {
-      tables = <RawTableComponent table={uploadingTable.table.tables[0]} />;
+      tables = (
+        <RawTableComponent
+          key={`version-${uploadingTable.version}`}
+          table={uploadingTable.table.tables[0]}
+        />
+      );
     } else {
       tables = uploadingTable.table.tables.map((table, index) => {
         return (
@@ -128,7 +139,11 @@ export const UploadPhase2 = withStyles(styles)(
                 }}
               />
             </Typography.Text>
-            <RawTableComponent table={table} />,
+            <RawTableComponent
+              key={`version-${uploadingTable.version}`}
+              table={table}
+            />
+            ,
           </Space>
         );
       });
@@ -144,7 +159,7 @@ export const UploadPhase2 = withStyles(styles)(
         .uploadTable(
           projectId,
           uploadingTable.file,
-          uploadingTable.table.parser_opts,
+          uploadingTable.table.parserOpts,
           tableIndex
         )
         .then((result) => {
@@ -155,7 +170,10 @@ export const UploadPhase2 = withStyles(styles)(
 
     return (
       <Space direction="vertical" style={{ width: "100%" }}>
-        <ParserOptsForm parserOpts={uploadingTable.table.parser_opts} />
+        <ParserOptsForm
+          parserOpts={uploadingTable.table.parserOpts}
+          setParserOpts={setParserOpts}
+        />
         {tables}
         <Space>
           <Button type="primary" onClick={finishUpload}>
@@ -189,7 +207,7 @@ export const UploadTableForm = ({
   const { projectStore } = useStores();
   const [phase, setPhase] = useState<"phase1" | "phase2">("phase1");
   const [uploadingTable, setUploadingTable] = useState<
-    { table: UploadingTable; file: File } | undefined
+    { table: UploadingTable; file: File; version: number } | undefined
   >(undefined);
 
   if (phase === "phase1") {
@@ -197,7 +215,7 @@ export const UploadTableForm = ({
       <UploadPhase1
         projectId={project.id}
         setUploadTable={(table, file) => {
-          setUploadingTable({ table, file });
+          setUploadingTable({ table, file, version: 0 });
           setPhase("phase2");
         }}
       />
@@ -209,6 +227,20 @@ export const UploadTableForm = ({
       <UploadPhase2
         projectId={project.id}
         uploadingTable={uploadingTable!}
+        setParserOpts={(opts) => {
+          projectStore
+            .uploadTable(project.id, uploadingTable!.file, opts)
+            .then((tbl) => {
+              if (Array.isArray(tbl)) {
+                throw new Error("Error");
+              }
+              setUploadingTable({
+                table: tbl,
+                file: uploadingTable!.file,
+                version: uploadingTable!.version + 1,
+              });
+            });
+        }}
         destroy={destroy}
         onDone={onDone || (() => {})}
       />

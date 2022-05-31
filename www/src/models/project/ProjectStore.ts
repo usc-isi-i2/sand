@@ -50,7 +50,10 @@ export class ProjectStore extends CRUDStore<
       }
     );
 
-    if (resp.data.tables !== undefined) return resp.data.tables[0];
+    if (resp.data.tables !== undefined) {
+      const { parser_opts, tables } = resp.data.tables[0];
+      return { parserOpts: parser_opts, tables };
+    }
     return resp.data.table_ids;
   };
 

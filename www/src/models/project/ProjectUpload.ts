@@ -22,6 +22,6 @@ export interface RawTable {
 }
 
 export interface UploadingTable {
-  parser_opts: ParserOpts;
+  parserOpts: ParserOpts;
   tables: RawTable[];
 }

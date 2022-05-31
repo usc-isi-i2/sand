@@ -1,6 +1,6 @@
 {
   "name": "smc",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "private": true,
   "main": "./lib/library.js",
   "module": "./lib/library.js",
