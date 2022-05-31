@@ -63,7 +63,7 @@ def create_dataset_model(table: Table, sm: O.SemanticModel) -> DRepr:
             resource_id="entity",
             path=Path(
                 steps=[
-                    RangeExpr(start=0, end=table.size, step=1),
+                    RangeExpr(start=1, end=table.size + 1, step=1),
                     IndexExpr(val=node.col_index),
                 ]
             ),
