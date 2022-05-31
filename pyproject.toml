@@ -25,7 +25,7 @@ tornado = "^6.1"
 gena = "^1.1.2"
 loguru = ">=0.6.0"
 orjson = "^3.6.8"
-drepr = "2.10.0.dev1"
+drepr = "2.10.0-dev2"
 
 [tool.poetry.dev-dependencies]
 
