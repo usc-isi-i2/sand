@@ -137,3 +137,5 @@ dmypy.json
 .pyre/
 sand.db
 poetry.lock
+
+sand/www

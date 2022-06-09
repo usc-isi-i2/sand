@@ -1,13 +1,7 @@
 {
-  "name": "smc",
+  "name": "sand",
   "version": "2.1.2",
   "private": true,
-  "main": "./lib/library.js",
-  "module": "./lib/library.js",
-  "types": "./lib/library.d.ts",
-  "files": [
-    "/lib"
-  ],
   "dependencies": {
     "@ant-design/colors": "^6.0.0",
     "@ant-design/pro-table": "^2.53.1",
