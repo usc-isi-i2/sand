@@ -19,7 +19,7 @@ jobs:
           node-version: "16"
       - name: setup dependencies
         run: |
-          pip install poetry twine
+          pip install poetry
           poetry install
       # - name: run test
       #   run: poetry run pytest -x
@@ -46,8 +46,10 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: wheels
-      - name: publish
-        run: twine upload --skip-existing dist/* -u $PYPI_USER -p $PYPI_PWD
-        env:
-          PYPI_USER: __token__
-          PYPI_PWD: ${{ secrets.PYPI_TOKEN }}
+      - name: pypi publish
+        use: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
+          skip_existing: true
+          print_hash: true
