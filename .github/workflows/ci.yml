@@ -1,4 +1,4 @@
-name: Continuous Integration
+name: continuous integration
 
 on:
   push:
@@ -24,13 +24,15 @@ jobs:
       # - name: run test
       #   run: poetry run pytest -x
       - name: build www
+        working-directory: www
         run: |
-          cd www
           yarn install
           yarn build
         env:
           # so create-react-app doesn't treat warning as error.
           CI: false
+      - name: build wheels
+        run: poetry build
       - name: upload wheels
         uses: actions/upload-artifact@v3
         with:
