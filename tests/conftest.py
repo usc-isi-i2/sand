@@ -11,9 +11,9 @@ def client():
     try:
         tempdir.mkdir()
         shutil.copyfile(
-            Path(__file__).parent / "resources/smc.db", str(Path(tempdir) / "smc.db")
+            Path(__file__).parent / "resources/sand.db", str(Path(tempdir) / "sand.db")
         )
-        init_db(str(Path(tempdir) / "smc.db"))
+        init_db(str(Path(tempdir) / "sand.db"))
 
         from sand.app import app
         from sand.config import SETTINGS, _ROOT_DIR

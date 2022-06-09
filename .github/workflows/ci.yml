@@ -21,8 +21,8 @@ jobs:
         run: |
           pip install poetry twine
           poetry install
-      - name: run test
-        run: poetry run pytest -x
+      # - name: run test
+      #   run: poetry run pytest -x
       - name: build www
         run: |
           cd www
