@@ -1,6 +1,5 @@
 import G6, {
   IGroup,
-  ILabelConfig,
   IShape,
   LabelStyle,
   ModelConfig,

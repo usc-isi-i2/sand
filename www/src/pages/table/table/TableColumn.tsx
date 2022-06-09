@@ -1,5 +1,5 @@
-import { Menu, Space, Tabs, Typography } from "antd";
 import { WithStyles, withStyles } from "@material-ui/styles";
+import { Tabs } from "antd";
 import { useEffect, useState } from "react";
 import { Property, Table, useStores } from "../../../models";
 import { Class } from "../../../models/ontology/ClassStore";
@@ -26,11 +26,11 @@ export const TableColumnFilter = withStyles(styles)(
     columnIndex: number;
     filter: ColumnFilter;
   } & WithStyles<typeof styles>) => {
-    const [menu, setMenu] = useState("by-type");
-    const { assistantService, semanticModelStore, classStore } = useStores();
+    const [menu, _setMenu] = useState("by-type");
+    const { assistantService } = useStores();
     const [types, setTypes] = useState<{ [id: string]: Class }>({});
-    const [props, setProps] = useState<{ [id: string]: Property }>({});
-    const [typeCfg, setTypeCfg] = useState({
+    const [props, _setProps] = useState<{ [id: string]: Property }>({});
+    const [_typeCfg, _setTypeCfg] = useState({
       includeNil: false,
       includeUnlinked: false,
     });

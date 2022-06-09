@@ -1,7 +1,7 @@
 import { withStyles, WithStyles } from "@material-ui/styles";
 import { Col, Row, Typography } from "antd";
-import { ID2Prop, IncompleteProperty } from "./Entity";
 import { Statement } from "../../models/entity";
+import { ID2Prop } from "./Entity";
 import { InlinePropertyComponent } from "./InlinePropertyComponent";
 import { ValueComponent } from "./ValueComponent";
 

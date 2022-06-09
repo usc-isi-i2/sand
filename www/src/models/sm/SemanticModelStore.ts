@@ -140,7 +140,7 @@ export class SemanticModelStore extends CRUDStore<
   getCreateDraftsByTable(table: Table): DraftSemanticModel[] {
     const drafts = [];
     for (const draft of this.createDrafts.values()) {
-      if (draft.table == table.id) {
+      if (draft.table === table.id) {
         drafts.push(draft);
       }
     }
@@ -205,6 +205,7 @@ export class SemanticModelStore extends CRUDStore<
       description: record.description,
       version: record.version,
       data: {
+        /* eslint-disable array-callback-return */
         nodes: record.graph.nodes.map((node) => {
           switch (node.nodetype) {
             case "class_node":
@@ -232,6 +233,7 @@ export class SemanticModelStore extends CRUDStore<
               };
           }
         }),
+        /* eslint-enable array-callback-return */
         edges: record.graph.edges.map((edge) => {
           return {
             source: edge.source,

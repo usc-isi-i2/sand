@@ -1,5 +1,3 @@
-import { AxiosError } from "axios";
-import { makeObservable, observable } from "mobx";
 import { RStore } from "gena-app";
 import { SERVER } from "../../env";
 import { Entity } from "./Entity";

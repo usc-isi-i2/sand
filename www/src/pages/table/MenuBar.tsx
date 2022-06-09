@@ -13,7 +13,6 @@ import {
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Button, Dropdown, Menu, Popconfirm, Space, Tag } from "antd";
-import { runInAction } from "mobx";
 import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";

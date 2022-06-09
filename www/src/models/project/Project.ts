@@ -1,11 +1,5 @@
+import { DraftCreateRecord, DraftUpdateRecord, Record } from "gena-app";
 import { makeObservable, observable } from "mobx";
-import { SERVER } from "../../env";
-import {
-  Record,
-  DraftUpdateRecord,
-  DraftCreateRecord,
-  CRUDStore,
-} from "gena-app";
 
 export class Project implements Record<number> {
   id: number;

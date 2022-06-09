@@ -1,11 +1,9 @@
 import { withStyles, WithStyles } from "@material-ui/styles";
-import { Typography } from "antd";
-import { toJS } from "mobx";
 import { ExternalLink } from "gena-app";
-import { FetchEntityComponent } from "./FetchEntityComponent";
-import { InlineEntityComponent } from "./InlineEntityComponent";
 import { DataValue } from "../../models/entity";
 import { CollapsibleComponent } from "../element/Collapse";
+import { FetchEntityComponent } from "./FetchEntityComponent";
+import { InlineEntityComponent } from "./InlineEntityComponent";
 
 const styles = {};
 

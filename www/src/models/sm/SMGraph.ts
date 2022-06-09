@@ -1,4 +1,4 @@
-import { observable, toJS, action, makeObservable } from "mobx";
+import { action, makeObservable, observable, toJS } from "mobx";
 import { Resource } from "../entity";
 import { appConfig } from "../settings";
 
@@ -145,7 +145,7 @@ export class SMGraph {
   /** Whether this graph is just containing all data nodes and no edges (it hasn't been modeled) */
   isEmpty = () => {
     return (
-      this.edges.length == 0 &&
+      this.edges.length === 0 &&
       this.nodes.every((node) => node.nodetype === "data_node")
     );
   };

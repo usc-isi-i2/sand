@@ -1,27 +1,15 @@
 import { gold, green, purple, yellow } from "@ant-design/colors";
 import { withStyles, WithStyles } from "@material-ui/styles";
 import { observer } from "mobx-react";
-import React, {
-  forwardRef,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 import {
   GraphComponent,
   GraphComponentFunc,
   GraphEdge,
   GraphNode,
 } from "../../components/graph";
-import {
-  DraftSemanticModel,
-  SemanticModel,
-  Table,
-  useStores,
-} from "../../models";
+import { SemanticModel, Table } from "../../models";
 import { SMNode } from "../../models/sm";
-import { routes } from "../../routes";
 import { openForm } from "./forms";
 
 const styles = {

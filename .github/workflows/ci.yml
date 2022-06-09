@@ -28,6 +28,9 @@ jobs:
           cd www
           yarn install
           yarn build
+        env:
+          # so create-react-app doesn't treat warning as error.
+          CI: false
       - name: Upload wheels
         uses: actions/upload-artifact@v3
         with:

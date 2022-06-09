@@ -113,7 +113,7 @@ export const UploadPhase2 = withStyles(styles)(
     );
     let tables;
 
-    if (uploadingTable.table.tables.length == 1) {
+    if (uploadingTable.table.tables.length === 1) {
       tables = (
         <RawTableComponent
           key={`version-${uploadingTable.version}`}

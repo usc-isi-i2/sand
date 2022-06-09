@@ -4,12 +4,9 @@ import {
   faCheck,
   faCheckDouble,
   faPlus,
-  faBan,
 } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { withStyles, WithStyles } from "@material-ui/styles";
-import { Button, Divider, Modal, Space, Typography } from "antd";
-import { runInAction, toJS } from "mobx";
+import { Button, Modal, Space, Typography } from "antd";
 import { observer } from "mobx-react";
 import React, { useState } from "react";
 import { CheckboxIcon, Number } from "../../../components/element";
@@ -20,7 +17,7 @@ import {
 } from "../../../components/entity";
 import { useStores } from "../../../models";
 import { appConfig } from "../../../models/settings";
-import { TableRow, Link } from "../../../models/table";
+import { TableRow } from "../../../models/table";
 import { EntitySearchComponent } from "../OntSearchComponent";
 
 const styles = {
@@ -45,7 +42,7 @@ const styles = {
 export const CandidateEntityListComponent = withStyles(styles)(
   observer(
     ({
-      record: record,
+      record,
       index,
       classes,
       topK = 3,
