@@ -17,10 +17,10 @@ jobs:
       #   uses: actions/setup-node@v3
       #   with:
       #     node-version: "16"
-      - name: setup dependencies
-        run: |
-          pip install poetry
-          poetry install
+      # - name: setup dependencies
+      #   run: |
+      #     pip install poetry
+      #     poetry install
       # - name: run test
       #   run: poetry run pytest -x
       # - name: build www
