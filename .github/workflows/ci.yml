@@ -19,7 +19,7 @@ jobs:
           node-version: "18"
       - name: setup dependencies
         run: |
-          pip install poetry twine
+          pip install poetry twine pytest
           poetry install
       - name: run test
         run: poetry run pytest -x
