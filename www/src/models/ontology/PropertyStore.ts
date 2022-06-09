@@ -1,5 +1,5 @@
+import { RStore, SingleKeyUniqueIndex } from "gena-app";
 import { action, makeObservable, observable, runInAction } from "mobx";
-import { RStore, SingleKeyIndex, SingleKeyUniqueIndex } from "gena-app";
 import { SERVER } from "../../env";
 import { Property } from "./Property";
 

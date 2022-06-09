@@ -1,20 +1,15 @@
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { Button, PageHeader, Space } from "antd";
-import _ from "lodash";
+import { Space } from "antd";
+import { LoadingComponent, NotFoundComponent } from "gena-app";
 import { observer } from "mobx-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useHotkeys } from "react-hotkeys-hook";
-import { history, LoadingComponent, NotFoundComponent } from "gena-app";
-import { AutoHideTooltip } from "../../components/element";
 import {
   DataType,
   DraftSemanticModel,
-  Project,
   SemanticModel,
-  Table,
-  TableStore as TableStoreType,
   useStores,
 } from "../../models";
+import { appConfig } from "../../models/settings";
 import { routes } from "../../routes";
 import { EntitySettingComponent } from "./EntitySettingComponent";
 import { MenuBar } from "./MenuBar";
@@ -26,7 +21,6 @@ import { TableComponent } from "./table";
 import { TableFilter } from "./table/filters/Filter";
 import { TableComponentFunc } from "./table/TableComponent";
 import { TableNavBar } from "./TableNavBar";
-import { appConfig } from "../../models/settings";
 
 // https://cssinjs.org/jss-plugin-nested?v=v10.8.0#use--to-reference-selector-of-the-parent-rule
 const styles = {

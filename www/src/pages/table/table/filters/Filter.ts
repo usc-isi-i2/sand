@@ -1,4 +1,4 @@
-import { action, computed, makeObservable, observable, toJS } from "mobx";
+import { action, computed, makeObservable, observable } from "mobx";
 import { ClassStore, EntityStore, TableRow } from "../../../../models";
 import { appConfig } from "../../../../models/settings";
 

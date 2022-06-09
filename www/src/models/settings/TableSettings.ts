@@ -1,4 +1,4 @@
-import { action, computed, makeObservable, observable } from "mobx";
+import { action, makeObservable, observable } from "mobx";
 
 export class TableSettings {
   // page size

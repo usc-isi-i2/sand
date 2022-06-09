@@ -1,3 +1,4 @@
+import { gold, green, purple } from "@ant-design/colors";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { Select } from "antd";
 import { observer } from "mobx-react";
@@ -5,7 +6,6 @@ import React, { useMemo } from "react";
 import { SequentialFuncInvoker } from "../../misc";
 import { SemanticModel, useStores } from "../../models";
 import { SMNodeType } from "../../models/sm";
-import { gold, green, purple, yellow } from "@ant-design/colors";
 
 const styles = {
   selection: {

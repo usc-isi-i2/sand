@@ -1,13 +1,7 @@
 {
-  "name": "smc",
+  "name": "sand",
   "version": "2.1.2",
   "private": true,
-  "main": "./lib/library.js",
-  "module": "./lib/library.js",
-  "types": "./lib/library.d.ts",
-  "files": [
-    "/lib"
-  ],
   "dependencies": {
     "@ant-design/colors": "^6.0.0",
     "@ant-design/pro-table": "^2.53.1",
@@ -70,7 +64,15 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "rules": {
+      "jsx-a11y/anchor-is-valid": "off",
+      "react-hooks/exhaustive-deps": "off",
+      "@typescript-eslint/no-unused-vars": ["warn", {
+        "args": "none",
+        "varsIgnorePattern": "^_"
+      }]
+    }
   },
   "proxy": "http://127.0.0.1:5524",
   "browserslist": {

@@ -1,14 +1,8 @@
-import { makeObservable, observable } from "mobx";
+import axios from "axios";
+import { CRUDStore } from "gena-app";
 import { SERVER } from "../../env";
-import {
-  Record,
-  DraftUpdateRecord,
-  DraftCreateRecord,
-  CRUDStore,
-} from "gena-app";
 import { DraftCreateProject, DraftUpdateProject, Project } from "./Project";
 import { ParserOpts, UploadingTable } from "./ProjectUpload";
-import axios from "axios";
 
 export class ProjectStore extends CRUDStore<
   number,

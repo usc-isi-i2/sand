@@ -1,11 +1,11 @@
-import { WordWrap } from "./wordwrap";
 import G6, {
-  ModelConfig,
-  ShapeStyle,
   IGroup,
   IShape,
   LabelStyle,
+  ModelConfig,
+  ShapeStyle,
 } from "@antv/g6";
+import { WordWrap } from "./wordwrap";
 import { ParagraphRenderedUnit } from "./wordwrap/model";
 
 /** Draw paragraph */
@@ -30,7 +30,7 @@ export function drawText(
   yoffset = yoffset === undefined ? 0 : yoffset;
 
   if (stroke !== undefined) {
-    units.map(({ text, x, y }) => {
+    units.forEach(({ text, x, y }) => {
       group!.addShape("text", {
         attrs: {
           text,

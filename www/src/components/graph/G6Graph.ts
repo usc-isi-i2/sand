@@ -1,9 +1,8 @@
-import G6, { Graph, GraphData, NodeConfig, LayoutConfig } from "@antv/g6";
-import { registerRectNode } from "./RectNode";
-import { registerCircleNode } from "./CircleNode";
-import { WordWrap } from "./wordwrap";
-import { testNodeWrap } from "./TestNodeWrap";
+import G6, { Graph, GraphData, LayoutConfig, NodeConfig } from "@antv/g6";
 import _ from "lodash";
+import { registerCircleNode } from "./CircleNode";
+import { registerRectNode } from "./RectNode";
+import { WordWrap } from "./wordwrap";
 
 export interface GraphEdge {
   id: string;
@@ -187,7 +186,7 @@ export class G6Graph {
     // edges = y;
 
     // get new nodes
-    let newNodes = nodes.map((u, i) => {
+    let newNodes = nodes.map((u) => {
       let type;
       if (u.label.trim().length > 0) {
         if (u.shape === "rect" || u.shape === "circle") {

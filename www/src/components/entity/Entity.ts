@@ -58,13 +58,13 @@ export function useEntityProperties(entity: Entity): ID2Prop {
       }
     }
     return Array.from(ids);
-  }, [entity.id]);
+  }, [entity]);
 
   const { propertyStore } = useStores();
 
   useEffect(() => {
     propertyStore.batch.fetchByIds(propIds);
-  }, [entity.id]);
+  }, [propertyStore.batch, propIds]);
 
   return Object.fromEntries(
     propIds.map((id) => {

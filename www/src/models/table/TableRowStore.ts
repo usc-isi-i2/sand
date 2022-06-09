@@ -1,14 +1,9 @@
-import { SERVER } from "../../env";
-import {
-  FetchResult,
-  PairKeysUniqueIndex,
-  RStore,
-  SimpleCRUDStore,
-} from "gena-app";
-import { Link, Table, TableRow } from "./Table";
-import { action, makeObservable, flow } from "mobx";
-import { CancellablePromise } from "mobx/dist/api/flow";
 import axios from "axios";
+import { FetchResult, PairKeysUniqueIndex, SimpleCRUDStore } from "gena-app";
+import { action, flow, makeObservable } from "mobx";
+import { CancellablePromise } from "mobx/dist/api/flow";
+import { SERVER } from "../../env";
+import { Link, Table, TableRow } from "./Table";
 
 export class TableRowStore extends SimpleCRUDStore<number, TableRow> {
   constructor() {
@@ -116,7 +111,7 @@ export class TableRowStore extends SimpleCRUDStore<number, TableRow> {
     // first, we update cells in the store
     const map = this.tableIndex.index.get(table.id);
     if (map !== undefined) {
-      for (const [index, rowId] of map) {
+      for (const [_index, rowId] of map) {
         const row = this.records.get(rowId)!;
         if (row.row[columnIndex] !== text) {
           continue;

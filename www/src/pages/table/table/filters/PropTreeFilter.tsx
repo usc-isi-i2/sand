@@ -1,10 +1,9 @@
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { Checkbox, Divider, Space, Tooltip, Typography } from "antd";
 import { observer } from "mobx-react";
-import { ReactNode, useEffect, useMemo, useState } from "react";
-import { Property, Table, useStores } from "../../../../models";
-import { Class } from "../../../../models/ontology/ClassStore";
-import { ColumnFilter, TableFilter } from "./Filter";
+import { ReactNode, useMemo, useState } from "react";
+import { Property } from "../../../../models";
+import { ColumnFilter } from "./Filter";
 
 const styles = {
   treeNode: {},
@@ -45,7 +44,7 @@ export const PropTreeFilter = withStyles(styles)(
 
         // get list of roots to start with
         const rootIds = new Set(Object.keys(p2cs));
-        for (const [parent, children] of Object.entries(p2cs)) {
+        for (const [_parent, children] of Object.entries(p2cs)) {
           for (const child of children) {
             rootIds.delete(child);
           }

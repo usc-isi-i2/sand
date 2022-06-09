@@ -44,7 +44,7 @@ interface Props<R> {
   isFirstItemLogo?: boolean;
 }
 type Component = <R extends Record<any, PathDef<any, any>>>(
-  p: Props<R>
+  _p: Props<R>
 ) => JSX.Element;
 
 export const CenterNavBar = withStyles(css)(

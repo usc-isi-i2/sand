@@ -35,7 +35,7 @@ export const PropertyFilterComponent = withStyles(styles)(
           label: `${id2prop[pid].label} (${pid})`,
           value: pid,
         }));
-      }, [id2prop, entity.id]);
+      }, [id2prop, entity]);
 
       return (
         <div>

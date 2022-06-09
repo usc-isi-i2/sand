@@ -1,15 +1,15 @@
-import { SERVER } from "../env";
-import { RStore, Record } from "gena-app";
-import { action, flow, makeObservable, observable } from "mobx";
-import { Table, TableRowStore, TableStore } from "../models/table";
-import { DraftSemanticModel, SemanticModelStore } from "./sm";
 import axios, { AxiosResponse } from "axios";
+import { Record, RStore } from "gena-app";
+import { action, flow, makeObservable } from "mobx";
 import { CancellablePromise } from "mobx/dist/api/flow";
-import { Entity, EntityStore } from "./entity";
+import { SERVER } from "../env";
+import { Table, TableRowStore, TableStore } from "../models/table";
+import { EntityStore } from "./entity";
 import { Class, ClassStore } from "./ontology/ClassStore";
-import { PropertyStore } from "./ontology/PropertyStore";
 import { Property } from "./ontology/Property";
+import { PropertyStore } from "./ontology/PropertyStore";
 import { appConfig } from "./settings";
+import { DraftSemanticModel, SemanticModelStore } from "./sm";
 
 interface AssistantRecord extends Record<number> {}
 

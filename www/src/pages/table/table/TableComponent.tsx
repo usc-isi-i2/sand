@@ -2,7 +2,7 @@ import { SearchOutlined } from "@ant-design/icons";
 import ProTable, { ActionType } from "@ant-design/pro-table";
 import { withStyles, WithStyles } from "@material-ui/styles";
 import { Descriptions, Tag, Typography } from "antd";
-import { toJS } from "mobx";
+import { ExternalLink } from "gena-app";
 import { observer } from "mobx-react";
 import React, {
   forwardRef,
@@ -10,24 +10,23 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { ExternalLink } from "gena-app";
 import {
   FetchEntityComponent,
   InlineEntityComponent,
   openPageEntityComponent,
   PopoverEntityComponent,
 } from "../../../components/entity";
+import { DataType } from "../../../models";
 import { Table, TableRow } from "../../../models/table";
 import {
   isLineBreak,
   LineBreak,
   Text,
 } from "../../../models/table/TableContext";
-import { TableColumnFilter } from "./TableColumn";
 import { CellComponent } from "./CellComponent";
 import { TableFilter } from "./filters/Filter";
 import { tableStyles } from "./styles";
-import { DataType, SemanticModel } from "../../../models";
+import { TableColumnFilter } from "./TableColumn";
 
 export const styles = {
   table: tableStyles,
