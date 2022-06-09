@@ -47,10 +47,14 @@ jobs:
         with:
           name: wheels
           path: dist
-      - name: pypi publish
-        uses: pypa/gh-action-pypi-publish@release/v1
+      - name: setup python
+        uses: actions/setup-python@v3
         with:
-          user: __token__
-          password: ${{ secrets.PYPI_TOKEN }}
-          skip_existing: true
-          print_hash: true
+          python-version: 3.8
+      - name: pypi publish
+        run: |
+          pip install twine
+          twine upload --skip-existing dist/* -u $PYPI_USER -p $PYPI_PWD
+        env:
+          PYPI_USER: __token__
+          PYPI_PWD: ${{ secrets.PYPI_TOKEN }}
