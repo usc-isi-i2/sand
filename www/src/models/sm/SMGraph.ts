@@ -130,6 +130,7 @@ export class SMGraph {
       addColumnRelationship: action,
       upsertColumnType: action,
       upsertRelationship: action,
+      addDataNode: action,
       addClassNode: action,
       addLiteralNode: action,
       removeNode: action,
@@ -161,12 +162,14 @@ export class SMGraph {
 
   node = (id: string) => this.nodes[this.nodeId2Index[id]];
   hasNode = (id: string) => this.nodeId2Index[id] !== undefined;
+  hasColumnIndex = (columnIndex: number) =>
+    this.column2nodeIndex[columnIndex] !== undefined;
   nodesByURI = (uri: string) =>
     this.nodes.filter(
       (node) => node.nodetype === "class_node" && node.uri === uri
     );
-  nodeByColumnIndex = (id: number): DataNode =>
-    this.nodes[this.column2nodeIndex[id]] as DataNode;
+  nodeByColumnIndex = (columnIndex: number): DataNode =>
+    this.nodes[this.column2nodeIndex[columnIndex]] as DataNode;
   nodeByEntityId = (id: string): LiteralNode =>
     this.nodes.filter(
       (node) =>
@@ -442,6 +445,19 @@ export class SMGraph {
         approximation: false,
       });
     }
+  }
+
+  /**
+   * Add a data node to the model.
+   */
+  public addDataNode(node: DataNode) {
+    if (this.nodeId2Index[node.id] !== undefined) {
+      throw new Error("Duplicated id");
+    }
+    this.nodeId2Index[node.id] = this.nodes.length;
+    this.nodes.push(node);
+    this.version += 1;
+    this.stale = true;
   }
 
   /**
