@@ -1,8 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/binh-vu/hugedict/tree/HEAD)
+## [Unreleased](https://github.com/usc-isi-i2/sand/tree/HEAD)
 
-[Full Changelog](https://github.com/binh-vu/hugedict/compare/2.1.5...HEAD)
+[Full Changelog](https://github.com/usc-isi-i2/sand/compare/2.1.5...HEAD)
 
 **Changed**
 
