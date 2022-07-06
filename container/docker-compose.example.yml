@@ -1,0 +1,13 @@
+version: '2.0'
+services:
+  sandk:
+    build: sand/container
+    image: usc-isi-i2/sand:2.1.5
+    volumes:
+      - ./databases/20211213:/sand/externaldb
+      - ./databases/sand.db:/sand/sand.db
+      - ~/.certs:/root/.certs:ro
+    ports:
+      - "5524:5524"
+    command: 
+      sand start -d /sand/sand.db --externaldb /sand/externaldb --certfile /root/.certs/cert.pem --keyfile /root/.certs/privkey.pem -p 5524
