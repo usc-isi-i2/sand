@@ -31,13 +31,16 @@ Install from pip: `pip install -U web-sand`
 
 ## Usage
 
-1. Start the webserver: `sand start -d <dbfile> --externaldb <folder_of_ent_and_ont_db>`
-2. Open the URL: `http://localhost:5524`
+1. Initialize database: `sand init -d <dbfile>`
+2. Start the webserver: `sand start -d <dbfile> --externaldb <folder_of_ent_and_ont_db>`
+3. Open the URL: `http://localhost:5524`
+
+For example, checkout [server.sh](./server.sh)
 
 ## Development
 
 1. Install `yarn` and [`yalc`](https://github.com/wclr/yalc)
 2. Install dependencies: `yarn install`
-3. Start development server: `yarn start`
+3. Start development server: `yarn start`. Then, access development server at: `http://127.0.0.1:3000`.
 4. Build production files: `yarn build`
-5. Build library files and publish to private index: `yarn build:lib && yalc public --private`
+5. Build library files and publish to private index (only if you are released `sand` as a library): `yarn build:lib && yalc public --private`

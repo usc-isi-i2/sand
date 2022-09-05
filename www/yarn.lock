@@ -6151,10 +6151,10 @@ fuse.js@^6.4.6:
   resolved "https://registry.yarnpkg.com/fuse.js/-/fuse.js-6.5.3.tgz#7446c0acbc4ab0ab36fa602e97499bdb69452b93"
   integrity sha512-sA5etGE7yD/pOqivZRBvUBd/NaL2sjAu6QuSaFoe1H2BrJSkH/T/UXAJ8CdXdw7DvY3Hs8CXKYkDWX7RiP5KOg==
 
-gena-app@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/gena-app/-/gena-app-3.0.0.tgz#1d87c5f78445919595b8c6701a39558df13d92b3"
-  integrity sha512-ZF2zy7HgbMy7uO5kdlpfMD5XkNQPNRPiSO5shg0f0hLtP3uc5/n50BGHdb6wrWSCESxm6rREpBCdKUdL1UoY1w==
+gena-app@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/gena-app/-/gena-app-3.0.1.tgz#92a418272c1b3f06e2c5c69da8162f58dd8a2fb9"
+  integrity sha512-+BUovdYo6g65ZSYvNFr1pWrLiA4Mi6QrBvn50y5cJyTlQpOHlpGiBpxOJU2Suh77E3PTcN8yxSnZtXxpES5Jww==
   dependencies:
     "@material-ui/styles" "^4.11.4"
     "@testing-library/jest-dom" "^5.11.4"
