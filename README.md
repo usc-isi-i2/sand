@@ -31,7 +31,7 @@ Install from pip: `pip install -U web-sand`
 
 ## Usage
 
-1. Initialize database: `sand init -d <dbfile>`
+1. Initialize database: `sand init -d <dbfile>`. For example: `sand init -d ./data/sand.db`
 2. Start the webserver: `sand start -d <dbfile> --externaldb <folder_of_ent_and_ont_db>`
 3. Open the URL: `http://localhost:5524`
 
@@ -39,6 +39,7 @@ For example, checkout [server.sh](./server.sh)
 
 ## Development
 
+0. cd to `www`
 1. Install `yarn` and [`yalc`](https://github.com/wclr/yalc)
 2. Install dependencies: `yarn install`
 3. Start development server: `yarn start`. Then, access development server at: `http://127.0.0.1:3000`.
