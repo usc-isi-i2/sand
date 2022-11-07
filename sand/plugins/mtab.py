@@ -1,26 +1,15 @@
 import copy
 from rdflib import RDFS
 import subprocess
-from abc import ABC, abstractmethod
 from pathlib import Path
-import threading
 from typing import Dict, List, Tuple
-from flask.blueprints import Blueprint
-from sm.misc.funcs import V, import_func
-from sm.misc.deser import (
-    deserialize_csv,
-    deserialize_json,
-    deserialize_text,
-    serialize_csv,
-)
+import serde.prelude as serde
 from sm.namespaces.wikidata import WikidataNamespace
-import sm.outputs as O
+import sm.outputs.semantic_model as O
 from sand.controllers.assistant import Assistant
-from sand.models.base import init_db, db
+from sand.models.base import init_db
 
 from sand.models.table import CandidateEntity, Link, Table, TableRow
-from flask import request, jsonify
-from uuid import uuid4
 
 
 class MTabAssistant(Assistant):
@@ -42,12 +31,14 @@ class MTabAssistant(Assistant):
 
         rerun = True
         if infile.exists() and outfile.exists():
-            serialize_csv(content, str(infile) + ".tmp")
-            if deserialize_text(infile) == deserialize_text(str(infile) + ".tmp"):
+            serde.csv.ser(content, str(infile) + ".tmp")
+            if serde.textline.deser(infile) == serde.textline.deser(
+                str(infile) + ".tmp"
+            ):
                 rerun = False
 
         if rerun:
-            serialize_csv(content, infile)
+            serde.csv.ser(content, infile)
             subprocess.check_call(
                 [
                     "curl",
@@ -61,7 +52,7 @@ class MTabAssistant(Assistant):
                 ]
             )
 
-        record = deserialize_json(outfile)
+        record = serde.json.deser(outfile)
         assert record["status"] == "Success"
 
         semantic = record["tables"][0]["semantic"]

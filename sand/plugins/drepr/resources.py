@@ -4,10 +4,8 @@ import orjson, csv
 from typing import Dict, List, Set, Tuple
 from sand.config import SETTINGS
 from sand.models.entity import NIL_ENTITY, Entity
-from sand.models.ontology import OntProperty, OntPropertyAR
+from sand.models.ontology import OntPropertyAR
 from sand.models.table import Table, TableRow
-import sm.outputs as O
-import sm.misc as M
 from drepr.models import (
     ResourceDataString,
     ResourceData,

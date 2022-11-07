@@ -1,5 +1,5 @@
 import orjson
-import sm.outputs as O
+import sm.outputs.semantic_model as O
 from peewee import CharField, ForeignKeyField, TextField, IntegerField
 from playhouse.shortcuts import model_to_dict
 from sand.models.base import BaseModel, BlobField

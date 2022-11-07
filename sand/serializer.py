@@ -4,7 +4,7 @@ from typing import Callable, Dict, List, Mapping, Optional
 
 from playhouse.shortcuts import model_to_dict
 
-import sm.outputs as O
+import sm.outputs.semantic_model as O
 from sand.models import SemanticModel, Table
 from sand.models.entity import Entity, EntityAR
 from sand.models.ontology import OntProperty, OntClass, OntPropertyAR, OntClassAR

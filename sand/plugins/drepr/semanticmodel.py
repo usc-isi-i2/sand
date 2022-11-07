@@ -6,7 +6,7 @@ from sand.config import SETTINGS
 from sand.models.entity import NIL_ENTITY, Entity
 from sand.models.ontology import OntProperty, OntPropertyAR, OntPropertyDataType
 from sand.models.table import Table, TableRow
-import sm.outputs as O
+import sm.outputs.semantic_model as O
 import sm.misc as M
 from sm.namespaces.wikidata import WikidataNamespace
 import drepr.models.sm as drepr_sm

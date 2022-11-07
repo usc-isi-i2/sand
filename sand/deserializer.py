@@ -1,5 +1,5 @@
 from gena.deserializer import get_dataclass_deserializer
-import sm.outputs as O
+import sm.outputs.semantic_model as O
 from sm.outputs.semantic_model import LiteralNodeDataType
 from sand.plugins.wikidata import get_rel_uri
 

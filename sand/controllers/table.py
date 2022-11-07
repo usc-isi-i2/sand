@@ -28,7 +28,7 @@ from sand.serializer import (
     batch_serialize_sms,
     serialize_property,
 )
-import sm.outputs as O
+import sm.outputs.semantic_model as O
 from sand.plugins.wikidata import DEFAULT_ONT_CLASSES, DEFAULT_ONT_PROPS
 from flask import json, jsonify, request, make_response
 from peewee import Model as PeeweeModel, DoesNotExist, fn

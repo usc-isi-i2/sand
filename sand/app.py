@@ -1,6 +1,6 @@
 import os
 
-import sm.outputs as O
+import sm.outputs.semantic_model as O
 from gena import generate_api, generate_app, generate_readonly_api_4dict
 from hugedict.chained_mapping import ChainedMapping
 from sm.misc.funcs import import_attr
