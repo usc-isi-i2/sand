@@ -271,7 +271,7 @@ export const MenuBar = observer(
             Predict
           </Button>
           <Dropdown
-            overlay={menu}
+            menu={menu}
             onVisibleChange={setMenuVisible}
             visible={menuVisible}
           >

@@ -264,7 +264,7 @@ export const GraphToolbar = withStyles(styles)(
           </Tooltip>
           <Tooltip title="Change graph layout">
             <Dropdown
-              overlay={
+              menu={
                 <Menu onClick={onMenuSelectLayout}>
                   {Object.keys(GraphLayout).map((layout) => (
                     <Menu.Item key={layout}>{layout}</Menu.Item>
