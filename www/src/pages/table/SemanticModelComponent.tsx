@@ -148,7 +148,7 @@ export const SemanticModelComponent = withStyles(styles)(
 const getNodeLabel = (sm: SemanticModel, node: SMNode) => {
   switch (node.nodetype) {
     case "data_node":
-      return node.label;
+      return node.label.replace(/\n/g, " ");
     case "literal_node":
       return node.label;
     case "class_node":

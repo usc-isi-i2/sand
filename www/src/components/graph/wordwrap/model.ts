@@ -129,7 +129,13 @@ export class Paragraph {
     let chunks = text.split(/(\s+)/).filter((w) => w.length > 0);
     if (separable !== undefined && separable.length > 0) {
       const re = new RegExp(`.*?[${separable.join("")}]|.+`, "g");
-      chunks = chunks.flatMap((w) => w.match(re)!);
+      chunks = chunks.flatMap((w) => {
+        let lst = w.match(re);
+        if (lst === null) {
+          lst = [w];
+        }
+        return lst;
+      });
     }
 
     // Here we assume that every space has the same default size. Callers who want
