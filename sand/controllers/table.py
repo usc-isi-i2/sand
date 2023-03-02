@@ -1,43 +1,38 @@
 from dataclasses import dataclass
 from functools import partial
-import os
-from re import L
-from typing import Dict, List, Optional
+from typing import List, Optional
 
-from gena import generate_readonly_api_4dict, generate_api
-from gena import generate_app
+from gena import generate_api
 from gena.deserializer import (
-    deserialize_dict,
     generate_deserializer,
     get_dataclass_deserializer,
     get_deserializer_from_type,
 )
-from grams.algorithm.inferences.features.tree_utils import TreeStruct
-from grams.inputs.context import Attribute
-from hugedict.chained_mapping import ChainedMapping
-from sand.deserializer import deserialize_graph
-from sand.models import SemanticModel, EntityAR, Project, Table, TableRow
-from sand.models.entity import NIL_ENTITY, Entity
-from sand.models.ontology import OntClass, OntClassAR, OntProperty, OntPropertyAR
-from sand.models.table import CandidateEntity, Link
+from rsoup.rsoup import ContentHierarchy
+from sand.models import SemanticModel, Table, TableRow
+from sand.models.ontology import OntClassAR, OntPropertyAR
+from sand.models.table import Link
 from sand.plugins.drepr.relational2rdf import relational2rdf
 from sand.serializer import (
     get_label,
-    serialize_class,
-    serialize_entity,
-    batch_serialize_sms,
-    serialize_property,
 )
 import sm.outputs.semantic_model as O
-from sand.plugins.wikidata import DEFAULT_ONT_CLASSES, DEFAULT_ONT_PROPS
-from flask import json, jsonify, request, make_response
-from peewee import Model as PeeweeModel, DoesNotExist, fn
+from flask import jsonify, request, make_response
+from peewee import DoesNotExist, fn
 
 from werkzeug.exceptions import BadRequest, NotFound
 
+
+def deser_context_tree(value):
+    raise NotImplementedError()
+
+
 table_bp = generate_api(
     Table,
-    deserializers=generate_deserializer(Table, {Attribute: deserialize_dict}),
+    deserializers=dict(
+        context_tree=deser_context_tree,
+        **generate_deserializer(Table, known_field_deserializers={"context_tree"}),
+    ),
 )
 table_row_bp = generate_api(TableRow)
 deser_list_links = get_deserializer_from_type(List[Link], {})

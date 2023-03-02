@@ -21,15 +21,29 @@ else
     PORT=$3
 fi
 
-python -m sand init --db $DIR/data/home/databases/sand.db
+
+DB=$DIR/data/home/sand/db.sqlite
+
+if [ ! -f "$DB" ];
+then
+    DIRNAME=$(dirname $DB)
+    if [ ! -d "$DIRNAME" ]
+    then
+        mkdir -p $DIRNAME
+    fi
+
+    python -m sand init --db $DB
+
+    python -m sand create --db $DB --description 'auto-labeled wikipedia tables' wtauto-200
+    python -m sand load --db $DB -p wtauto-200 --dataset $DIR/data/home/datasets/wtauto-200
+fi
 
 python -m sand start $FLAG \
-    --db $DIR/data/home/databases/sand.db \
+    --db $DB \
     --externaldb $DIR/data/home/databases \
     -p $PORT
 
 # python -m sand init --db $DIR/data/home/sand-demo/sand.db
-
 # python -m sand start $FLAG \
 #     --db $DIR/data/home/sand-demo/sand.db \
 #     --externaldb $DIR/data/home/sand-demo #--externaldb-proxy

@@ -21,7 +21,7 @@ from sand.commands.load import load_dataset
 
 
 @click.command()
-@click.option("-d", "--db", required=True, help="smc database file")
+@click.option("-d", "--db", required=True, help="sand database file")
 def init(db):
     """Init database"""
     init_db(db)
@@ -31,7 +31,7 @@ def init(db):
 
 
 @click.command()
-@click.option("-d", "--db", required=True, help="smc database file")
+@click.option("-d", "--db", required=True, help="sand database file")
 @click.option(
     "--externaldb",
     default="",
@@ -84,7 +84,7 @@ def start(
 
 
 @click.command()
-@click.option("-d", "--db", required=True, help="smc database file")
+@click.option("-d", "--db", required=True, help="sand database file")
 @click.option("--description", required=True, help="Description of the project")
 @click.argument("name")
 def create(db, description: str, name: str):

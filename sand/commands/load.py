@@ -12,7 +12,7 @@ from sand.models import (
     init_db,
 )
 from sand.plugins.grams_plugin import convert_linked_table
-from sm.dataset import Example, load as sm_load
+from sm.dataset import Example, Dataset, FullTable
 from grams.inputs import LinkedTable
 
 
@@ -31,13 +31,23 @@ def load_dataset(db: str, project: str, dataset: str, n_tables: int):
     """Load a dataset into a project"""
     init_db(db)
 
-    examples = sm_load(dataset, table_deser=LinkedTable.from_dict)
+    examples = Dataset(Path(dataset)).load()
+
     if n_tables > 0:
         examples = examples[:n_tables]
 
+    newexamples: list[Example[LinkedTable]] = []
+    for example in examples:
+        newexamples.append(
+            Example(
+                sms=example.sms,
+                table=LinkedTable.from_full_table(example.table),
+            )
+        )
+
     with dbconn:
         p = Project.get(name=project)
-        for e in tqdm(examples, desc="Loading examples"):
+        for e in tqdm(newexamples, desc="Loading examples"):
             save_example(p, e)
 
 

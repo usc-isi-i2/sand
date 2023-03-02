@@ -12,8 +12,8 @@ CACHE_SIZE = 10240
 SETTINGS = {
     "entity": {
         "constructor": "sand.plugins.wikidata.get_entity_db",
-        "uri2id": "sm.namespaces.WikidataNamespace.get_entity_id",
-        "id2uri": "sm.namespaces.WikidataNamespace.get_entity_abs_uri",
+        "uri2id": "sm.namespaces.prelude.WikidataNamespace.get_entity_id",
+        "id2uri": "sm.namespaces.prelude.WikidataNamespace.get_entity_abs_uri",
         "args": {
             "dbfile": "/tmp/wdentities.db",
             "proxy": True,

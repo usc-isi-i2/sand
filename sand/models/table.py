@@ -6,7 +6,7 @@ from gena.custom_fields import (
     DataClassField,
     Dict2ListDataClassField,
 )
-from grams.inputs.context import ContentHierarchy
+from rsoup.rsoup import ContentHierarchy
 
 import orjson
 from peewee import CharField, ForeignKeyField, CompositeKey, TextField, IntegerField
