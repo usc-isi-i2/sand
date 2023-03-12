@@ -34,8 +34,13 @@ then
 
     python -m sand init --db $DB
 
+    # load the auto-labeled wikipedia tables
     python -m sand create --db $DB --description 'auto-labeled wikipedia tables' wtauto-200
     python -m sand load --db $DB -p wtauto-200 --dataset $DIR/data/home/datasets/wtauto-200
+
+    # load the manually labeled wikipedia tables
+    python -m sand create --db $DB --description 'manually labeled wikipedia tables' wt250
+    python -m sand load --db $DB -p wt250 --dataset $DIR/datasets/250wt
 fi
 
 python -m sand start $FLAG \
