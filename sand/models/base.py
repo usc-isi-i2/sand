@@ -1,8 +1,7 @@
 import functools
 from pathlib import Path
-from typing import Mapping, TypeVar, Type, Callable, Any, Union
+from typing import Mapping, TypeVar, Callable, Any, Union
 
-import orjson
 from peewee import SqliteDatabase, Model, Field
 
 from sand.config import CACHE_SIZE

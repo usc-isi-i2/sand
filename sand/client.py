@@ -1,11 +1,16 @@
+from dataclasses import asdict
 from typing import Union
 from gena.client import Client as IndividualClient
 from grams.inputs.linked_table import LinkedTable
 from pathlib import Path
 from peewee import fn
+import requests
 from sand.models import init_db, SemanticModel, Project, Table
+from sand.models.table import CandidateEntity, Link
 from sm.prelude import M
 from tqdm import tqdm
+import serde.json
+from functools import lru_cache
 
 
 class Client:
@@ -19,31 +24,101 @@ class Client:
         self.table_rows = IndividualClient(f"{url}/api/tablerow")
         self.semantic_models = IndividualClient(f"{url}/api/semanticmodel")
 
-    def export(self, project_name: str, outdir: Union[str, Path]):
-        outdir = Path(outdir)
-        project = Project.get(name=project_name)
-        tables = list(project.tables)
+    @lru_cache(maxsize=None)
+    def get_project_id(self, name: str) -> int:
+        """Get project id by name"""
+        project = self.projects.get_one({"name": name, "fields": "id"})
+        return project["id"]
 
-        for tbl in tqdm(tables):
-            dname = LinkedTable._get_friendly_fs_id(tbl.name)
-            subquery = (
-                SemanticModel.select(
-                    SemanticModel.id, fn.MAX(SemanticModel.version).alias("version")
+    @lru_cache(maxsize=None)
+    def get_table_id(self, project_name: str, table_name: str):
+        project_id = self.get_project_id(project_name)
+        table = self.tables.get_one(
+            {"project": project_id, "name": table_name, "fields": "id"}
+        )
+        return table["id"]
+
+    def get_table_url(self, table_id: int):
+        """Return a URL to browse a table."""
+        return f"{self.url}/tables/{table_id}"
+
+    def get_table_url_by_name(self, project_name: str, table_name: str):
+        """Return a URL to browse a table by its name."""
+        return self.get_table_url(self.get_table_id(project_name, table_name))
+
+    def update_column_links(self, table_id: int, column: int, links: list[list[Link]]):
+        """Update all links in a column of a table.
+
+        Args:
+            table_id: table id
+            column: column index
+            links: list of links of each cell. A cell may have more than one link or no links.
+        """
+        for ri, clinks in enumerate(links):
+            rowid = self.table_rows.get_one(
+                {"table": table_id, "index": ri, "fields": "id"}
+            )["id"]
+            resp = requests.put(
+                f"{self.table_rows.endpoint}/{rowid}/cells/{column}",
+                json={"links": [asdict(l) for l in clinks]},
+            )
+            self.table_rows.assert_resp(resp)
+            assert resp.json()["success"]
+
+    def get_column_links(self, table_id: int, column: int) -> list[list[Link]]:
+        """Get annotated links of a column of a table.
+
+        Args:
+            table_id: table id
+            column: column index
+        """
+        rows = self.table_rows.get({"table": table_id, "fields": "index,links"})
+        links = [[] for _ in range(len(rows))]
+        for row in rows:
+            lst = []
+            for item in row["links"].get(str(column), []):
+                lst.append(
+                    Link(
+                        start=item["start"],
+                        end=item["end"],
+                        url=item["url"],
+                        entity_id=item["entity_id"],
+                        candidate_entities=[
+                            CandidateEntity(c["entity_id"], c["probability"])
+                            for c in item["candidate_entities"]
+                        ],
+                    )
                 )
-                .where(SemanticModel.table == tbl.id)
-                .group_by(SemanticModel.table, SemanticModel.name)
-                .alias("q1")
-            )
+            links[row["index"]] = lst
+        return links
 
-            query = (
-                SemanticModel.select()
-                .where(SemanticModel.table == tbl.id)
-                .join(subquery, on=(SemanticModel.id == subquery.c.id))
-            )
+    def export(self, project_name: str, outdir: Union[str, Path]):
+        """Export a project to a directory."""
+        raise NotImplementedError()
+        # outdir = Path(outdir)
+        # project = Project.get(name=project_name)
+        # tables = list(project.tables)
 
-            sms = list(query)
-            outfile = outdir / dname / f"version.01.json"
-            outfile.parent.mkdir(exist_ok=True, parents=True)
-            M.serialize_json([sm.data.to_dict() for sm in sms], outfile, indent=2)
+        # for tbl in tqdm(tables):
+        #     dname = LinkedTable.get_friendly_fs_id(tbl.name)
+        #     subquery = (
+        #         SemanticModel.select(
+        #             SemanticModel.id, fn.MAX(SemanticModel.version).alias("version")
+        #         )
+        #         .where(SemanticModel.table == tbl.id)
+        #         .group_by(SemanticModel.table, SemanticModel.name)
+        #         .alias("q1")
+        #     )
 
-        return None
+        #     query = (
+        #         SemanticModel.select()
+        #         .where(SemanticModel.table == tbl.id)
+        #         .join(subquery, on=(SemanticModel.id == subquery.c.id))
+        #     )
+
+        #     sms = list(query)
+        #     outfile = outdir / dname / f"version.01.json"
+        #     outfile.parent.mkdir(exist_ok=True, parents=True)
+        #     serde.json.ser([sm.data.to_dict() for sm in sms], outfile, indent=2)
+
+        # return None
