@@ -1,6 +1,6 @@
 {
   "name": "sand",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "private": true,
   "dependencies": {
     "@ant-design/colors": "^6.0.0",

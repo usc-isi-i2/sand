@@ -10,19 +10,16 @@ export interface Class {
   aliases: string[];
   description: string;
   parents: string[];
-  parentsClosure: Set<string>;
+  ancestors: Set<string>;
 }
 
 export class ClassStore extends RStore<string, Class> {
   public doesNotExistURIs = new Set<string>();
 
   constructor() {
-    super(
-      `${SERVER}/api/classes`,
-      { readableLabel: "readable_label", parentsClosure: "parents_closure" },
-      false,
-      [new SingleKeyUniqueIndex("uri")]
-    );
+    super(`${SERVER}/api/classes`, { readableLabel: "readable_label" }, false, [
+      new SingleKeyUniqueIndex("uri"),
+    ]);
 
     makeObservable(this, {
       doesNotExistURIs: observable,
@@ -67,7 +64,7 @@ export class ClassStore extends RStore<string, Class> {
 
   public deserialize(record: any): Class {
     record = super.deserialize(record);
-    record.parentsClosure = new Set(record.parentsClosure);
+    record.ancestors = new Set(record.ancestors);
     return record;
   }
 }

@@ -63,7 +63,8 @@ export class PropertyStore extends RStore<string, Property> {
       record.aliases,
       record.description,
       record.datatype,
-      record.parents
+      record.parents,
+      new Set(record.ancestors)
     );
   }
 }

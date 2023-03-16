@@ -79,16 +79,16 @@ export const TableComponent = withStyles(styles)(
           })
         );
 
+        const hasColumnType = column2datatype.some((col) => col !== undefined);
         const columns = table.columns.map((col, columnIndex) => ({
           dataIndex: ["row", columnIndex],
           title: () => {
-            const dtypes = column2datatype[columnIndex];
-            if (
-              dtypes === undefined ||
-              (dtypes.length === 1 && dtypes[0] === "unknown")
-            ) {
-              // no datatype
+            let dtypes = column2datatype[columnIndex];
+            if (!hasColumnType) {
               return table.columns[columnIndex];
+            }
+            if (dtypes === undefined || dtypes.length === 0) {
+              dtypes = ["unknown"];
             }
 
             return (

@@ -19,6 +19,7 @@ export class Property {
   public description: string;
   public datatype: DataType;
   public parents: string[];
+  public ancestors: Set<string>;
 
   constructor(
     id: string,
@@ -28,7 +29,8 @@ export class Property {
     aliases: string[],
     description: string,
     datatype: DataType,
-    parents: string[]
+    parents: string[],
+    ancestors: Set<string>
   ) {
     this.id = id;
     this.uri = uri;
@@ -38,6 +40,7 @@ export class Property {
     this.description = description;
     this.datatype = datatype;
     this.parents = parents;
+    this.ancestors = ancestors;
 
     makeObservable(this, {
       id: observable,
@@ -48,6 +51,7 @@ export class Property {
       description: observable,
       datatype: observable,
       parents: observable,
+      ancestors: observable,
     });
   }
 }

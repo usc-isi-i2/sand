@@ -188,15 +188,13 @@ export class ColumnFilter {
         (includeTypeIds.length === 0 ||
           Object.values(classes).some((klass) =>
             includeTypeIds.some(
-              (typeId) =>
-                klass.id === typeId || klass.parentsClosure.has(typeId)
+              (typeId) => klass.id === typeId || klass.ancestors.has(typeId)
             )
           )) &&
         (excludeTypeIds.length === 0 ||
           !Object.values(classes).some((klass) =>
             excludeTypeIds.some(
-              (typeId) =>
-                klass.id === typeId || klass.parentsClosure.has(typeId)
+              (typeId) => klass.id === typeId || klass.ancestors.has(typeId)
             )
           ))
       );
