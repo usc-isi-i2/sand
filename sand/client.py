@@ -38,6 +38,11 @@ class Client:
         )
         return table["id"]
 
+    @lru_cache(maxsize=None)
+    def get_table_size(self, table_id: int):
+        """Return the number of rows in a table."""
+        return self.tables.get_one({"id": table_id, "fields": "size"})["size"]
+
     def get_table_url(self, table_id: int):
         """Return a URL to browse a table."""
         return f"{self.url}/tables/{table_id}"
@@ -72,7 +77,10 @@ class Client:
             table_id: table id
             column: column index
         """
-        rows = self.table_rows.get({"table": table_id, "fields": "index,links"})
+        rows = self.table_rows.get(
+            {"table": table_id, "fields": "index,links", "limit": 1000}
+        )
+        assert len(rows) == self.get_table_size(table_id)
         links = [[] for _ in range(len(rows))]
         for row in rows:
             lst = []
