@@ -12,6 +12,7 @@ from sand.models.base import init_db
 from sand.models.table import CandidateEntity, Link, Table, TableRow
 
 
+wdns = WikidataNamespace.create()
 class MTabAssistant(Assistant):
     def __init__(self):
         self.cache_dir = Path(f"/tmp/mtab")
@@ -142,15 +143,15 @@ class MTabAssistant(Assistant):
             # somehow, they may end-up predict multiple classes, we need to select one
             if qnode_id.find(" ") != -1:
                 qnode_id = qnode_id.split(" ")[0]
-            curl = WikidataNamespace.get_entity_abs_uri(qnode_id)
+            curl = wdns.get_entity_abs_uri(qnode_id)
 
             try:
                 cnode_label = f"{self.id2label[qnode_id]} ({qnode_id})"
             except KeyError:
-                cnode_label = WikidataNamespace.get_entity_rel_uri(qnode_id)
+                cnode_label = wdns.get_entity_rel_uri(qnode_id)
             cnode = O.ClassNode(
                 abs_uri=curl,
-                rel_uri=WikidataNamespace.get_entity_rel_uri(qnode_id),
+                rel_uri=wdns.get_entity_rel_uri(qnode_id),
                 readable_label=cnode_label,
             )
             sm.add_node(dnode)
@@ -196,8 +197,8 @@ class MTabAssistant(Assistant):
                 O.Edge(
                     source=source.id,
                     target=target.id,
-                    abs_uri=WikidataNamespace.get_prop_abs_uri(prop),
-                    rel_uri=WikidataNamespace.get_prop_rel_uri(prop),
+                    abs_uri=wdns.get_prop_abs_uri(prop),
+                    rel_uri=wdns.get_prop_rel_uri(prop),
                     readable_label=f"{self.id2label[prop]} ({prop})",
                 )
             )
