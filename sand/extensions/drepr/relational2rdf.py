@@ -31,9 +31,9 @@ import drepr.models.sm as drepr_sm
 from drepr.engine import execute, FileOutput, OutputFormat, MemoryOutput
 from uuid import uuid4
 from slugify import slugify
-from sand.plugins.drepr.resources import get_entity_resource, get_table_resource
-from sand.plugins.drepr.semanticmodel import get_drepr_sm, get_entity_data_nodes
-from sand.plugins.drepr.transformation import has_transformation, get_transformation
+from sand.extensions.drepr.resources import get_entity_resource, get_table_resource
+from sand.extensions.drepr.semanticmodel import get_drepr_sm, get_entity_data_nodes
+from sand.extensions.drepr.transformation import has_transformation, get_transformation
 
 
 def create_dataset_model(table: Table, sm: O.SemanticModel) -> DRepr:

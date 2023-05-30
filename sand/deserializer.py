@@ -1,7 +1,7 @@
 from gena.deserializer import get_dataclass_deserializer
 import sm.outputs.semantic_model as O
 from sm.outputs.semantic_model import LiteralNodeDataType
-from sand.plugins.wikidata import get_rel_uri
+from sand.extensions.wikidata import get_rel_uri
 
 
 def deserialize_graph(value) -> O.SemanticModel:

@@ -12,7 +12,7 @@ from rsoup.rsoup import ContentHierarchy
 from sand.models import SemanticModel, Table, TableRow
 from sand.models.ontology import OntClassAR, OntPropertyAR
 from sand.models.table import Link
-from sand.plugins.drepr.relational2rdf import relational2rdf
+from sand.extensions.drepr.relational2rdf import relational2rdf
 from sand.serializer import (
     get_label,
 )
