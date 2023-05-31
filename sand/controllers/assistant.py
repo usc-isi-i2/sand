@@ -44,7 +44,7 @@ def get_assistants() -> Dict[str, IAssistant]:
 
 
 @assistant_bp.route(f"/{assistant_bp.name}/predict/<table_id>", methods=["GET"])
-def predict(table_id: int):
+def predict_semantic_desc(table_id: int):
 
     table = Table.get_by_id(table_id)
     rows: List[TableRow] = list(
