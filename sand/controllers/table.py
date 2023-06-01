@@ -8,11 +8,10 @@ from gena.deserializer import (
     get_dataclass_deserializer,
     get_deserializer_from_type,
 )
-from rsoup.rsoup import ContentHierarchy
 from sand.models import SemanticModel, Table, TableRow
 from sand.models.ontology import OntClassAR, OntPropertyAR
 from sand.models.table import Link
-from sand.extensions.drepr.relational2rdf import DreprExport
+from sand.extensions.export.drepr.main import DreprExport
 from sand.serializer import (
     get_label,
 )

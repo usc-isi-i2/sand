@@ -1,9 +1,5 @@
-from dataclasses import dataclass
-from io import StringIO
-import orjson, csv
-from typing import Dict, List, Set, Tuple, cast
+from typing import List, Set
 from sand.config import SETTINGS
-from sand.models.entity import NIL_ENTITY, Entity
 from sand.models.ontology import OntProperty, OntPropertyAR, OntPropertyDataType
 from sand.models.table import Table, TableRow
 import sm.outputs.semantic_model as O
@@ -19,22 +15,17 @@ from drepr.models import (
     IndexExpr,
     RangeExpr,
     RangeAlignment,
-    ValueAlignment,
-    AlignmentType,
     AlignedStep,
     Preprocessing,
     PreprocessingType,
     PMap,
-    ResourceDataString,
 )
-import drepr.models.sm as drepr_sm
-from drepr.engine import execute, FileOutput, OutputFormat, MemoryOutput
-from uuid import uuid4
+from drepr.engine import execute, OutputFormat, MemoryOutput
 from slugify import slugify
 from sand.extension_interface.export import IExport
-from sand.extensions.drepr.resources import get_entity_resource, get_table_resource
-from sand.extensions.drepr.semanticmodel import get_drepr_sm, get_entity_data_nodes
-from sand.extensions.drepr.transformation import has_transformation, get_transformation
+from sand.extensions.export.drepr.resources import get_entity_resource, get_table_resource
+from sand.extensions.export.drepr.semanticmodel import get_drepr_sm, get_entity_data_nodes
+from sand.extensions.export.drepr.transformation import has_transformation, get_transformation
 
 
 class DreprExport(IExport):
