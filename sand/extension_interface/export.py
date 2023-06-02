@@ -15,11 +15,11 @@ class IExport(ABC):
 
     @abstractmethod
     def export_data_model(self, table: Table, sm: O.SemanticModel) -> DRepr:
-        """Search Class using name"""
+        """Class to export data model"""
         pass
 
     @abstractmethod
     def export_data(self, table: Table, rows: List[TableRow], sm: O.SemanticModel,
                     output_format: OutputFormat):
-        """Search Class using name"""
+        """Class to export data"""
         pass
