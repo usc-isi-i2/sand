@@ -3,7 +3,7 @@ from sand.config import SETTINGS
 from sand.models.ontology import OntProperty, OntPropertyAR, OntPropertyDataType
 from sand.models.table import Table, TableRow
 import sm.outputs.semantic_model as O
-import sm.misc as M
+from sm.misc.funcs import import_attr
 from hugedict.chained_mapping import ChainedMapping
 from drepr.models import (
     DRepr,
@@ -67,7 +67,7 @@ class DreprExport(IExport):
 
         id2props = ChainedMapping(
             OntPropertyAR(),
-            M.import_attr(SETTINGS["ont_props"]["default"]),
+            import_attr(SETTINGS["ont_props"]["default"]),
         )
         dsm = get_drepr_sm(sm, id2props, get_attr_id, get_ent_attr_id)
 
