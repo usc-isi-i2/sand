@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "web-sand"
-version = "2.1.12"
+version = "2.1.13"
 description = "UI for browsing/editing semantic descriptions"
 authors = ["Binh Vu <binh@toan2.com>"]
 repository = "https://github.com/usc-isi-i2/sand"
