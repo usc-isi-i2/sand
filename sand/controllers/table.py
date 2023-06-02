@@ -53,19 +53,19 @@ class UpdateColumnLinksInput:
 deser_update_column_links = get_dataclass_deserializer(UpdateColumnLinksInput, {})
 assert deser_update_column_links is not None
 
-GetAssistantCache = threading.local()
+GetExportCache = threading.local()
 
 
 def get_exports(name) -> IExport:
-    global GetAssistantCache
+    global GetExportCache
 
-    if not hasattr(GetAssistantCache, "exports"):
-        GetAssistantCache.exports = {}
+    if not hasattr(GetExportCache, "exports"):
+        GetExportCache.exports = {}
         export_config = SETTINGS["exports"]
         constructor = export_config[name]
-        GetAssistantCache.exports[name] = import_func(constructor)()
+        GetExportCache.exports[name] = import_func(constructor)()
 
-    return GetAssistantCache.exports[name]
+    return GetExportCache.exports[name]
 
 
 @table_bp.route(f"/{table_bp.name}/<id>/export-models", methods=["GET"])
