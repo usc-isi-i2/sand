@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import List, AnyStr
+from typing import List
 
 import sm.outputs.semantic_model as O
 from sand.models.table import Table, TableRow
-from sand.models.table import Table, TableRow
 from drepr.models import DRepr
+from drepr.engine import OutputFormat
 
 
 class IExport(ABC):
@@ -20,6 +20,6 @@ class IExport(ABC):
 
     @abstractmethod
     def export_data(self, table: Table, rows: List[TableRow], sm: O.SemanticModel,
-                    output_format: AnyStr):
+                    output_format: OutputFormat):
         """Search Class using name"""
         pass

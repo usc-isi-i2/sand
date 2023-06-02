@@ -18,7 +18,7 @@ from sand.serializer import (
 import sm.outputs.semantic_model as O
 from flask import jsonify, request, make_response
 from peewee import DoesNotExist, fn
-
+from drepr.engine import OutputFormat
 from werkzeug.exceptions import BadRequest, NotFound
 
 
@@ -121,7 +121,7 @@ def export_table_data(id: int):
     rows: List[TableRow] = list(TableRow.select().where(TableRow.table == table))
 
     # export the data using drepr library
-    content = DreprExport().export_data(table, rows, sm.data, 'TTL')
+    content = DreprExport().export_data(table, rows, sm.data, OutputFormat.TTL)
     resp = make_response(content)
     resp.headers["Content-Type"] = "text/ttl; charset=utf-8"
     if request.args.get("attachment", "false") == "true":
