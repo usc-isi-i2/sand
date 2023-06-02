@@ -15,11 +15,11 @@ class IExport(ABC):
 
     @abstractmethod
     def export_data_model(self, table: Table, sm: O.SemanticModel) -> DRepr:
-        """Class to export data model"""
+        """export data model using DREPR"""
         pass
 
     @abstractmethod
     def export_data(self, table: Table, rows: List[TableRow], sm: O.SemanticModel,
                     output_format: OutputFormat):
-        """Class to export data"""
+        """export relational data using DREPR"""
         pass
