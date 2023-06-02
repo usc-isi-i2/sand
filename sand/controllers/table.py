@@ -121,7 +121,7 @@ def export_table_data(id: int):
     rows: List[TableRow] = list(TableRow.select().where(TableRow.table == table))
 
     # export the data using drepr library
-    content = DreprExport().export_data(table, rows, sm.data)
+    content = DreprExport().export_data(table, rows, sm.data, 'TTL')
     resp = make_response(content)
     resp.headers["Content-Type"] = "text/ttl; charset=utf-8"
     if request.args.get("attachment", "false") == "true":

@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import List, Set, AnyStr
 from sand.config import SETTINGS
 from sand.models.ontology import OntProperty, OntPropertyAR, OntPropertyDataType
 from sand.models.table import Table, TableRow
@@ -126,7 +126,8 @@ class DreprExport(IExport):
             sm=dsm,
         )
 
-    def export_data(self, table: Table, rows: List[TableRow], sm: O.SemanticModel):
+    def export_data(self, table: Table, rows: List[TableRow], sm: O.SemanticModel,
+                    output_format: AnyStr):
         """Convert a relational table into RDF format"""
         if len(table.columns) == 0:
             # no column, no data
@@ -141,7 +142,7 @@ class DreprExport(IExport):
         content = execute(
             ds_model=self.export_data_model(table, sm),
             resources=resources,
-            output=MemoryOutput(OutputFormat.TTL),
+            output=MemoryOutput(OutputFormat.__getitem__(output_format)),
             debug=False,
         )
         return content

@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
-
+from typing import List, AnyStr
 
 import sm.outputs.semantic_model as O
 from sand.models.table import Table, TableRow
@@ -20,6 +19,7 @@ class IExport(ABC):
         pass
 
     @abstractmethod
-    def export_data(self, table: Table, rows: List[TableRow], sm: O.SemanticModel):
+    def export_data(self, table: Table, rows: List[TableRow], sm: O.SemanticModel,
+                    output_format: AnyStr):
         """Search Class using name"""
         pass
