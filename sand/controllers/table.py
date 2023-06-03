@@ -8,18 +8,21 @@ from gena.deserializer import (
     get_dataclass_deserializer,
     get_deserializer_from_type,
 )
-from rsoup.rsoup import ContentHierarchy
 from sand.models import SemanticModel, Table, TableRow
 from sand.models.ontology import OntClassAR, OntPropertyAR
 from sand.models.table import Link
-from sand.plugins.drepr.relational2rdf import relational2rdf
+from sand.extensions.export.drepr.main import DreprExport
 from sand.serializer import (
     get_label,
 )
+import threading
+from sand.extension_interface.export import IExport
+from sm.misc.funcs import import_func
+from sand.config import SETTINGS
 import sm.outputs.semantic_model as O
 from flask import jsonify, request, make_response
 from peewee import DoesNotExist, fn
-
+from drepr.engine import OutputFormat
 from werkzeug.exceptions import BadRequest, NotFound
 
 
@@ -49,6 +52,20 @@ class UpdateColumnLinksInput:
 
 deser_update_column_links = get_dataclass_deserializer(UpdateColumnLinksInput, {})
 assert deser_update_column_links is not None
+
+GetExportCache = threading.local()
+
+
+def get_export(name) -> IExport:
+    global GetExportCache
+
+    if not hasattr(GetExportCache, "export"):
+        GetExportCache.export = {}
+        export_config = SETTINGS["exports"]
+        constructor = export_config[name]
+        GetExportCache.export[name] = import_func(constructor)()
+
+    return GetExportCache.export[name]
 
 
 @table_bp.route(f"/{table_bp.name}/<id>/export-models", methods=["GET"])
@@ -89,7 +106,7 @@ def export_sms(id: int):
 
 
 @table_bp.route(f"/{table_bp.name}/<id>/export", methods=["GET"])
-def export_data(id: int):
+def export_table_data(id: int):
     # load table
     table: Table = Table.get_by_id(id)
 
@@ -122,7 +139,7 @@ def export_data(id: int):
     rows: List[TableRow] = list(TableRow.select().where(TableRow.table == table))
 
     # export the data using drepr library
-    content = relational2rdf(table, rows, sm.data)
+    content = get_export('default').export_data(table, rows, sm.data, OutputFormat.TTL)
     resp = make_response(content)
     resp.headers["Content-Type"] = "text/ttl; charset=utf-8"
     if request.args.get("attachment", "false") == "true":
@@ -154,13 +171,13 @@ def update_cell_link(id: int, column: int):
     if "links" not in request_json:
         raise KeyError(f"Field 'links' is required")
     if not isinstance(request_json["links"], list) or not all(
-        isinstance(link, dict) for link in request_json["links"]
+            isinstance(link, dict) for link in request_json["links"]
     ):
         raise KeyError(f"Field 'links' must be a list of dictionaries")
 
     if (
-        len(request_json["links"]) > 0
-        and "candidate_entities" not in request_json["links"][0]
+            len(request_json["links"]) > 0
+            and "candidate_entities" not in request_json["links"][0]
     ):
         # add back the candidate so we can deserialize them
         for link in request_json["links"]:

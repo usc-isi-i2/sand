@@ -17,20 +17,12 @@ from flask import request, jsonify
 from sand.serializer import batch_serialize_sms, get_label, serialize_graph
 from sand.models.entity import NIL_ENTITY, Entity, EntityAR
 from sand.models.ontology import OntProperty, OntClass, OntPropertyAR, OntClassAR
+from sand.extension_interface.assistant import IAssistant
 from operator import attrgetter
 
 from peewee import Model as PeeweeModel, DoesNotExist, fn
 
 from werkzeug.exceptions import BadRequest, NotFound
-
-
-class Assistant(ABC):
-    @abstractmethod
-    def predict(
-        self, table: Table, rows: List[TableRow]
-    ) -> Tuple[Optional[SemanticModel], Optional[List[TableRow]]]:
-        """Predict semantic model and link entities"""
-        pass
 
 
 assistant_bp = Blueprint("assistant", "assistant")
@@ -39,7 +31,7 @@ assistant_bp = Blueprint("assistant", "assistant")
 GetAssistantCache = threading.local()
 
 
-def get_assistants() -> Dict[str, Assistant]:
+def get_assistants() -> Dict[str, IAssistant]:
     """Get all assistants"""
     global GetAssistantCache
 
@@ -52,7 +44,7 @@ def get_assistants() -> Dict[str, Assistant]:
 
 
 @assistant_bp.route(f"/{assistant_bp.name}/predict/<table_id>", methods=["GET"])
-def predict(table_id: int):
+def predict_semantic_desc(table_id: int):
 
     table = Table.get_by_id(table_id)
     rows: List[TableRow] = list(

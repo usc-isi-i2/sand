@@ -1,18 +1,15 @@
-import glob
-import os
 from pathlib import Path
 
 import click
 from tqdm.auto import tqdm
-from loguru import logger
 from sand.models import (
     Project,
     SemanticModel,
     db as dbconn,
     init_db,
 )
-from sand.plugins.grams_plugin import convert_linked_table
-from sm.dataset import Example, Dataset, FullTable
+from sand.extensions.assistants.grams_plugin import convert_linked_table
+from sm.dataset import Example, Dataset
 from grams.inputs import LinkedTable
 
 

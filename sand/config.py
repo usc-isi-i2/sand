@@ -2,7 +2,6 @@ import os
 
 from pathlib import Path
 
-
 _ROOT_DIR = Path(os.path.abspath(__file__)).parent.parent
 PACKAGE_DIR = str(Path(os.path.abspath(__file__)).parent)
 FROM_SITEPACKAGES = _ROOT_DIR.name == "site-packages"
@@ -11,7 +10,7 @@ CACHE_SIZE = 10240
 
 SETTINGS = {
     "entity": {
-        "constructor": "sand.plugins.wikidata.get_entity_db",
+        "constructor": "sand.extensions.wikidata.get_entity_db",
         "uri2id": "sm.namespaces.prelude.WikidataNamespace.get_entity_id",
         "id2uri": "sm.namespaces.prelude.WikidataNamespace.get_entity_abs_uri",
         "args": {
@@ -30,18 +29,18 @@ SETTINGS = {
         "new_entity_template": "http://www.wikidata.org/entity/{id}",
     },
     "ont_classes": {
-        "constructor": "sand.plugins.wikidata.get_ontclass_db",
-        "uri2id": "sand.plugins.wikidata.uri2id",
+        "constructor": "sand.extensions.wikidata.get_ontclass_db",
+        "uri2id": "sand.extensions.wikidata.uri2id",
         "args": {
             "dbfile": "/tmp/wdclasses.db",
             "proxy": True,
         },
         # extra classes
-        "default": "sand.plugins.wikidata.WD_ONT_CLASSES",
+        "default": "sand.extensions.wikidata.WD_ONT_CLASSES",
     },
     "ont_props": {
-        "constructor": "sand.plugins.wikidata.get_ontprop_db",
-        "uri2id": "sand.plugins.wikidata.uri2id",
+        "constructor": "sand.extensions.wikidata.get_ontprop_db",
+        "uri2id": "sand.extensions.wikidata.uri2id",
         "args": {
             "dbfile": "/tmp/wdprops.db",
             "proxy": True,
@@ -59,8 +58,12 @@ SETTINGS = {
     },
     "assistants": {
         # list of assistants' names and their models
-        # "grams": "sand.plugins.grams.GRAMSAssistant",
-        "mtab": "sand.plugins.mtab.MTabAssistant",
+        # "grams": "sand.extensions.grams.GRAMSAssistant",
+        "mtab": "sand.extensions.assistants.mtab.MTabAssistant",
         # "default": "mtab",
     },
+    "exports": {
+        "drepr": "sand.extensions.export.drepr.main.DreprExport",
+        "default": "sand.extensions.export.drepr.main.DreprExport"
+    }
 }
