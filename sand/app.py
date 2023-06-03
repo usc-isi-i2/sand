@@ -9,6 +9,7 @@ from sand.config import SETTINGS
 from sand.controllers.assistant import assistant_bp
 from sand.controllers.project import project_bp
 from sand.controllers.table import table_bp, table_row_bp
+from sand.controllers.search import search_bp
 from sand.controllers.settings import setting_bp
 from sand.deserializer import deserialize_graph
 from sand.models import EntityAR, SemanticModel
@@ -27,6 +28,7 @@ app = generate_app(
         assistant_bp,
         table_row_bp,
         setting_bp,
+        search_bp,
         generate_api(
             SemanticModel,
             deserializers={"data": deserialize_graph},

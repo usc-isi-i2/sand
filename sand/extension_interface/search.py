@@ -6,16 +6,16 @@ class ISearch(ABC):
         KG datastores.
     """
     @abstractmethod
-    def find_class_by_name(self):
+    def find_class_by_name(self, search_text):
         """Search Class using name"""
         pass
 
     @abstractmethod
-    def find_entity_by_name(self):
+    def find_entity_by_name(self, search_text):
         """Search Entity using name"""
         pass
 
     @abstractmethod
-    def find_props_by_name(self):
+    def find_props_by_name(self, search_text):
         """Search properties using name"""
         pass
