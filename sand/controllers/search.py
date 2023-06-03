@@ -31,7 +31,7 @@ def get_search(name) -> ISearch:
 @search_bp.route(f"/{search_bp.name}/classes", methods=["GET"])
 def search_classes():
     search_text = request.args.get('q')
-    wikidata_search = get_search('default')
+    wikidata_search = get_search('classes')
     payload = wikidata_search.find_class_by_name(search_text)
     return jsonify(payload)
 
@@ -39,7 +39,7 @@ def search_classes():
 @search_bp.route(f"/{search_bp.name}/entities", methods=["GET"])
 def search_entities():
     search_text = request.args.get('q')
-    wikidata_search = get_search('default')
+    wikidata_search = get_search('entities')
     payload = wikidata_search.find_entity_by_name(search_text)
     return jsonify(payload)
 
@@ -47,6 +47,6 @@ def search_entities():
 @search_bp.route(f"/{search_bp.name}/props", methods=["GET"])
 def search_props():
     search_text = request.args.get('q')
-    wikidata_search = get_search('default')
+    wikidata_search = get_search('props')
     payload = wikidata_search.find_props_by_name(search_text)
     return jsonify(payload)

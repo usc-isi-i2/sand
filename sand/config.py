@@ -63,8 +63,9 @@ SETTINGS = {
         # "default": "mtab",
     },
     "search": {
-        "wikidata_search": "sand.extensions.search.wikidata_search.WikidataSearch",
-        "default": "sand.extensions.search.wikidata_search.WikidataSearch"
+        "entities": "sand.extensions.search.wikidata_search.WikidataSearch",
+        "classes": "sand.extensions.search.wikidata_search.WikidataSearch",
+        "props": "sand.extensions.search.wikidata_search.WikidataSearch"
     },
     "exports": {
         "drepr": "sand.extensions.export.drepr.main.DreprExport",
