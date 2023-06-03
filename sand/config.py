@@ -63,6 +63,7 @@ SETTINGS = {
         # "default": "mtab",
     },
     "exports": {
-        "drepr": "sand.extensions.export.drepr.main.DreprExport"
+        "drepr": "sand.extensions.export.drepr.main.DreprExport",
+        "default": "sand.extensions.export.drepr.main.DreprExport"
     }
 }

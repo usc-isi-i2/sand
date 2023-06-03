@@ -56,16 +56,16 @@ assert deser_update_column_links is not None
 GetExportCache = threading.local()
 
 
-def get_exports(name) -> IExport:
+def get_export(name) -> IExport:
     global GetExportCache
 
-    if not hasattr(GetExportCache, "exports"):
-        GetExportCache.exports = {}
+    if not hasattr(GetExportCache, "export"):
+        GetExportCache.export = {}
         export_config = SETTINGS["exports"]
         constructor = export_config[name]
-        GetExportCache.exports[name] = import_func(constructor)()
+        GetExportCache.export[name] = import_func(constructor)()
 
-    return GetExportCache.exports[name]
+    return GetExportCache.export[name]
 
 
 @table_bp.route(f"/{table_bp.name}/<id>/export-models", methods=["GET"])
@@ -139,7 +139,7 @@ def export_table_data(id: int):
     rows: List[TableRow] = list(TableRow.select().where(TableRow.table == table))
 
     # export the data using drepr library
-    content = get_exports('drepr').export_data(table, rows, sm.data, OutputFormat.TTL)
+    content = get_export('default').export_data(table, rows, sm.data, OutputFormat.TTL)
     resp = make_response(content)
     resp.headers["Content-Type"] = "text/ttl; charset=utf-8"
     if request.args.get("attachment", "false") == "true":
