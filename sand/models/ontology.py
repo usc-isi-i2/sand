@@ -24,7 +24,7 @@ class OntClass:
     def uri2id(uri: str) -> str:
         """Convert class URI to entity ID."""
         raise NotImplementedError(
-            "The method is set when its store is initialized. Check the call order to ensure `OntClassAR`is called first"
+            "The method is set when its store is initialized. Check the call order to ensure `OntClassAR` is called first"
         )
 
     @staticmethod
