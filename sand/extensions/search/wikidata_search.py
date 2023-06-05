@@ -2,12 +2,12 @@ import requests
 from flask import request, jsonify
 from typing import Dict
 import nh3
-from sand.controllers.search import ISearch
+from sand.extension_interface.search import IEntitySearch, IOntologySearch
 from sand.models.entity import Entity
 from sand.models.ontology import OntClass, OntProperty
 
 
-class WikidataSearch(ISearch):
+class WikidataSearch(IEntitySearch, IOntologySearch):
 
     def __init__(self):
         self.wikidata_url = "https://www.wikidata.org/w/api.php"

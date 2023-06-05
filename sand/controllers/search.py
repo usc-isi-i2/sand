@@ -1,18 +1,18 @@
 import threading
-from typing import Dict, List
+from typing import Dict, List, Union
 from flask.blueprints import Blueprint
 from sm.misc.funcs import import_func
 from sand.config import SETTINGS
 from flask import request, jsonify
 
-from sand.extension_interface.search import ISearch
+from sand.extension_interface.search import IEntitySearch, IOntologySearch
 
 search_bp = Blueprint("search", "search")
 
 GetSearchCache = threading.local()
 
 
-def get_search(name) -> ISearch:
+def get_search(name) -> Union[IEntitySearch, IOntologySearch]:
     """
     Returns an implementation of an ISearch Interface from the
     configuration file.
