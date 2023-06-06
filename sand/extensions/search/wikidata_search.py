@@ -1,10 +1,10 @@
 import requests
 from flask import request, jsonify
-from typing import Dict
+from typing import Dict, Any
 import nh3
 from sand.extension_interface.search import IEntitySearch, IOntologySearch
 from sand.models.entity import Entity
-from sand.models.ontology import OntClass, OntProperty
+from sand.models.ontology import OntClass, OntProperty, OntClassAR
 
 
 class WikidataSearch(IEntitySearch, IOntologySearch):
@@ -36,10 +36,9 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         class_params['srsearch'] = f"haswbstatement:P279 {search_text}"
         return class_params
 
-    def get_local_class_properties(self, id: str) -> Dict:
+    def get_local_class_properties(self, id: str) -> OntClass:
         """Calls local class search API to fetch all class metadata using class ID"""
-        api_data = requests.get(self.local_class_idsearch_uri + str(id))
-        return api_data.json()
+        return OntClassAR()[id]
 
     def get_entity_search_params(self, search_text: str) -> Dict:
         """Updates entity search parameters for wikidata API"""
@@ -68,8 +67,8 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
             item = self.search_item_template.copy()
             item['id'] = search_item['title']
             local_class_props = self.get_local_class_properties(item['id'])
-            item['label'] = local_class_props['label']
-            item['description'] = local_class_props['description']
+            item['label'] = local_class_props.label
+            item['description'] = local_class_props.description
             item['uri'] = OntClass.id2uri(item['id'])
             payload['items'].append(item)
         return payload

@@ -37,25 +37,18 @@ app = generate_app(
         generate_readonly_api_4dict(
             "entities",
             serialize=serialize_entity,
-            id2ent=ChainedMapping(
-                EntityAR(), import_attr(SETTINGS["entity"]["default"])
-            ),
+            id2ent=EntityAR(),
         ),
         generate_readonly_api_4dict(
             "classes",
             serialize=serialize_class,
-            id2ent=ChainedMapping(
-                OntClassAR(), import_attr(SETTINGS["ont_classes"]["default"])
-            ),
+            id2ent=OntClassAR(),
             unique_field_funcs={"uri": OntClass.uri2id},
         ),
         generate_readonly_api_4dict(
             "properties",
             serialize=serialize_property,
-            id2ent=ChainedMapping(
-                OntPropertyAR(),
-                import_attr(SETTINGS["ont_props"]["default"]),
-            ),
+            id2ent=OntPropertyAR(),
             unique_field_funcs={"uri": OntProperty.uri2id},
         ),
     ],
