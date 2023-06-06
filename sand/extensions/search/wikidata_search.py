@@ -1,10 +1,10 @@
 import requests
-from typing import Dict
+from typing import Dict, List
 import nh3
 from sand.extension_interface.search import IEntitySearch, IOntologySearch
 from sand.models.entity import Entity
 from sand.models.ontology import OntClass, OntProperty, OntClassAR
-from sand.models.search import SearchItem, SearchPayload
+from sand.models.search import SearchItem
 
 
 class WikidataSearch(IEntitySearch, IOntologySearch):
@@ -21,6 +21,7 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
             "srlimit": 10,
             "srprop": "snippet|titlesnippet"
         }
+        self.ont_class_ar = None
 
     def get_class_search_params(self, search_text: str) -> Dict:
         """Updates class search parameters for wikidata API"""
@@ -31,7 +32,9 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
 
     def get_local_class_properties(self, id: str) -> OntClass:
         """Calls local class search API to fetch all class metadata using class ID"""
-        return OntClassAR()[id]
+        if self.ont_class_ar is None:
+            self.ont_class_ar = OntClassAR()
+        return self.ont_class_ar[id]
 
     def get_entity_search_params(self, search_text: str) -> Dict:
         """Updates entity search parameters for wikidata API"""
@@ -47,7 +50,7 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         props_params['srsearch'] = search_text
         return props_params
 
-    def find_class_by_name(self, search_text: str) -> SearchPayload:
+    def find_class_by_name(self, search_text: str) -> List[SearchItem]:
         """
         Uses Wikidata API to search for classes using their name/text.
         Uses local ID based class search to fetch label and description data.
@@ -65,10 +68,9 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
                 uri=OntClass.id2uri(search_item['title'])
             )
             payload_items.append(item)
-        payload = SearchPayload(payload_items)
-        return payload
+        return payload_items
 
-    def find_entity_by_name(self, search_text: str) -> SearchPayload:
+    def find_entity_by_name(self, search_text: str) -> List[SearchItem]:
         """Uses Wikidata API to search for entities using their name/text."""
         request_params = self.get_entity_search_params(search_text)
         api_data = requests.get(self.wikidata_url, request_params)
@@ -82,10 +84,9 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
                 uri=Entity.id2uri(search_item['title'])
             )
             payload_items.append(item)
-        payload = SearchPayload(payload_items)
-        return payload
+        return payload_items
 
-    def find_props_by_name(self, search_text: str) -> SearchPayload:
+    def find_props_by_name(self, search_text: str) -> List[SearchItem]:
         """Uses Wikidata API to search for properties using their name/text."""
         request_params = self.get_props_search_params(search_text)
         api_data = requests.get(self.wikidata_url, request_params)
@@ -99,5 +100,4 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
                 uri=OntProperty.id2uri(search_item['title'].split(":")[1])
             )
             payload_items.append(item)
-        payload = SearchPayload(payload_items)
-        return payload
+        return payload_items
