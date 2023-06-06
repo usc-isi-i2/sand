@@ -4,7 +4,7 @@ import nh3
 from sand.extension_interface.search import IEntitySearch, IOntologySearch
 from sand.models.entity import Entity
 from sand.models.ontology import OntClass, OntProperty, OntClassAR
-from sand.models.search import SearchItem
+from sand.models.search import SearchResult
 
 
 class WikidataSearch(IEntitySearch, IOntologySearch):
@@ -50,54 +50,54 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         props_params['srsearch'] = search_text
         return props_params
 
-    def find_class_by_name(self, search_text: str) -> List[SearchItem]:
+    def find_class_by_name(self, search_text: str) -> List[SearchResult]:
         """
         Uses Wikidata API to search for classes using their name/text.
         Uses local ID based class search to fetch label and description data.
         """
         request_params = self.get_class_search_params(search_text)
         api_data = requests.get(self.wikidata_url, request_params)
-        search_items = api_data.json()['query']['search']
-        payload_items = []
-        for search_item in search_items:
-            local_class_props = self.get_local_class_properties(search_item['title'])
-            item = SearchItem(
+        search_results = api_data.json()['query']['search']
+        payload_results = []
+        for search_result in search_results:
+            local_class_props = self.get_local_class_properties(search_result['title'])
+            item = SearchResult(
                 label=local_class_props.label,
-                id=search_item['title'],
+                id=search_result['title'],
                 description=local_class_props.description,
-                uri=OntClass.id2uri(search_item['title'])
+                uri=OntClass.id2uri(search_result['title'])
             )
-            payload_items.append(item)
-        return payload_items
+            payload_results.append(item)
+        return payload_results
 
-    def find_entity_by_name(self, search_text: str) -> List[SearchItem]:
+    def find_entity_by_name(self, search_text: str) -> List[SearchResult]:
         """Uses Wikidata API to search for entities using their name/text."""
         request_params = self.get_entity_search_params(search_text)
         api_data = requests.get(self.wikidata_url, request_params)
-        search_items = api_data.json()['query']['search']
-        payload_items = []
-        for search_item in search_items:
-            item = SearchItem(
-                label=nh3.clean(search_item['titlesnippet'], tags=set()),
-                id=search_item['title'],
-                description=nh3.clean(search_item['snippet'], tags=set()),
-                uri=Entity.id2uri(search_item['title'])
+        search_results = api_data.json()['query']['search']
+        payload_results = []
+        for search_result in search_results:
+            item = SearchResult(
+                label=nh3.clean(search_result['titlesnippet'], tags=set()),
+                id=search_result['title'],
+                description=nh3.clean(search_result['snippet'], tags=set()),
+                uri=Entity.id2uri(search_result['title'])
             )
-            payload_items.append(item)
-        return payload_items
+            payload_results.append(item)
+        return payload_results
 
-    def find_props_by_name(self, search_text: str) -> List[SearchItem]:
+    def find_props_by_name(self, search_text: str) -> List[SearchResult]:
         """Uses Wikidata API to search for properties using their name/text."""
         request_params = self.get_props_search_params(search_text)
         api_data = requests.get(self.wikidata_url, request_params)
-        search_items = api_data.json()['query']['search']
-        payload_items = []
-        for search_item in search_items:
-            item = SearchItem(
-                label=nh3.clean(search_item['titlesnippet'], tags=set()),
-                id=search_item['title'].split(":")[1],
-                description=nh3.clean(search_item['snippet'], tags=set()),
-                uri=OntProperty.id2uri(search_item['title'].split(":")[1])
+        search_results = api_data.json()['query']['search']
+        payload_results = []
+        for search_result in search_results:
+            item = SearchResult(
+                label=nh3.clean(search_result['titlesnippet'], tags=set()),
+                id=search_result['title'].split(":")[1],
+                description=nh3.clean(search_result['snippet'], tags=set()),
+                uri=OntProperty.id2uri(search_result['title'].split(":")[1])
             )
-            payload_items.append(item)
-        return payload_items
+            payload_results.append(item)
+        return payload_results

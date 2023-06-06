@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
-from sand.models.search import SearchItem
+from sand.models.search import SearchResult
 
 
 class IEntitySearch(ABC):
@@ -8,7 +8,7 @@ class IEntitySearch(ABC):
         KG datastores.
     """
     @abstractmethod
-    def find_entity_by_name(self, search_text: str) -> List[SearchItem]:
+    def find_entity_by_name(self, search_text: str) -> List[SearchResult]:
         """Search Entity using name"""
         pass
 
@@ -19,11 +19,11 @@ class IOntologySearch(ABC):
     """
 
     @abstractmethod
-    def find_class_by_name(self, search_text: str) -> List[SearchItem]:
+    def find_class_by_name(self, search_text: str) -> List[SearchResult]:
         """Search Class using name"""
         pass
 
     @abstractmethod
-    def find_props_by_name(self, search_text: str) -> List[SearchItem]:
+    def find_props_by_name(self, search_text: str) -> List[SearchResult]:
         """Search properties using name"""
         pass

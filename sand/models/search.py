@@ -1,9 +1,8 @@
 from dataclasses import dataclass
-from typing import List
 
 
 @dataclass
-class SearchItem:
+class SearchResult:
     """
     Search Item dataclass to save the values of each search item in a search
     """
