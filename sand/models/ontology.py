@@ -27,6 +27,12 @@ class OntClass:
             "The method is set when its store is initialized. Check the call order to ensure `OntClassAR` is called first"
         )
 
+    @staticmethod
+    def id2uri(id: str) -> str:
+        """Convert class ID to class URI."""
+        raise NotImplementedError(
+            "The method is set when its store is initialized. Check the call order to ensure `OntClassAR` is called first"
+        )
 
 OntPropertyDataType = Literal[
     "monolingualtext",
@@ -62,6 +68,12 @@ class OntProperty:
             "The method is set when its store is initialized. Check the call order to ensure `OntPropertyAR` is called first"
         )
 
+    @staticmethod
+    def id2uri(id: str) -> str:
+        """Convert property ID to property URI."""
+        raise NotImplementedError(
+            "The method is set when its store is initialized. Check the call order to ensure `OntPropertyAR` is called first"
+        )
 
 PROP_AR = None
 CLASS_AR = None
@@ -89,6 +101,7 @@ def OntPropertyAR() -> Mapping[str, OntProperty]:
         func = import_func(cfg["constructor"])
         PROP_AR = func(**cfg["args"])
         OntProperty.uri2id = import_func(cfg["uri2id"])
+        OntProperty.id2uri = import_func(cfg["id2uri"])
 
     return PROP_AR
 
@@ -102,5 +115,5 @@ def OntClassAR() -> Mapping[str, OntClass]:
         func = import_func(cfg["constructor"])
         CLASS_AR = func(**cfg["args"])
         OntClass.uri2id = import_func(cfg["uri2id"])
-
+        OntClass.id2uri = import_func(cfg["id2uri"])
     return CLASS_AR

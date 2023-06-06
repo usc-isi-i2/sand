@@ -31,6 +31,7 @@ SETTINGS = {
     "ont_classes": {
         "constructor": "sand.extensions.wikidata.get_ontclass_db",
         "uri2id": "sand.extensions.wikidata.uri2id",
+        "id2uri": "sm.namespaces.prelude.WikidataNamespace.get_entity_abs_uri",
         "args": {
             "dbfile": "/tmp/wdclasses.db",
             "proxy": True,
@@ -41,6 +42,7 @@ SETTINGS = {
     "ont_props": {
         "constructor": "sand.extensions.wikidata.get_ontprop_db",
         "uri2id": "sand.extensions.wikidata.uri2id",
+        "id2uri": "sm.namespaces.prelude.WikidataNamespace.get_prop_abs_uri",
         "args": {
             "dbfile": "/tmp/wdprops.db",
             "proxy": True,
@@ -61,6 +63,11 @@ SETTINGS = {
         # "grams": "sand.extensions.grams.GRAMSAssistant",
         "mtab": "sand.extensions.assistants.mtab.MTabAssistant",
         # "default": "mtab",
+    },
+    "search": {
+        "entities": "sand.extensions.search.wikidata_search.WikidataSearch",
+        "classes": "sand.extensions.search.wikidata_search.WikidataSearch",
+        "props": "sand.extensions.search.wikidata_search.WikidataSearch"
     },
     "exports": {
         "drepr": "sand.extensions.export.drepr.main.DreprExport",
