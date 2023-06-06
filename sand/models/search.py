@@ -4,7 +4,7 @@ from dataclasses import dataclass
 @dataclass
 class SearchResult:
     """
-    Search Item dataclass to save the values of each search item in a search
+    Search Result dataclass to save the values of each search result in a search
     """
     label: str
     id: str
