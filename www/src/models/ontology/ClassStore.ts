@@ -1,6 +1,7 @@
 import { RStore, SingleKeyUniqueIndex } from "gena-app";
 import { action, makeObservable, observable, runInAction } from "mobx";
 import { SERVER } from "../../env";
+import axios, { AxiosRequestConfig } from "axios";
 
 export interface Class {
   id: string;
@@ -11,6 +12,18 @@ export interface Class {
   description: string;
   parents: string[];
   ancestors: Set<string>;
+}
+
+export interface SearchResults {
+  value: string;
+  element: SearchResult;
+}
+
+export interface SearchResult {
+  id: string;
+  label: string;
+  description: string;
+  uri: string;
 }
 
 export class ClassStore extends RStore<string, Class> {
@@ -34,6 +47,38 @@ export class ClassStore extends RStore<string, Class> {
   getClassByURI = (uri: string): Class | undefined => {
     const id = this.uriIndex.index.get(uri);
     return id !== undefined ? this.get(id)! : undefined;
+  };
+
+  /**
+   * Get search results from the search API from axios.
+   *
+   * @returns SearchResults[] if there is no search result from Wikidata API.
+   */
+
+  fetchSearchResults = (searchText: string): SearchResults[] => {
+    const options: AxiosRequestConfig = {
+      method: "GET",
+      url: `${SERVER}/api/search/classes`,
+      params: { q: `${searchText}` },
+    };
+    const search_options: SearchResults[] = [];
+
+    axios
+      .request(options)
+      .then(function ({ data }) {
+        data.items.forEach((element: SearchResult) => {
+          search_options.push({
+            value: `${element.label}(${element.id}) : ${element.description}`,
+            element: element,
+          });
+        });
+        return search_options;
+      })
+      .catch(function (error: any) {
+        console.error(error);
+      });
+
+    return search_options;
   };
 
   /**
