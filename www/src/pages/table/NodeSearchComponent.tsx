@@ -2,10 +2,11 @@ import { gold, green, purple } from "@ant-design/colors";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { Select } from "antd";
 import { observer } from "mobx-react";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { SequentialFuncInvoker } from "../../misc";
 import { SemanticModel, useStores } from "../../models";
 import { SMNodeType } from "../../models/sm";
+import { debounce } from "lodash";
 
 const styles = {
   selection: {
@@ -34,6 +35,21 @@ const styles = {
   },
 };
 
+export interface SearchResult {
+  id: string;
+  label: string;
+  description: string;
+  uri: string;
+}
+
+export interface SearchOptions {
+  id: string;
+  value: string;
+  label: string;
+  element: SearchResult;
+  type: SMNodeType | "class";
+}
+
 export type SearchValue = { type: SMNodeType | "class"; id: string };
 
 export const NodeSearchComponent = withStyles(styles)(
@@ -51,55 +67,79 @@ export const NodeSearchComponent = withStyles(styles)(
       onSelect: (value: SearchValue) => void;
     } & WithStyles<typeof styles>) => {
       const { classStore } = useStores();
-      const seqInvoker = new SequentialFuncInvoker();
+      const [searchOptions, setSearchOptions] = useState<SearchOptions[]>();
+      const [searchAPIOptions, setSearchAPIOptions] = useState<
+        SearchResult[]
+      >();
 
       // gather all options already in the store, leverage the fact
       // that property store is readonly
       const options = useMemo(() => {
-        const options: ({
-          value: string;
-          label: string;
-        } & SearchValue)[] = [];
-        for (const r of classStore.iter()) {
-          options.push({
-            type: "class",
-            id: r.id,
-            value: `class:${r.id}`,
-            label: sm.graph.uriCount.nextLabel(r.uri, r.readableLabel),
-          });
-        }
-
+        const options: SearchOptions[] = [];
         for (const u of sm.graph.nodes) {
           options.push({
             type: u.nodetype,
             id: u.id,
             value: `${u.nodetype}:${u.id}`,
             label: sm.graph.uriCount.label(u),
+            element: undefined,
             className: classes[u.nodetype],
           } as any);
         }
+        setSearchOptions([...options]);
         return options;
-      }, [classStore.records.size]);
+      }, [sm.graph.version]);
 
       // search for additional values if it's not in the list
       const onSearch = (query: string) => {
-        if (query === "") return;
-        seqInvoker.exec(() => {
-          return classStore.fetchById(query).then(() => 1);
-        });
+        if (query === "") {
+          setSearchOptions([...options]);
+          return;
+        }
+        const searchResults: SearchOptions[] = [];
+
+        classStore
+          .fetchSearchResults(query)
+          .then((data) => {
+            data.forEach((searchResult: SearchResult) => {
+              searchResults.push({
+                type: "class",
+                id: searchResult.id,
+                element: searchResult,
+                label: `${searchResult.label} (${searchResult.id})`,
+                value: `class:${searchResult.id}`,
+              });
+            });
+            console.log("results");
+            console.log(searchResults);
+            setSearchOptions(searchResults);
+            return searchResults;
+          })
+          .then((searchResults) => {
+            setSearchOptions([...searchResults, ...options]);
+            console.log(searchOptions);
+          })
+          .catch(function (error: any) {
+            console.error(error);
+          });
       };
 
       return (
         <Select
           allowClear={true}
-          options={options}
+          options={searchOptions}
+          onClear={() => setSearchOptions([...options])}
+          defaultActiveFirstOption={false}
           optionFilterProp="label"
           className={classes.selection}
           showSearch={true}
-          onSearch={onSearch}
+          filterOption={false}
+          onSearch={debounce(onSearch, 300)}
           value={value === undefined ? undefined : `${value.type}:${value.id}`}
-          onSelect={(value: any, option: SearchValue) => {
-            onSelect({ type: option.type, id: option.id });
+          onSelect={(value: any, option: SearchOptions) => {
+            classStore.fetchById(option.id).then(() => {
+              onSelect({ type: option.type, id: option.id });
+            });
           }}
           onDeselect={(value: any, option: SearchValue) => {
             onDeselect({ type: option.type, id: option.id });

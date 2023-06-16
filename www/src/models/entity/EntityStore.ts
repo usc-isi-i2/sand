@@ -3,11 +3,6 @@ import { SERVER } from "../../env";
 import { Entity } from "./Entity";
 import axios, { AxiosRequestConfig } from "axios";
 
-export interface SearchResults {
-  value: string;
-  element: SearchResult;
-}
-
 export interface SearchResult {
   id: string;
   label: string;
@@ -23,34 +18,23 @@ export class EntityStore extends RStore<string, Entity> {
   /**
    * Get search results from the search API from axios.
    *
-   * @returns SearchResults[] if there is no search result from Wikidata API.
+   * @returns Promise<SearchResult[]> if there is no search result from Wikidata API.
    */
 
-  fetchSearchResults = (searchText: string): SearchResults[] => {
-    const options: AxiosRequestConfig = {
-      method: "GET",
-      url: `${SERVER}/api/search/classes`,
-      params: { q: `${searchText}` },
+  async fetchSearchResults(searchTest: string): Promise<SearchResult[]> {
+    let params: any = {
+      q: `${searchTest}`,
     };
-    const search_options: SearchResults[] = [];
 
-    axios
-      .request(options)
-      .then(function ({ data }) {
-        data.items.forEach((element: SearchResult) => {
-          search_options.push({
-            value: `${element.label}(${element.id}) : ${element.description}`,
-            element: element,
-          });
-        });
-        return search_options;
-      })
-      .catch(function (error: any) {
-        console.error(error);
-      });
+    let resp: any;
+    try {
+      resp = await axios.get(`${SERVER}/api/search/classes`, { params });
+    } catch (error) {
+      throw error;
+    }
 
-    return search_options;
-  };
+    return resp.data.items;
+  }
 
   public deserialize(record: any): Entity {
     record.readableLabel = record.readable_label;
