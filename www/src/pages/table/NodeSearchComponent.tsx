@@ -129,11 +129,14 @@ export const NodeSearchComponent = withStyles(styles)(
           allowClear={true}
           options={searchOptions}
           onClear={() => setSearchOptions([...options])}
-          defaultActiveFirstOption={false}
           optionFilterProp="label"
           className={classes.selection}
           showSearch={true}
-          filterOption={false}
+          filterSort={(optionA, optionB) =>
+            (optionA?.label ?? "")
+              .toLowerCase()
+              .localeCompare((optionB?.label ?? "").toLowerCase())
+          }
           onSearch={debounce(onSearch, 300)}
           value={value === undefined ? undefined : `${value.type}:${value.id}`}
           onSelect={(value: any, option: SearchOptions) => {
