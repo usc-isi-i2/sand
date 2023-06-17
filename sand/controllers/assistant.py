@@ -1,29 +1,22 @@
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
 import threading
-from typing import Dict, List, Optional, Tuple
-from flask.blueprints import Blueprint
-from gena.deserializer import (
-    generate_deserializer,
-    get_dataclass_deserializer,
-)
-from grams.algorithm.inferences.features.tree_utils import TreeStruct
-from sm.misc.funcs import import_func
-from sm.outputs.semantic_model import SemanticModel
-from sand.config import SETTINGS
+from dataclasses import dataclass
 from functools import partial
-from sand.models.table import Link, Table, TableRow
-from flask import request, jsonify
-from sand.serializer import batch_serialize_sms, get_label, serialize_graph
-from sand.models.entity import NIL_ENTITY, Entity, EntityAR
-from sand.models.ontology import OntProperty, OntClass, OntPropertyAR, OntClassAR
-from sand.extension_interface.assistant import IAssistant
-from operator import attrgetter
+from typing import Dict, List, Optional
 
-from peewee import Model as PeeweeModel, DoesNotExist, fn
-
+from flask import jsonify, request
+from flask.blueprints import Blueprint
+from gena.deserializer import get_dataclass_deserializer
+from peewee import DoesNotExist
+from sm.misc.funcs import import_func
 from werkzeug.exceptions import BadRequest, NotFound
 
+from sand.config import SETTINGS
+from sand.extension_interface.assistant import IAssistant
+from sand.helpers.tree_utils import TreeStruct
+from sand.models.entity import NIL_ENTITY, Entity, EntityAR
+from sand.models.ontology import OntClass, OntClassAR, OntPropertyAR
+from sand.models.table import Link, Table, TableRow
+from sand.serializer import get_label, serialize_graph
 
 assistant_bp = Blueprint("assistant", "assistant")
 
@@ -45,7 +38,6 @@ def get_assistants() -> Dict[str, IAssistant]:
 
 @assistant_bp.route(f"/{assistant_bp.name}/predict/<table_id>", methods=["GET"])
 def predict_semantic_desc(table_id: int):
-
     table = Table.get_by_id(table_id)
     rows: List[TableRow] = list(
         TableRow.select().where(TableRow.table == table).order_by(TableRow.index)

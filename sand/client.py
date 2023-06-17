@@ -1,16 +1,17 @@
 from dataclasses import asdict
-from typing import Union
-from gena.client import Client as IndividualClient
-from grams.inputs.linked_table import LinkedTable
+from functools import lru_cache
 from pathlib import Path
-from peewee import fn
+from typing import Union
+
 import requests
-from sand.models import init_db, SemanticModel, Project, Table
-from sand.models.table import CandidateEntity, Link
+import serde.json
+from gena.client import Client as IndividualClient
+from peewee import fn
 from sm.prelude import M
 from tqdm import tqdm
-import serde.json
-from functools import lru_cache
+
+from sand.models import Project, SemanticModel, Table, init_db
+from sand.models.table import CandidateEntity, Link
 
 
 class Client:

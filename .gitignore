@@ -139,3 +139,4 @@ sand.db
 poetry.lock
 
 sand/www
+/data
