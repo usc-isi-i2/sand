@@ -193,7 +193,7 @@ export const CandidateEntityListComponent = withStyles(styles)(
 
       // nil entity & create new entity
       const className =
-        links.length > 0 && links[0].entityId === appConfig.NIL_ENTITY
+        links.length > 0 && links[0].entityId === appConfig.NIL_ENTITY_ID
           ? classes.correctCandidateEntity
           : classes.candidateEntity;
 
@@ -203,19 +203,21 @@ export const CandidateEntityListComponent = withStyles(styles)(
             <CheckboxIcon
               icon={faCheck}
               selected={
-                links.length > 0 && links[0].entityId === appConfig.NIL_ENTITY
+                links.length > 0 &&
+                links[0].entityId === appConfig.NIL_ENTITY_ID
               }
-              onChange={singleUpdate(appConfig.NIL_ENTITY)}
+              onChange={singleUpdate(appConfig.NIL_ENTITY_ID)}
             />
             <CheckboxIcon
               icon={faCheckDouble}
               selected={
-                links.length > 0 && links[0].entityId === appConfig.NIL_ENTITY
+                links.length > 0 &&
+                links[0].entityId === appConfig.NIL_ENTITY_ID
               }
-              onChange={selectMultiple(appConfig.NIL_ENTITY)}
+              onChange={selectMultiple(appConfig.NIL_ENTITY_ID)}
             />
             <FetchEntityComponent
-              entityId={appConfig.NIL_ENTITY}
+              entityId={appConfig.NIL_ENTITY_ID}
               render={(entity, settings) => (
                 <PopoverEntityComponent entity={entity} settings={settings}>
                   <InlineEntityComponent

@@ -112,7 +112,7 @@ export class AssistantService extends RStore<number, AssistantRecord> {
       for (const link of row.links[columnIndex] || []) {
         if (
           link.entityId !== undefined &&
-          link.entityId !== appConfig.NIL_ENTITY
+          link.entityId !== appConfig.NIL_ENTITY_ID
         ) {
           entIds.add(link.entityId);
         }
@@ -190,7 +190,7 @@ export class AssistantService extends RStore<number, AssistantRecord> {
       for (const link of row.links[columnIndex] || []) {
         if (
           link.entityId !== undefined &&
-          link.entityId !== appConfig.NIL_ENTITY
+          link.entityId !== appConfig.NIL_ENTITY_ID
         ) {
           entIds.add(link.entityId);
         }

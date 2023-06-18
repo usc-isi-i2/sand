@@ -13,7 +13,7 @@ from werkzeug.exceptions import BadRequest, NotFound
 from sand.config import SETTINGS
 from sand.extension_interface.assistant import IAssistant
 from sand.helpers.tree_utils import TreeStruct
-from sand.models.entity import NIL_ENTITY, Entity, EntityAR
+from sand.models.entity import NIL_ENTITY_ID, Entity, EntityAR
 from sand.models.ontology import OntClass, OntClassAR, OntPropertyAR
 from sand.models.table import Link, Table, TableRow
 from sand.serializer import get_label, serialize_graph
@@ -120,7 +120,7 @@ def gather_column_types():
         for link in row.links.get(column, []):
             if (
                 link.entity_id is not None
-                and link.entity_id != NIL_ENTITY
+                and link.entity_id != NIL_ENTITY_ID
                 and link.entity_id not in ents
             ):
                 ents[link.entity_id] = entities.get(link.entity_id, None)

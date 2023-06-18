@@ -1,20 +1,21 @@
 from dataclasses import dataclass
-from typing import Mapping
-from hugedict.misc import identity
 from itertools import chain
+from typing import Mapping
+
+from hugedict.misc import identity
 from kgdata.wikidata import db
-from kgdata.wikidata.models import WDEntity, WDValue, WDClass, WDProperty
+from kgdata.wikidata.models import WDClass, WDEntity, WDProperty, WDValue
 from sm.namespaces.wikidata import WikidataNamespace
+
 from sand.models.base import StoreWrapper
-from sand.models.entity import Entity, Statement, Value
+from sand.models.entity import DEFAULT_ENTITY, Entity, Statement, Value
 from sand.models.ontology import (
+    DEFAULT_ONT_CLASSES,
     DEFAULT_ONT_PROPS,
     OntClass,
     OntProperty,
-    DEFAULT_ONT_CLASSES,
     OntPropertyDataType,
 )
-
 
 wdns = WikidataNamespace.create()
 WD_ONT_CLASSES = {
@@ -29,7 +30,16 @@ WD_ONT_CLASSES = {
 }
 WD_ONT_CLASSES.update(DEFAULT_ONT_CLASSES)
 INVERSE_DEFAULT_URI2ID = {
-    v.uri: k for k, v in chain(DEFAULT_ONT_PROPS.items(), WD_ONT_CLASSES.items())
+    v.uri: k
+    for k, v in chain(
+        DEFAULT_ONT_PROPS.items(), WD_ONT_CLASSES.items(), DEFAULT_ENTITY.items()
+    )
+}
+DEFAULT_ID2URI = {
+    k: v.uri
+    for k, v in chain(
+        DEFAULT_ONT_PROPS.items(), WD_ONT_CLASSES.items(), DEFAULT_ENTITY.items()
+    )
 }
 
 WD_DATATYPE_MAPPING: Mapping[str, OntPropertyDataType] = {
@@ -113,6 +123,7 @@ def qnode_deser(qnode: WDEntity):
 
     return WrapperWDEntity(
         id=qnode.id,
+        uri=wdns.get_entity_abs_uri(qnode.id),
         label=qnode.label,
         aliases=qnode.aliases,
         description=qnode.description,
@@ -140,7 +151,9 @@ def ont_prop_deser(item: WDProperty):
         aliases=item.aliases,
         label=item.label,
         description=item.description,
-        datatype=WD_DATATYPE_MAPPING[item.datatype] if item.datatype in WD_DATATYPE_MAPPING else "unknown",
+        datatype=WD_DATATYPE_MAPPING[item.datatype]
+        if item.datatype in WD_DATATYPE_MAPPING
+        else "unknown",
         parents=item.parents,
         ancestors=item.ancestors,
     )
@@ -175,6 +188,16 @@ def uri2id(uri: str):
     if uri in INVERSE_DEFAULT_URI2ID:
         return INVERSE_DEFAULT_URI2ID[uri]
     return uri
+
+
+def id2uri(id: str):
+    if id in DEFAULT_ID2URI:
+        return DEFAULT_ID2URI[id]
+    if id.startswith("P"):
+        return wdns.get_prop_abs_uri(id)
+    if id.startswith("Q"):
+        return wdns.get_entity_abs_uri(id)
+    raise ValueError(f"Cannot convert unknown id to uri: {id}")
 
 
 def get_rel_uri(uri: str):

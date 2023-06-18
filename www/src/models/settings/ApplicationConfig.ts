@@ -86,7 +86,7 @@ export class StartsWithIndex<V> {
 
 export class ApplicationConfig {
   // configuration related to entities
-  public NIL_ENTITY: string = "";
+  public NIL_ENTITY_ID: string = "";
 
   // list of properties' uris that when a column is tagged with one of them, the column is an entity column
   public SEM_MODEL_IDENTS = new Set<string>();

@@ -129,7 +129,7 @@ export class ColumnFilter {
       if (this.selectNil || this.selectUnlinked) {
         for (const link of row.links[this.columnIndex] || []) {
           if (
-            (this.selectNil && link.entityId === appConfig.NIL_ENTITY) ||
+            (this.selectNil && link.entityId === appConfig.NIL_ENTITY_ID) ||
             (this.selectUnlinked && link.entityId === undefined)
           )
             return true;
@@ -149,7 +149,7 @@ export class ColumnFilter {
       const entIds = new Set<string>();
       for (const link of row.links[this.columnIndex] || []) {
         if (
-          link.entityId !== appConfig.NIL_ENTITY &&
+          link.entityId !== appConfig.NIL_ENTITY_ID &&
           link.entityId !== undefined
         ) {
           entIds.add(link.entityId);

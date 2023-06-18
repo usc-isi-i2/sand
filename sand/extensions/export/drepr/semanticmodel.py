@@ -1,16 +1,18 @@
+import csv
 from dataclasses import dataclass
 from io import StringIO
-import orjson, csv
 from typing import Callable, Dict, List, Mapping, Set, Tuple
+
+import drepr.models.sm as drepr_sm
+import orjson
+import sm.misc as M
+import sm.outputs.semantic_model as O
+from sm.namespaces.wikidata import WikidataNamespace
+
 from sand.config import SETTINGS
-from sand.models.entity import NIL_ENTITY, Entity
+from sand.models.entity import NIL_ENTITY_ID, Entity
 from sand.models.ontology import OntProperty, OntPropertyAR, OntPropertyDataType
 from sand.models.table import Table, TableRow
-import sm.outputs.semantic_model as O
-import sm.misc as M
-from sm.namespaces.wikidata import WikidataNamespace
-import drepr.models.sm as drepr_sm
-
 
 prefixes = WikidataNamespace.create().prefix2ns.copy()
 prefixes.update(drepr_sm.SemanticModel.get_default_prefixes())
