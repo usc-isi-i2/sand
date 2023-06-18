@@ -25,7 +25,7 @@ export class UISettings {
   async fetchSettings() {
     const resp = await axios.get("/api/settings");
     appConfig.setInstanceOf(resp.data["entity"]["instanceof"]);
-    appConfig.NIL_ENTITY = resp.data["entity"]["nil"];
+    appConfig.NIL_ENTITY_ID = resp.data["entity"]["nil"]["id"];
     appConfig.SEM_MODEL_IDENTS = new Set(
       resp.data["semantic_model"]["identifiers"]
     );

@@ -1,5 +1,4 @@
 import os
-
 from pathlib import Path
 
 _ROOT_DIR = Path(os.path.abspath(__file__)).parent.parent
@@ -11,8 +10,8 @@ CACHE_SIZE = 10240
 SETTINGS = {
     "entity": {
         "constructor": "sand.extensions.wikidata.get_entity_db",
-        "uri2id": "sm.namespaces.prelude.WikidataNamespace.get_entity_id",
-        "id2uri": "sm.namespaces.prelude.WikidataNamespace.get_entity_abs_uri",
+        "uri2id": "sand.extensions.wikidata.uri2id",
+        "id2uri": "sand.extensions.wikidata.id2uri",
         "args": {
             "dbfile": "/tmp/wdentities.db",
             "proxy": True,
@@ -24,14 +23,14 @@ SETTINGS = {
             "http://www.wikidata.org": "P31",
         },
         # id of an nil entity
-        "nil": "drepr:nil",
+        "nil": {"id": "drepr:nil", "uri": "https://purl.org/drepr/ontology/1.0/nil"},
         # template for new entity uri
         "new_entity_template": "http://www.wikidata.org/entity/{id}",
     },
     "ont_classes": {
         "constructor": "sand.extensions.wikidata.get_ontclass_db",
         "uri2id": "sand.extensions.wikidata.uri2id",
-        "id2uri": "sm.namespaces.prelude.WikidataNamespace.get_entity_abs_uri",
+        "id2uri": "sand.extensions.wikidata.id2uri",
         "args": {
             "dbfile": "/tmp/wdclasses.db",
             "proxy": True,
@@ -42,7 +41,7 @@ SETTINGS = {
     "ont_props": {
         "constructor": "sand.extensions.wikidata.get_ontprop_db",
         "uri2id": "sand.extensions.wikidata.uri2id",
-        "id2uri": "sm.namespaces.prelude.WikidataNamespace.get_prop_abs_uri",
+        "id2uri": "sand.extensions.wikidata.id2uri",
         "args": {
             "dbfile": "/tmp/wdprops.db",
             "proxy": True,
@@ -67,10 +66,10 @@ SETTINGS = {
     "search": {
         "entities": "sand.extensions.search.wikidata_search.WikidataSearch",
         "classes": "sand.extensions.search.wikidata_search.WikidataSearch",
-        "props": "sand.extensions.search.wikidata_search.WikidataSearch"
+        "props": "sand.extensions.search.wikidata_search.WikidataSearch",
     },
     "exports": {
         "drepr": "sand.extensions.export.drepr.main.DreprExport",
-        "default": "sand.extensions.export.drepr.main.DreprExport"
-    }
+        "default": "sand.extensions.export.drepr.main.DreprExport",
+    },
 }

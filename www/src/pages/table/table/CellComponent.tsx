@@ -70,7 +70,7 @@ export const CellComponent = withStyles(styles)(
               className={
                 classes.link +
                 (link.entityId === undefined ||
-                link.entityId === appConfig.NIL_ENTITY
+                link.entityId === appConfig.NIL_ENTITY_ID
                   ? " " + classes.noEntityLink
                   : "")
               }

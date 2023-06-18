@@ -1,16 +1,16 @@
+import csv
 from dataclasses import dataclass
 from io import StringIO
-import orjson, csv
 from typing import Dict, List, Set, Tuple
+from uuid import uuid4
+
+import orjson
+from drepr.models import ResourceData, ResourceDataString
+
 from sand.config import SETTINGS
-from sand.models.entity import NIL_ENTITY, Entity
+from sand.models.entity import NIL_ENTITY_ID, Entity
 from sand.models.ontology import OntPropertyAR
 from sand.models.table import Table, TableRow
-from drepr.models import (
-    ResourceDataString,
-    ResourceData,
-)
-from uuid import uuid4
 
 
 def get_table_resource(table: Table, rows: List[TableRow]) -> ResourceData:
@@ -46,7 +46,7 @@ def get_entity_resource(
             # for now, just return the first entity
             ent = None
             for link in links:
-                if link.entity_id is not None and link.entity_id != NIL_ENTITY:
+                if link.entity_id is not None and link.entity_id != NIL_ENTITY_ID:
                     ent = Entity.id2uri(link.entity_id)
                     break
             else:

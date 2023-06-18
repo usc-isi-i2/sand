@@ -2,12 +2,12 @@ from dataclasses import asdict
 from functools import partial
 from typing import Callable, Dict, List, Mapping, Optional
 
+import sm.outputs.semantic_model as O
 from playhouse.shortcuts import model_to_dict
 
-import sm.outputs.semantic_model as O
 from sand.models import SemanticModel, Table
 from sand.models.entity import Entity, EntityAR
-from sand.models.ontology import OntProperty, OntClass, OntPropertyAR, OntClassAR
+from sand.models.ontology import OntClass, OntClassAR, OntProperty, OntPropertyAR
 
 
 def serialize_property(prop: OntProperty):
@@ -40,7 +40,7 @@ def serialize_class(cls: OntClass):
 def serialize_entity(ent: Entity):
     return {
         "id": ent.id,
-        "uri": Entity.id2uri(ent.id),
+        "uri": ent.uri,
         "readable_label": ent.readable_label,
         "label": ent.label.to_dict(),
         "aliases": ent.aliases.to_dict(),

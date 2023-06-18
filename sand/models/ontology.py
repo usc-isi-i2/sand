@@ -1,8 +1,10 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Literal, Mapping, Set
 
+from hugedict.chained_mapping import ChainedMapping
 from rdflib import RDFS
-from sm.misc.funcs import import_func
+from sm.misc.funcs import import_attr, import_func
+
 from sand.config import SETTINGS
 
 
@@ -34,6 +36,7 @@ class OntClass:
             "The method is set when its store is initialized. Check the call order to ensure `OntClassAR` is called first"
         )
 
+
 OntPropertyDataType = Literal[
     "monolingualtext",
     "url",
@@ -42,7 +45,7 @@ OntPropertyDataType = Literal[
     "number",
     "string",
     "globe-coordinate",
-    "unknown"  # don't know the type yet
+    "unknown",  # don't know the type yet
 ]
 
 
@@ -75,6 +78,7 @@ class OntProperty:
             "The method is set when its store is initialized. Check the call order to ensure `OntPropertyAR` is called first"
         )
 
+
 PROP_AR = None
 CLASS_AR = None
 
@@ -99,7 +103,7 @@ def OntPropertyAR() -> Mapping[str, OntProperty]:
     if PROP_AR is None:
         cfg = SETTINGS["ont_props"]
         func = import_func(cfg["constructor"])
-        PROP_AR = func(**cfg["args"])
+        PROP_AR = ChainedMapping(func(**cfg["args"]), import_attr(cfg["default"]))
         OntProperty.uri2id = import_func(cfg["uri2id"])
         OntProperty.id2uri = import_func(cfg["id2uri"])
 
@@ -113,7 +117,7 @@ def OntClassAR() -> Mapping[str, OntClass]:
     if CLASS_AR is None:
         cfg = SETTINGS["ont_classes"]
         func = import_func(cfg["constructor"])
-        CLASS_AR = func(**cfg["args"])
+        CLASS_AR = ChainedMapping(func(**cfg["args"]), import_attr(cfg["default"]))
         OntClass.uri2id = import_func(cfg["uri2id"])
         OntClass.id2uri = import_func(cfg["id2uri"])
     return CLASS_AR

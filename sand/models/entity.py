@@ -1,33 +1,36 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Literal, Union
+from typing import Literal, Mapping, Optional, Union
+
+from hugedict.chained_mapping import ChainedMapping
+from kgdata.wikidata.models.multilingual import (
+    MultiLingualString,
+    MultiLingualStringList,
+)
 from kgdata.wikidata.models.wdvalue import (
     ValueGlobeCoordinate,
     ValueMonolingualText,
     ValueQuantity,
     ValueTime,
 )
-from kgdata.wikidata.models.multilingual import (
-    MultiLingualString,
-    MultiLingualStringList,
-)
+from sm.misc.funcs import import_attr, import_func
 
 from sand.config import SETTINGS
-from sm.misc.funcs import import_func
-
 
 # represent that there is no entity
-NIL_ENTITY = SETTINGS["entity"]["nil"]
+NIL_ENTITY_ID = SETTINGS["entity"]["nil"]["id"]
+NIL_ENTITY_URI = SETTINGS["entity"]["nil"]["uri"]
 
 
 @dataclass
 class Entity:
     id: str
+    uri: str
     label: MultiLingualString
     aliases: MultiLingualStringList
     description: MultiLingualString
-    properties: Dict[str, List[Statement]]
+    properties: dict[str, list[Statement]]
 
     @property
     def readable_label(self):
@@ -57,9 +60,9 @@ class Entity:
 class Statement:
     __slots__ = ("value", "qualifiers", "qualifiers_order")
     value: Value
-    qualifiers: Dict[str, List[Value]]
+    qualifiers: dict[str, list[Value]]
     # list of qualifiers id that records the order (as dict lacks of order)
-    qualifiers_order: List[str]
+    qualifiers_order: list[str]
 
 
 @dataclass
@@ -80,10 +83,11 @@ class Value:
         return self.type == "entityid"
 
 
-ENTITY_AR = None
+ENTITY_AR: Optional[Mapping[str, Entity]] = None
 DEFAULT_ENTITY = {
-    NIL_ENTITY: Entity(
-        id=NIL_ENTITY,
+    NIL_ENTITY_ID: Entity(
+        id=NIL_ENTITY_ID,
+        uri=NIL_ENTITY_URI,
         label=MultiLingualString.en("NIL"),
         aliases=MultiLingualStringList(lang2values={"en": []}, lang="en"),
         description=MultiLingualString.en("the correct entity is absent in KG"),
@@ -92,21 +96,14 @@ DEFAULT_ENTITY = {
 }
 
 
-def check_nil(fn: Callable[[str], str]):
-    def wrapper(x: str) -> str:
-        return fn(x) if x != NIL_ENTITY else NIL_ENTITY
-
-    return wrapper
-
-
-def EntityAR() -> Dict[str, Entity]:
+def EntityAR() -> Mapping[str, Entity]:
     global ENTITY_AR
 
     if ENTITY_AR is None:
         cfg = SETTINGS["entity"]
         func = import_func(cfg["constructor"])
-        ENTITY_AR = func(**cfg["args"])
-        Entity.uri2id = check_nil(import_func(cfg["uri2id"]))
-        Entity.id2uri = check_nil(import_func(cfg["id2uri"]))
+        ENTITY_AR = ChainedMapping(func(**cfg["args"]), import_attr(cfg["default"]))
+        Entity.uri2id = import_func(cfg["uri2id"])
+        Entity.id2uri = import_func(cfg["id2uri"])
 
     return ENTITY_AR
