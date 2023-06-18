@@ -120,7 +120,7 @@ export const NodeSearchComponent = withStyles(styles)(
             });
             console.log("results");
             console.log(searchResults);
-            // setSearchOptions(searchResults);
+            setSearchOptions(searchResults);
             return searchResults;
           })
           .then((searchResults) => {
