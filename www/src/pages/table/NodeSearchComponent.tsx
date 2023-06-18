@@ -45,7 +45,7 @@ export interface SearchResult {
 export interface SearchOptions {
   id: string;
   value: string;
-  label: string;
+  label: any;
   element: SearchResult;
   type: SMNodeType | "class";
 }
@@ -68,9 +68,7 @@ export const NodeSearchComponent = withStyles(styles)(
     } & WithStyles<typeof styles>) => {
       const { classStore } = useStores();
       const [searchOptions, setSearchOptions] = useState<SearchOptions[]>();
-      const [searchAPIOptions, setSearchAPIOptions] = useState<
-        SearchResult[]
-      >();
+      const [searchLoader, setSearchLoader] = useState<boolean>(false);
 
       // gather all options already in the store, leverage the fact
       // that property store is readonly
@@ -97,7 +95,7 @@ export const NodeSearchComponent = withStyles(styles)(
           return;
         }
         const searchResults: SearchOptions[] = [];
-
+        setSearchLoader(true);
         classStore
           .fetchSearchResults(query)
           .then((data) => {
@@ -106,18 +104,26 @@ export const NodeSearchComponent = withStyles(styles)(
                 type: "class",
                 id: searchResult.id,
                 element: searchResult,
-                label: `${searchResult.label} (${searchResult.id})`,
+                // label: `${searchResult.label} (${searchResult.id})`,
+                label: (
+                  <div>
+                    <p style={{ color: "blue" }}>
+                      {searchResult.label} ({searchResult.id})
+                    </p>
+                    <p style={{ fontSize: 12, marginTop: -5 }}>
+                      {searchResult.description}
+                    </p>
+                  </div>
+                ),
                 value: `class:${searchResult.id}`,
               });
             });
-            console.log("results");
-            console.log(searchResults);
             setSearchOptions(searchResults);
             return searchResults;
           })
           .then((searchResults) => {
             setSearchOptions([...searchResults, ...options]);
-            console.log(searchOptions);
+            setSearchLoader(false);
           })
           .catch(function (error: any) {
             console.error(error);
@@ -129,21 +135,23 @@ export const NodeSearchComponent = withStyles(styles)(
           allowClear={true}
           options={searchOptions}
           onClear={() => setSearchOptions([...options])}
-          optionFilterProp="label"
+          optionFilterProp="elemen.label"
           className={classes.selection}
           showSearch={true}
-          filterSort={(optionA, optionB) =>
-            (optionA?.label ?? "")
-              .toLowerCase()
-              .localeCompare((optionB?.label ?? "").toLowerCase())
-          }
+          // filterSort={(optionA, optionB) =>
+          //   (optionA?.element?.label ?? "")
+          //     .toLowerCase()
+          //     .localeCompare((optionB?.element?.label ?? "").toLowerCase())
+          // }
           onSearch={debounce(onSearch, 300)}
+          filterOption={false}
           value={value === undefined ? undefined : `${value.type}:${value.id}`}
           onSelect={(value: any, option: SearchOptions) => {
             classStore.fetchById(option.id).then(() => {
               onSelect({ type: option.type, id: option.id });
             });
           }}
+          loading={searchLoader}
           onDeselect={(value: any, option: SearchValue) => {
             onDeselect({ type: option.type, id: option.id });
           }}
