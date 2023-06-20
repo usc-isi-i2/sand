@@ -1,7 +1,7 @@
 import { RStore, SingleKeyUniqueIndex } from "gena-app";
 import { action, makeObservable, observable, runInAction } from "mobx";
 import { SERVER } from "../../env";
-import axios, { AxiosRequestConfig } from "axios";
+import axios from "axios";
 
 export interface Class {
   id: string;

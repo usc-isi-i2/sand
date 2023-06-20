@@ -2,6 +2,14 @@ import { RStore, SingleKeyUniqueIndex } from "gena-app";
 import { action, makeObservable, observable, runInAction } from "mobx";
 import { SERVER } from "../../env";
 import { Property } from "./Property";
+import axios from "axios";
+
+export interface SearchResult {
+  id: string;
+  label: string;
+  description: string;
+  uri: string;
+}
 
 export class PropertyStore extends RStore<string, Property> {
   public doesNotExistURIs = new Set<string>();
@@ -28,6 +36,27 @@ export class PropertyStore extends RStore<string, Property> {
     const id = this.uriIndex.index.get(uri);
     return id !== undefined ? this.get(id)! : undefined;
   };
+
+  /**
+   * Get search results from the search API from axios.
+   *
+   * @returns Promise<SearchResult[]> if there is no search result from Wikidata API.
+   */
+
+  async fetchSearchResults(searchTest: string): Promise<SearchResult[]> {
+    let params: any = {
+      q: `${searchTest}`,
+    };
+
+    let resp: any;
+    try {
+      resp = await axios.get(`${SERVER}/api/search/properties`, { params });
+    } catch (error) {
+      throw error;
+    }
+
+    return resp.data.items;
+  }
 
   /**
    * Fetch a property by URI if it is not in the store.

@@ -118,7 +118,7 @@ export const NodeSearchComponent = withStyles(styles)(
         const searchResults: SearchOptions[] = [];
         loaderOption.filterlabel = query;
 
-        setSearchOptions([loaderOption, ...options]);
+        setSearchOptions([...options, loaderOption]);
 
         classStore
           .fetchSearchResults(query)
@@ -143,11 +143,10 @@ export const NodeSearchComponent = withStyles(styles)(
                 value: `class:${searchResult.id}`,
               });
             });
-            setSearchOptions(searchResults);
             return searchResults;
           })
           .then((searchResults) => {
-            setSearchOptions([...searchResults, ...options]);
+            setSearchOptions([...options, ...searchResults]);
           })
           .catch(function (error: any) {
             console.error(error);
@@ -163,11 +162,6 @@ export const NodeSearchComponent = withStyles(styles)(
           defaultActiveFirstOption={false}
           className={classes.selection}
           showSearch={true}
-          filterSort={(optionA, optionB) =>
-            (optionA?.filterlabel ?? "")
-              .toLowerCase()
-              .localeCompare((optionB?.filterlabel ?? "").toLowerCase())
-          }
           onSearch={debounce(onSearch, 300)}
           value={value === undefined ? undefined : `${value.type}:${value.id}`}
           onSelect={(value: any, option: SearchOptions) => {
