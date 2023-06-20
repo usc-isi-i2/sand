@@ -1,6 +1,6 @@
 import { gold, green, purple } from "@ant-design/colors";
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { Select } from "antd";
+import { Select, Spin } from "antd";
 import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
 import { SequentialFuncInvoker } from "../../misc";
@@ -47,6 +47,7 @@ export interface SearchOptions {
   value: string;
   label: any;
   element: SearchResult;
+  filterlabel: string;
   type: SMNodeType | "class";
 }
 
@@ -68,7 +69,26 @@ export const NodeSearchComponent = withStyles(styles)(
     } & WithStyles<typeof styles>) => {
       const { classStore } = useStores();
       const [searchOptions, setSearchOptions] = useState<SearchOptions[]>();
-      const [searchLoader, setSearchLoader] = useState<boolean>(false);
+
+      // Loader Option to display Spin component to represent loader on
+      // searching the classes and entities
+      const loaderOption: SearchOptions = {
+        type: "class",
+        id: "",
+        element: {
+          id: "",
+          label: "",
+          description: "",
+          uri: "",
+        },
+        label: (
+          <div>
+            <Spin style={{ width: "100%" }} size="large" />
+          </div>
+        ),
+        filterlabel: ``,
+        value: ``,
+      };
 
       // gather all options already in the store, leverage the fact
       // that property store is readonly
@@ -80,6 +100,7 @@ export const NodeSearchComponent = withStyles(styles)(
             id: u.id,
             value: `${u.nodetype}:${u.id}`,
             label: sm.graph.uriCount.label(u),
+            filterlabel: sm.graph.uriCount.label(u),
             element: undefined,
             className: classes[u.nodetype],
           } as any);
@@ -95,7 +116,10 @@ export const NodeSearchComponent = withStyles(styles)(
           return;
         }
         const searchResults: SearchOptions[] = [];
-        setSearchLoader(true);
+        loaderOption.filterlabel = query;
+
+        setSearchOptions([loaderOption, ...options]);
+
         classStore
           .fetchSearchResults(query)
           .then((data) => {
@@ -115,6 +139,7 @@ export const NodeSearchComponent = withStyles(styles)(
                     </p>
                   </div>
                 ),
+                filterlabel: `${searchResult.label} (${searchResult.id})`,
                 value: `class:${searchResult.id}`,
               });
             });
@@ -123,7 +148,6 @@ export const NodeSearchComponent = withStyles(styles)(
           })
           .then((searchResults) => {
             setSearchOptions([...searchResults, ...options]);
-            setSearchLoader(false);
           })
           .catch(function (error: any) {
             console.error(error);
@@ -135,23 +159,26 @@ export const NodeSearchComponent = withStyles(styles)(
           allowClear={true}
           options={searchOptions}
           onClear={() => setSearchOptions([...options])}
-          optionFilterProp="elemen.label"
+          optionFilterProp="filterlabel"
+          defaultActiveFirstOption={false}
           className={classes.selection}
           showSearch={true}
-          // filterSort={(optionA, optionB) =>
-          //   (optionA?.element?.label ?? "")
-          //     .toLowerCase()
-          //     .localeCompare((optionB?.element?.label ?? "").toLowerCase())
-          // }
+          filterSort={(optionA, optionB) =>
+            (optionA?.filterlabel ?? "")
+              .toLowerCase()
+              .localeCompare((optionB?.filterlabel ?? "").toLowerCase())
+          }
           onSearch={debounce(onSearch, 300)}
-          filterOption={false}
           value={value === undefined ? undefined : `${value.type}:${value.id}`}
           onSelect={(value: any, option: SearchOptions) => {
-            classStore.fetchById(option.id).then(() => {
+            if (option.type == "class") {
+              classStore.fetchById(option.id).then(() => {
+                onSelect({ type: option.type, id: option.id });
+              });
+            } else {
               onSelect({ type: option.type, id: option.id });
-            });
+            }
           }}
-          loading={searchLoader}
           onDeselect={(value: any, option: SearchValue) => {
             onDeselect({ type: option.type, id: option.id });
           }}
