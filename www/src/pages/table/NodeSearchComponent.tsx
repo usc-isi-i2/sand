@@ -55,11 +55,13 @@ export const NodeSearchComponent = withStyles(styles)(
       onDeselect,
       onSelect,
       classes,
+      classSearchOnly,
     }: {
       sm: SemanticModel;
       value?: SearchValue;
       onDeselect: (value: SearchValue) => void;
       onSelect: (value: SearchValue) => void;
+      classSearchOnly: boolean;
     } & WithStyles<typeof styles>) => {
       const { classStore } = useStores();
       const [searchOptions, setSearchOptions] = useState<SearchOptions[]>();
@@ -88,17 +90,35 @@ export const NodeSearchComponent = withStyles(styles)(
       // that property store is readonly
       const options = useMemo(() => {
         const options: SearchOptions[] = [];
-        for (const u of sm.graph.nodes) {
-          options.push({
-            type: u.nodetype,
-            id: u.id,
-            value: `${u.nodetype}:${u.id}`,
-            label: sm.graph.uriCount.label(u),
-            filterlabel: sm.graph.uriCount.label(u),
-            element: undefined,
-            className: classes[u.nodetype],
-          } as any);
+
+        if (classSearchOnly) {
+          for (const u of sm.graph.nodes) {
+            if (u.nodetype == "class_node") {
+              options.push({
+                type: u.nodetype,
+                id: u.id,
+                value: `${u.nodetype}:${u.id}`,
+                label: sm.graph.uriCount.label(u),
+                filterlabel: sm.graph.uriCount.label(u),
+                element: undefined,
+                className: classes[u.nodetype],
+              } as any);
+            }
+          }
+        } else {
+          for (const u of sm.graph.nodes) {
+            options.push({
+              type: u.nodetype,
+              id: u.id,
+              value: `${u.nodetype}:${u.id}`,
+              label: sm.graph.uriCount.label(u),
+              filterlabel: sm.graph.uriCount.label(u),
+              element: undefined,
+              className: classes[u.nodetype],
+            } as any);
+          }
         }
+
         setSearchOptions([...options]);
         return options;
       }, [sm.graph.version]);
@@ -159,6 +179,7 @@ export const NodeSearchComponent = withStyles(styles)(
           onSearch={debounce(onSearch, 300)}
           value={value === undefined ? undefined : `${value.type}:${value.id}`}
           onSelect={(value: any, option: SearchOptions) => {
+            console.log(option);
             if (option.type == "class") {
               classStore.fetchById(option.id).then(() => {
                 onSelect({ type: option.type, id: option.id });
