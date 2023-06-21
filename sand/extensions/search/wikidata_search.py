@@ -27,7 +27,7 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         """Updates class search parameters for wikidata API"""
         class_params = self.PARAMS.copy()
         class_params["srnamespace"] = 0
-        class_params['srsearch'] = f"haswbstatement:P279 {search_text}"
+        class_params['srsearch'] = f"haswbstatement:P279 inlabel: {search_text}"
         return class_params
 
     def get_local_class_properties(self, id: str) -> OntClass:
