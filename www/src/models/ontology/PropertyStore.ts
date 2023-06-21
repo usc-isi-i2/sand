@@ -4,7 +4,7 @@ import { SERVER } from "../../env";
 import { Property } from "./Property";
 import axios from "axios";
 
-export interface SearchResult {
+export interface PropertyTextSearchResult {
   id: string;
   label: string;
   description: string;
@@ -43,7 +43,9 @@ export class PropertyStore extends RStore<string, Property> {
    * @returns Promise<SearchResult[]> if there is no search result from Wikidata API.
    */
 
-  async fetchSearchResults(searchTest: string): Promise<SearchResult[]> {
+  async fetchSearchResults(
+    searchTest: string
+  ): Promise<PropertyTextSearchResult[]> {
     let params: any = {
       q: `${searchTest}`,
     };

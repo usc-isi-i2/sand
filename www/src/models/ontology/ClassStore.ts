@@ -14,7 +14,7 @@ export interface Class {
   ancestors: Set<string>;
 }
 
-export interface SearchResult {
+export interface ClassTextSearchResult {
   id: string;
   label: string;
   description: string;
@@ -50,7 +50,9 @@ export class ClassStore extends RStore<string, Class> {
    * @returns Promise<SearchResult[]> if there is no search result from Wikidata API.
    */
 
-  async fetchSearchResults(searchTest: string): Promise<SearchResult[]> {
+  async fetchSearchResults(
+    searchTest: string
+  ): Promise<ClassTextSearchResult[]> {
     let params: any = {
       q: `${searchTest}`,
     };

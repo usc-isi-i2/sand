@@ -3,7 +3,7 @@ import { SERVER } from "../../env";
 import { Entity } from "./Entity";
 import axios, { AxiosRequestConfig } from "axios";
 
-export interface SearchResult {
+export interface EntityTextSearchResult {
   id: string;
   label: string;
   description: string;
@@ -21,7 +21,9 @@ export class EntityStore extends RStore<string, Entity> {
    * @returns Promise<SearchResult[]> if there is no search result from Wikidata API.
    */
 
-  async fetchSearchResults(searchTest: string): Promise<SearchResult[]> {
+  async fetchSearchResults(
+    searchTest: string
+  ): Promise<EntityTextSearchResult[]> {
     let params: any = {
       q: `${searchTest}`,
     };

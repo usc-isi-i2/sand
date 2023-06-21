@@ -4,6 +4,7 @@ import { Select, Spin } from "antd";
 import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
 import { SequentialFuncInvoker } from "../../misc";
+import { ClassTextSearchResult } from "../../models/ontology/ClassStore";
 import { SemanticModel, useStores } from "../../models";
 import { SMNodeType } from "../../models/sm";
 import { debounce } from "lodash";
@@ -35,18 +36,11 @@ const styles = {
   },
 };
 
-export interface SearchResult {
-  id: string;
-  label: string;
-  description: string;
-  uri: string;
-}
-
 export interface SearchOptions {
   id: string;
   value: string;
   label: any;
-  element: SearchResult;
+  element: ClassTextSearchResult;
   filterlabel: string;
   type: SMNodeType | "class";
 }
@@ -123,7 +117,7 @@ export const NodeSearchComponent = withStyles(styles)(
         classStore
           .fetchSearchResults(query)
           .then((data) => {
-            data.forEach((searchResult: SearchResult) => {
+            data.forEach((searchResult: ClassTextSearchResult) => {
               searchResults.push({
                 type: "class",
                 id: searchResult.id,
