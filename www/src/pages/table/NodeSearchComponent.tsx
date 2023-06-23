@@ -40,7 +40,6 @@ export interface SearchOptions {
   id: string;
   value: string;
   label: any;
-  element: ClassTextSearchResult;
   filterlabel: string;
   type: SMNodeType | "class";
 }
@@ -71,12 +70,6 @@ export const NodeSearchComponent = withStyles(styles)(
       const loaderOption: SearchOptions = {
         type: "class",
         id: "",
-        element: {
-          id: "",
-          label: "",
-          description: "",
-          uri: "",
-        },
         label: (
           <div>
             <Spin style={{ width: "100%" }} size="large" />
@@ -100,7 +93,6 @@ export const NodeSearchComponent = withStyles(styles)(
                 value: `${u.nodetype}:${u.id}`,
                 label: sm.graph.uriCount.label(u),
                 filterlabel: sm.graph.uriCount.label(u),
-                element: undefined,
                 className: classes[u.nodetype],
               } as any);
             }
@@ -113,7 +105,6 @@ export const NodeSearchComponent = withStyles(styles)(
               value: `${u.nodetype}:${u.id}`,
               label: sm.graph.uriCount.label(u),
               filterlabel: sm.graph.uriCount.label(u),
-              element: undefined,
               className: classes[u.nodetype],
             } as any);
           }
@@ -141,8 +132,6 @@ export const NodeSearchComponent = withStyles(styles)(
               searchResults.push({
                 type: "class",
                 id: searchResult.id,
-                element: searchResult,
-                // label: `${searchResult.label} (${searchResult.id})`,
                 label: (
                   <div>
                     <p style={{ color: "blue" }}>
