@@ -12,9 +12,6 @@ import { ClassTextSearchResult } from "../../models/ontology/ClassStore";
 import { PropertyTextSearchResult } from "../../models/ontology/PropertyStore";
 import { EntityTextSearchResult } from "../../models/entity/EntityStore";
 
-import SpinComponent from "../../components/search/SpinComponent";
-
-
 const styles = {
   selection: {
     width: "100%",
@@ -93,7 +90,7 @@ function useSearchComponent(
     type: "class",
     id: "",
     label: (
-      <SpinComponent/>
+      <Spin/>
     ),
     filterlabel: ``,
     value: ``,

@@ -9,7 +9,6 @@ import { SemanticModel, useStores } from "../../models";
 import { SMNodeType } from "../../models/sm";
 import { debounce } from "lodash";
 import LabelComponent from "../../components/search/ClassLabelComponent";
-import SpinComponent from "../../components/search/SpinComponent";
 
 const styles = {
   selection: {
@@ -73,7 +72,7 @@ export const NodeSearchComponent = withStyles(styles)(
         type: "class",
         id: "",
         label: (
-          <SpinComponent/>
+          <Spin/>
         ),
         filterlabel: ``,
         value: ``,
@@ -164,7 +163,7 @@ export const NodeSearchComponent = withStyles(styles)(
           onSelect={(value: any, option: SearchOptions) => {
             if (option.type == "class") {
               classStore.fetchById(option.id).then(() => {
-                onSelect({ type: "class", id: option.id });
+                onSelect({ type: option.type, id: option.id });
               });
             } else {
               onSelect({ type: option.type, id: option.id });
