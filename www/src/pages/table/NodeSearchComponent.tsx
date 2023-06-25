@@ -4,11 +4,11 @@ import { Select, Spin } from "antd";
 import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
 import { SequentialFuncInvoker } from "../../misc";
-import { TextSearchResult } from "../../models/ontology/ClassStore";
+import { ClassTextSearchResult } from "../../models/ontology/ClassStore";
 import { SemanticModel, useStores } from "../../models";
 import { SMNodeType } from "../../models/sm";
 import { debounce } from "lodash";
-import LabelComponent from "../../components/search/LabelComponent";
+import LabelComponent from "../../components/search/ClassLabelComponent";
 import SpinComponent from "../../components/search/SpinComponent";
 
 const styles = {
@@ -43,10 +43,10 @@ export interface SearchOptions {
   value: string;
   label: any;
   filterlabel: string;
-  type: SMNodeType | "class";
+  type: SMNodeType | "class" | "property" | "entity";
 }
 
-export type SearchValue = { type: SMNodeType | "class"; id: string };
+export type SearchValue = { type: SMNodeType | "class" | "property" | "entity"; id: string };
 
 export const NodeSearchComponent = withStyles(styles)(
   observer(
@@ -128,13 +128,13 @@ export const NodeSearchComponent = withStyles(styles)(
         classStore
           .fetchSearchResults(query)
           .then((data) => {
-            data.forEach((searchResult: TextSearchResult) => {
+            data.forEach((searchResult: ClassTextSearchResult) => {
               searchResults.push({
                 type: "class",
                 id: searchResult.id,
                 label: (
                   <LabelComponent id={searchResult.id} label={searchResult.label}
-                   description={searchResult.description} uri={""} />
+                   description={searchResult.description} />
                 ),
                 filterlabel: `${searchResult.label} (${searchResult.id})`,
                 value: `class:${searchResult.id}`,
@@ -162,7 +162,6 @@ export const NodeSearchComponent = withStyles(styles)(
           onSearch={debounce(onSearch, 300)}
           value={value === undefined ? undefined : `${value.type}:${value.id}`}
           onSelect={(value: any, option: SearchOptions) => {
-            console.log(option);
             if (option.type == "class") {
               classStore.fetchById(option.id).then(() => {
                 onSelect({ type: "class", id: option.id });

@@ -3,10 +3,15 @@ import { Select, Spin } from "antd";
 import { observer } from "mobx-react";
 import { useEffect, useMemo, useState } from "react";
 import { useStores } from "../../models";
-import LabelComponent from "../../components/search/LabelComponent";
+import ClassLabelComponent from "../../components/search/ClassLabelComponent";
+import EntityLabelComponent from "../../components/search/EntityLabelComponent";
+import PropertyLabelComponent from "../../components/search/PropertyLabelComponent";
 import { debounce } from "lodash";
 import { SearchOptions } from "./NodeSearchComponent";
-import { TextSearchResult } from "../../models/ontology/ClassStore";
+import { ClassTextSearchResult } from "../../models/ontology/ClassStore";
+import { PropertyTextSearchResult } from "../../models/ontology/PropertyStore";
+import { EntityTextSearchResult } from "../../models/entity/EntityStore";
+
 import SpinComponent from "../../components/search/SpinComponent";
 
 
@@ -103,22 +108,20 @@ function useSearchComponent(
     loaderOption.filterlabel = query;
 
     setSearchOptions([...options, loaderOption]);
-
-    console.log(store)
-    store
+    if(storeName === 'classStore') {
+      store
       .fetchSearchResults(query)
       .then((data) => {
-        console.log(data)
-        data.forEach((searchResult: TextSearchResult) => {
+        data.forEach((searchResult: ClassTextSearchResult) => {
           searchResults.push({
             type: "class",
             id: searchResult.id,
             label: (
-              <LabelComponent id={searchResult.id} label={searchResult.label}
-               description={searchResult.description} uri={""} />
+              <ClassLabelComponent id={searchResult.id} label={searchResult.label}
+               description={searchResult.description} />
             ),
             filterlabel: `${searchResult.label} (${searchResult.id})`,
-            value: `${searchResult.id}`,
+            value: `class:${searchResult.id}`,
           });
         });
         return searchResults;
@@ -129,7 +132,62 @@ function useSearchComponent(
       .catch(function (error: any) {
         console.error(error);
       });
-  };
+
+    } else if(storeName === 'propertyStore') {
+      store
+      .fetchSearchResults(query)
+      .then((data) => {
+        data.forEach((searchResult: PropertyTextSearchResult) => {
+          searchResults.push({
+            type: "property",
+            id: searchResult.id,
+            label: (
+              <PropertyLabelComponent id={searchResult.id} label={searchResult.label}
+               description={searchResult.description} />
+            ),
+            filterlabel: `${searchResult.label} (${searchResult.id})`,
+            value: `property:${searchResult.id}`,
+          });
+        });
+        return searchResults;
+      })
+      .then((searchResults) => {
+        setSearchOptions([...options, ...searchResults]);
+      })
+      .catch(function (error: any) {
+        console.error(error);
+      });
+
+    } else {
+      store
+      .fetchSearchResults(query)
+      .then((data) => {
+        data.forEach((searchResult: EntityTextSearchResult) => {
+          searchResults.push({
+            type: "entity",
+            id: searchResult.id,
+            label: (
+              <EntityLabelComponent id={searchResult.id} label={searchResult.label}
+               description={searchResult.description} />
+            ),
+            filterlabel: `${searchResult.label} (${searchResult.id})`,
+            value: `entity:${searchResult.id}`,
+          });
+        });
+        return searchResults;
+      })
+      .then((searchResults) => {
+        setSearchOptions([...options, ...searchResults]);
+      })
+      .catch(function (error: any) {
+        console.error(error);
+      });
+
+    }
+
+
+
+  } 
 
 
   return (
@@ -146,12 +204,12 @@ function useSearchComponent(
       onSelect={(value: any, option: SearchOptions) => {
           store.fetchById(option.id).then(() => {
             if(props !== undefined) {
-              props.onSelect?.(option.type)
+              props.onSelect?.(option.id)
             } 
           });
       }}
       onDeselect={(value: any, option: SearchOptions) => {
-        props.onDeselect?.(option.type)
+        props.onDeselect?.(option.id)
       }}
     />
   );

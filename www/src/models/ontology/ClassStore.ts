@@ -18,7 +18,7 @@ export interface ClassTextSearchResult {
   id: string;
   label: string;
   description: string;
-  uri: string;
+  uri?: string;
 }
 
 export class ClassStore extends RStore<string, Class> {

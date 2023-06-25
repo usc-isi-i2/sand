@@ -7,7 +7,7 @@ export interface EntityTextSearchResult {
   id: string;
   label: string;
   description: string;
-  uri: string;
+  uri?: string;
 }
 
 export class EntityStore extends RStore<string, Entity> {
@@ -27,10 +27,9 @@ export class EntityStore extends RStore<string, Entity> {
     let params: any = {
       q: `${searchTest}`,
     };
-
     let resp: any;
     try {
-      resp = await axios.get(`${SERVER}/api/search/classes`, { params });
+      resp = await axios.get(`${SERVER}/api/search/entities`, { params });
     } catch (error) {
       throw error;
     }

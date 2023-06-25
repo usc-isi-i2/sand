@@ -1,6 +1,6 @@
-import { TextSearchResult } from "../../models/ontology/ClassStore";
+import { PropertyTextSearchResult } from "../../models/ontology/PropertyStore";
 
-export default function LabelComponent(searchResult: TextSearchResult) {
+export default function PropertyLabelComponent(searchResult: PropertyTextSearchResult) {
     return (
         <div>
         <p style={{ color: "blue" }}>

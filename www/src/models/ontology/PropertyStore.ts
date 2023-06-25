@@ -8,7 +8,7 @@ export interface PropertyTextSearchResult {
   id: string;
   label: string;
   description: string;
-  uri: string;
+  uri?: string;
 }
 
 export class PropertyStore extends RStore<string, Property> {
