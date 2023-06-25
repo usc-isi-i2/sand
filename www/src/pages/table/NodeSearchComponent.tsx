@@ -4,10 +4,12 @@ import { Select, Spin } from "antd";
 import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
 import { SequentialFuncInvoker } from "../../misc";
-import { ClassTextSearchResult } from "../../models/ontology/ClassStore";
+import { TextSearchResult } from "../../models/ontology/ClassStore";
 import { SemanticModel, useStores } from "../../models";
 import { SMNodeType } from "../../models/sm";
 import { debounce } from "lodash";
+import LabelComponent from "../../components/search/LabelComponent";
+import SpinComponent from "../../components/search/SpinComponent";
 
 const styles = {
   selection: {
@@ -71,9 +73,7 @@ export const NodeSearchComponent = withStyles(styles)(
         type: "class",
         id: "",
         label: (
-          <div>
-            <Spin style={{ width: "100%" }} size="large" />
-          </div>
+          <SpinComponent/>
         ),
         filterlabel: ``,
         value: ``,
@@ -128,19 +128,13 @@ export const NodeSearchComponent = withStyles(styles)(
         classStore
           .fetchSearchResults(query)
           .then((data) => {
-            data.forEach((searchResult: ClassTextSearchResult) => {
+            data.forEach((searchResult: TextSearchResult) => {
               searchResults.push({
                 type: "class",
                 id: searchResult.id,
                 label: (
-                  <div>
-                    <p style={{ color: "blue" }}>
-                      {searchResult.label} ({searchResult.id})
-                    </p>
-                    <p style={{ fontSize: 12, marginTop: -5 }}>
-                      {searchResult.description}
-                    </p>
-                  </div>
+                  <LabelComponent id={searchResult.id} label={searchResult.label}
+                   description={searchResult.description} uri={""} />
                 ),
                 filterlabel: `${searchResult.label} (${searchResult.id})`,
                 value: `class:${searchResult.id}`,
@@ -171,7 +165,7 @@ export const NodeSearchComponent = withStyles(styles)(
             console.log(option);
             if (option.type == "class") {
               classStore.fetchById(option.id).then(() => {
-                onSelect({ type: option.type, id: option.id });
+                onSelect({ type: "class", id: option.id });
               });
             } else {
               onSelect({ type: option.type, id: option.id });
@@ -185,3 +179,4 @@ export const NodeSearchComponent = withStyles(styles)(
     }
   )
 );
+
