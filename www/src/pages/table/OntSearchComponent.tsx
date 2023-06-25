@@ -1,5 +1,5 @@
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { Select, Spin } from "antd";
+import { Select } from "antd";
 import { observer } from "mobx-react";
 import { useEffect, useMemo, useState } from "react";
 import { useStores } from "../../models";
@@ -11,6 +11,7 @@ import { SearchOptions } from "./NodeSearchComponent";
 import { ClassTextSearchResult } from "../../models/ontology/ClassStore";
 import { PropertyTextSearchResult } from "../../models/ontology/PropertyStore";
 import { EntityTextSearchResult } from "../../models/entity/EntityStore";
+import SpinComponent from "../../components/search/SpinComponent";
 
 const styles = {
   selection: {
@@ -90,7 +91,7 @@ function useSearchComponent(
     type: "class",
     id: "",
     label: (
-      <Spin/>
+      <SpinComponent/>
     ),
     filterlabel: ``,
     value: ``,

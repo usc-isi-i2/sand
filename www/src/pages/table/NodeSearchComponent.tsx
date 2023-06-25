@@ -1,6 +1,6 @@
 import { gold, green, purple } from "@ant-design/colors";
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { Select, Spin } from "antd";
+import { Select } from "antd";
 import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
 import { SequentialFuncInvoker } from "../../misc";
@@ -9,6 +9,7 @@ import { SemanticModel, useStores } from "../../models";
 import { SMNodeType } from "../../models/sm";
 import { debounce } from "lodash";
 import LabelComponent from "../../components/search/ClassLabelComponent";
+import SpinComponent from "../../components/search/SpinComponent";
 
 const styles = {
   selection: {
@@ -72,7 +73,8 @@ export const NodeSearchComponent = withStyles(styles)(
         type: "class",
         id: "",
         label: (
-          <Spin/>
+          <SpinComponent />
+          
         ),
         filterlabel: ``,
         value: ``,
