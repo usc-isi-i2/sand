@@ -1,6 +1,6 @@
 import { gold, green, purple } from "@ant-design/colors";
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { Select } from "antd";
+import { Select, Spin } from "antd";
 import { observer } from "mobx-react";
 import React, { useMemo, useState } from "react";
 import { SequentialFuncInvoker } from "../../misc";
@@ -8,8 +8,7 @@ import { ClassTextSearchResult } from "../../models/ontology/ClassStore";
 import { SemanticModel, useStores } from "../../models";
 import { SMNodeType } from "../../models/sm";
 import { debounce } from "lodash";
-import LabelComponent from "../../components/search/ClassLabelComponent";
-import SpinComponent from "../../components/search/SpinComponent";
+import LabelComponent from "../../components/search/LabelComponent";
 
 const styles = {
   selection: {
@@ -43,10 +42,16 @@ export interface SearchOptions {
   value: string;
   label: any;
   filterlabel: string;
-  type: SMNodeType | "class" | "property" | "entity";
+  type?: SMNodeType | "class" ;
 }
 
-export type SearchValue = { type: SMNodeType | "class" | "property" | "entity"; id: string };
+export interface TextSearchResult {
+  id: string;
+  label: string;
+  description: string;
+}
+
+export type SearchValue = { type?: SMNodeType | "class"; id: string };
 
 export const NodeSearchComponent = withStyles(styles)(
   observer(
@@ -73,8 +78,7 @@ export const NodeSearchComponent = withStyles(styles)(
         type: "class",
         id: "",
         label: (
-          <SpinComponent />
-          
+          <Spin style={{ width: "100%" }} size="large" />
         ),
         filterlabel: ``,
         value: ``,
@@ -126,6 +130,7 @@ export const NodeSearchComponent = withStyles(styles)(
 
         setSearchOptions([...options, loaderOption]);
 
+
         classStore
           .fetchSearchResults(query)
           .then((data) => {
@@ -134,8 +139,7 @@ export const NodeSearchComponent = withStyles(styles)(
                 type: "class",
                 id: searchResult.id,
                 label: (
-                  <LabelComponent id={searchResult.id} label={searchResult.label}
-                   description={searchResult.description} />
+                  <LabelComponent id={searchResult.id} description={searchResult.description} label={searchResult.label} />
                 ),
                 filterlabel: `${searchResult.label} (${searchResult.id})`,
                 value: `class:${searchResult.id}`,

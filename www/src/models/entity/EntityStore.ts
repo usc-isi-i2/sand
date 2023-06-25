@@ -7,7 +7,7 @@ export interface EntityTextSearchResult {
   id: string;
   label: string;
   description: string;
-  uri?: string;
+  uri: string;
 }
 
 export class EntityStore extends RStore<string, Entity> {

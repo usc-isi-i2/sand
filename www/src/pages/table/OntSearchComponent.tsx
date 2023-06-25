@@ -1,17 +1,14 @@
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { Select } from "antd";
+import { Select, Spin } from "antd";
 import { observer } from "mobx-react";
 import { useEffect, useMemo, useState } from "react";
 import { useStores } from "../../models";
-import ClassLabelComponent from "../../components/search/ClassLabelComponent";
-import EntityLabelComponent from "../../components/search/EntityLabelComponent";
-import PropertyLabelComponent from "../../components/search/PropertyLabelComponent";
+import LabelComponent from "../../components/search/LabelComponent";
 import { debounce } from "lodash";
 import { SearchOptions } from "./NodeSearchComponent";
 import { ClassTextSearchResult } from "../../models/ontology/ClassStore";
 import { PropertyTextSearchResult } from "../../models/ontology/PropertyStore";
 import { EntityTextSearchResult } from "../../models/entity/EntityStore";
-import SpinComponent from "../../components/search/SpinComponent";
 
 const styles = {
   selection: {
@@ -91,7 +88,7 @@ function useSearchComponent(
     type: "class",
     id: "",
     label: (
-      <SpinComponent/>
+      <Spin style={{ width: "100%" }} size="large" />
     ),
     filterlabel: ``,
     value: ``,
@@ -115,8 +112,9 @@ function useSearchComponent(
             type: "class",
             id: searchResult.id,
             label: (
-              <ClassLabelComponent id={searchResult.id} label={searchResult.label}
-               description={searchResult.description} />
+              <LabelComponent id={searchResult.id} description={searchResult.description}
+               label={searchResult.label} />
+
             ),
             filterlabel: `${searchResult.label} (${searchResult.id})`,
             value: `class:${searchResult.id}`,
@@ -137,10 +135,9 @@ function useSearchComponent(
       .then((data) => {
         data.forEach((searchResult: PropertyTextSearchResult) => {
           searchResults.push({
-            type: "property",
             id: searchResult.id,
             label: (
-              <PropertyLabelComponent id={searchResult.id} label={searchResult.label}
+              <LabelComponent id={searchResult.id} label={searchResult.label}
                description={searchResult.description} />
             ),
             filterlabel: `${searchResult.label} (${searchResult.id})`,
@@ -162,10 +159,9 @@ function useSearchComponent(
       .then((data) => {
         data.forEach((searchResult: EntityTextSearchResult) => {
           searchResults.push({
-            type: "entity",
             id: searchResult.id,
             label: (
-              <EntityLabelComponent id={searchResult.id} label={searchResult.label}
+              <LabelComponent id={searchResult.id} label={searchResult.label}
                description={searchResult.description} />
             ),
             filterlabel: `${searchResult.label} (${searchResult.id})`,
