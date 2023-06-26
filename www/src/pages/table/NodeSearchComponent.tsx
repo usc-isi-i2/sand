@@ -2,12 +2,12 @@ import { gold, green, purple } from "@ant-design/colors";
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { Select, Spin } from "antd";
 import { observer } from "mobx-react";
-import React, { useMemo, useState } from "react";
-import { SequentialFuncInvoker } from "../../misc";
+import { useMemo, useState } from "react";
 import { ClassTextSearchResult } from "../../models/ontology/ClassStore";
 import { SemanticModel, useStores } from "../../models";
 import { SMNodeType } from "../../models/sm";
 import { debounce } from "lodash";
+import LabelComponent from "../../components/search/LabelComponent";
 
 const styles = {
   selection: {
@@ -41,10 +41,10 @@ export interface SearchOptions {
   value: string;
   label: any;
   filterlabel: string;
-  type: SMNodeType | "class";
+  type?: SMNodeType | "class" ;
 }
 
-export type SearchValue = { type: SMNodeType | "class"; id: string };
+export type SearchValue = { type?: SMNodeType | "class"; id: string };
 
 export const NodeSearchComponent = withStyles(styles)(
   observer(
@@ -71,9 +71,7 @@ export const NodeSearchComponent = withStyles(styles)(
         type: "class",
         id: "",
         label: (
-          <div>
-            <Spin style={{ width: "100%" }} size="large" />
-          </div>
+          <Spin style={{ width: "100%" }} size="large" />
         ),
         filterlabel: ``,
         value: ``,
@@ -125,6 +123,7 @@ export const NodeSearchComponent = withStyles(styles)(
 
         setSearchOptions([...options, loaderOption]);
 
+
         classStore
           .fetchSearchResults(query)
           .then((data) => {
@@ -133,14 +132,7 @@ export const NodeSearchComponent = withStyles(styles)(
                 type: "class",
                 id: searchResult.id,
                 label: (
-                  <div>
-                    <p style={{ color: "blue" }}>
-                      {searchResult.label} ({searchResult.id})
-                    </p>
-                    <p style={{ fontSize: 12, marginTop: -5 }}>
-                      {searchResult.description}
-                    </p>
-                  </div>
+                  <LabelComponent id={searchResult.id} description={searchResult.description} label={searchResult.label} />
                 ),
                 filterlabel: `${searchResult.label} (${searchResult.id})`,
                 value: `class:${searchResult.id}`,
@@ -168,7 +160,6 @@ export const NodeSearchComponent = withStyles(styles)(
           onSearch={debounce(onSearch, 300)}
           value={value === undefined ? undefined : `${value.type}:${value.id}`}
           onSelect={(value: any, option: SearchOptions) => {
-            console.log(option);
             if (option.type == "class") {
               classStore.fetchById(option.id).then(() => {
                 onSelect({ type: option.type, id: option.id });
@@ -185,3 +176,4 @@ export const NodeSearchComponent = withStyles(styles)(
     }
   )
 );
+

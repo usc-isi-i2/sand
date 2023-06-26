@@ -52,7 +52,7 @@ export class PropertyStore extends RStore<string, Property> {
 
     let resp: any;
     try {
-      resp = await axios.get(`${SERVER}/api/search/properties`, { params });
+      resp = await axios.get(`${SERVER}/api/search/props`, { params });
     } catch (error) {
       throw error;
     }

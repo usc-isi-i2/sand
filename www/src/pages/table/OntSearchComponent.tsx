@@ -1,9 +1,14 @@
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { Select } from "antd";
+import { Select, Spin } from "antd";
 import { observer } from "mobx-react";
-import React, { useEffect, useMemo } from "react";
-import { SequentialFuncInvoker } from "../../misc";
+import { useEffect, useMemo, useState } from "react";
 import { useStores } from "../../models";
+import LabelComponent from "../../components/search/LabelComponent";
+import { debounce } from "lodash";
+import { SearchOptions } from "./NodeSearchComponent";
+import { ClassTextSearchResult } from "../../models/ontology/ClassStore";
+import { PropertyTextSearchResult } from "../../models/ontology/PropertyStore";
+import { EntityTextSearchResult } from "../../models/entity/EntityStore";
 
 const styles = {
   selection: {
@@ -36,12 +41,14 @@ export const EntitySearchComponent = withStyles(styles)(
   })
 );
 
+
+
 function useSearchComponent(
   storeName: "propertyStore" | "classStore" | "entityStore",
   props: SearchProps
 ) {
   const store = useStores()[storeName];
-  const seqInvoker = new SequentialFuncInvoker();
+  const [searchOptions, setSearchOptions] = useState<SearchOptions[]>();
 
   // when the provided value is not in the store, fetch it
   useEffect(() => {
@@ -64,36 +71,140 @@ function useSearchComponent(
   // gather all options already in the store, leverage the fact
   // that property store is readonly
   const options = useMemo(() => {
-    const options = [];
+    const options: SearchOptions[] = [];
     for (const r of store.iter()) {
       options.push({
-        value: r.id,
+        value: r.id ,
         label: r.readableLabel,
-      });
+
+      } as any);
+
     }
+    setSearchOptions([...options]);
     return options;
   }, [store.records.size]);
 
-  // search for additional properties if it's not in the list
-  const onSearch = (query: string) => {
-    if (query === "") return;
-    seqInvoker.exec(() => {
-      return store.fetchById(query).then(() => 1);
-    });
+  const loaderOption: SearchOptions = {
+    type: "class",
+    id: "",
+    label: (
+      <Spin style={{ width: "100%" }} size="large" />
+    ),
+    filterlabel: ``,
+    value: ``,
   };
+
+  const onSearch = (query: string) => {
+    if (query === "") {
+      setSearchOptions([...options]);
+      return;
+    }
+    const searchResults: SearchOptions[] = [];
+    loaderOption.filterlabel = query;
+
+    setSearchOptions([...options, loaderOption]);
+    if(storeName === 'classStore') {
+      store
+      .fetchSearchResults(query)
+      .then((data) => {
+        data.forEach((searchResult: ClassTextSearchResult) => {
+          searchResults.push({
+            type: "class",
+            id: searchResult.id,
+            label: (
+              <LabelComponent id={searchResult.id} description={searchResult.description}
+               label={searchResult.label} />
+
+            ),
+            filterlabel: `${searchResult.label} (${searchResult.id})`,
+            value: `class:${searchResult.id}`,
+          });
+        });
+        return searchResults;
+      })
+      .then((searchResults) => {
+        setSearchOptions([...options, ...searchResults]);
+      })
+      .catch(function (error: any) {
+        console.error(error);
+      });
+
+    } else if(storeName === 'propertyStore') {
+      store
+      .fetchSearchResults(query)
+      .then((data) => {
+        data.forEach((searchResult: PropertyTextSearchResult) => {
+          searchResults.push({
+            id: searchResult.id,
+            label: (
+              <LabelComponent id={searchResult.id} label={searchResult.label}
+               description={searchResult.description} />
+            ),
+            filterlabel: `${searchResult.label} (${searchResult.id})`,
+            value: `property:${searchResult.id}`,
+          });
+        });
+        return searchResults;
+      })
+      .then((searchResults) => {
+        setSearchOptions([...options, ...searchResults]);
+      })
+      .catch(function (error: any) {
+        console.error(error);
+      });
+
+    } else {
+      store
+      .fetchSearchResults(query)
+      .then((data) => {
+        data.forEach((searchResult: EntityTextSearchResult) => {
+          searchResults.push({
+            id: searchResult.id,
+            label: (
+              <LabelComponent id={searchResult.id} label={searchResult.label}
+               description={searchResult.description} />
+            ),
+            filterlabel: `${searchResult.label} (${searchResult.id})`,
+            value: `entity:${searchResult.id}`,
+          });
+        });
+        return searchResults;
+      })
+      .then((searchResults) => {
+        setSearchOptions([...options, ...searchResults]);
+      })
+      .catch(function (error: any) {
+        console.error(error);
+      });
+
+    }
+
+
+
+  } 
+
 
   return (
     <Select
-      mode={props.mode}
       allowClear={true}
-      options={options}
-      optionFilterProp="label"
+      options={searchOptions}
+      onClear={() => setSearchOptions([...options])}
+      optionFilterProp="filterlabel"
+      defaultActiveFirstOption={false}
       className={props.classes.selection}
       showSearch={true}
-      onSearch={onSearch}
-      value={props.value}
-      onSelect={props.onSelect as any}
-      onDeselect={props.onDeselect as any}
+      onSearch={debounce(onSearch, 300)}
+      value={props.value === undefined ? undefined : `${props.value}`}
+      onSelect={(value: any, option: SearchOptions) => {
+          store.fetchById(option.id).then(() => {
+            if(props !== undefined) {
+              props.onSelect?.(option.id)
+            } 
+          });
+      }}
+      onDeselect={(value: any, option: SearchOptions) => {
+        props.onDeselect?.(option.id)
+      }}
     />
   );
 }
