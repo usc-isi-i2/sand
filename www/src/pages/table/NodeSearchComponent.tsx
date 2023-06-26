@@ -41,7 +41,7 @@ export interface SearchOptions {
   value: string;
   label: any;
   filterlabel: string;
-  type?: SMNodeType | "class" ;
+  type?: SMNodeType | "class";
 }
 
 export type SearchValue = { type?: SMNodeType | "class"; id: string };
@@ -70,9 +70,7 @@ export const NodeSearchComponent = withStyles(styles)(
       const loaderOption: SearchOptions = {
         type: "class",
         id: "",
-        label: (
-          <Spin style={{ width: "100%" }} size="large" />
-        ),
+        label: <Spin style={{ width: "100%" }} size="large" />,
         filterlabel: ``,
         value: ``,
       };
@@ -123,7 +121,6 @@ export const NodeSearchComponent = withStyles(styles)(
 
         setSearchOptions([...options, loaderOption]);
 
-
         classStore
           .fetchSearchResults(query)
           .then((data) => {
@@ -132,7 +129,11 @@ export const NodeSearchComponent = withStyles(styles)(
                 type: "class",
                 id: searchResult.id,
                 label: (
-                  <LabelComponent id={searchResult.id} description={searchResult.description} label={searchResult.label} />
+                  <LabelComponent
+                    id={searchResult.id}
+                    description={searchResult.description}
+                    label={searchResult.label}
+                  />
                 ),
                 filterlabel: `${searchResult.label} (${searchResult.id})`,
                 value: `class:${searchResult.id}`,
@@ -176,4 +177,3 @@ export const NodeSearchComponent = withStyles(styles)(
     }
   )
 );
-

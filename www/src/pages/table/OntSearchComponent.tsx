@@ -41,8 +41,6 @@ export const EntitySearchComponent = withStyles(styles)(
   })
 );
 
-
-
 function useSearchComponent(
   storeName: "propertyStore" | "classStore" | "entityStore",
   props: SearchProps
@@ -74,22 +72,17 @@ function useSearchComponent(
     const options: SearchOptions[] = [];
     for (const r of store.iter()) {
       options.push({
-        value: r.id ,
+        value: r.id,
         label: r.readableLabel,
-
       } as any);
-
     }
     setSearchOptions([...options]);
     return options;
   }, [store.records.size]);
 
   const loaderOption: SearchOptions = {
-    type: "class",
     id: "",
-    label: (
-      <Spin style={{ width: "100%" }} size="large" />
-    ),
+    label: <Spin style={{ width: "100%", marginTop: "2px" }} size="large" />,
     filterlabel: ``,
     value: ``,
   };
@@ -103,86 +96,87 @@ function useSearchComponent(
     loaderOption.filterlabel = query;
 
     setSearchOptions([...options, loaderOption]);
-    if(storeName === 'classStore') {
+    if (storeName === "classStore") {
       store
-      .fetchSearchResults(query)
-      .then((data) => {
-        data.forEach((searchResult: ClassTextSearchResult) => {
-          searchResults.push({
-            type: "class",
-            id: searchResult.id,
-            label: (
-              <LabelComponent id={searchResult.id} description={searchResult.description}
-               label={searchResult.label} />
-
-            ),
-            filterlabel: `${searchResult.label} (${searchResult.id})`,
-            value: `class:${searchResult.id}`,
+        .fetchSearchResults(query)
+        .then((data) => {
+          data.forEach((searchResult: ClassTextSearchResult) => {
+            searchResults.push({
+              type: "class",
+              id: searchResult.id,
+              label: (
+                <LabelComponent
+                  id={searchResult.id}
+                  description={searchResult.description}
+                  label={searchResult.label}
+                />
+              ),
+              filterlabel: `${searchResult.label} (${searchResult.id})`,
+              value: `class:${searchResult.id}`,
+            });
           });
+          return searchResults;
+        })
+        .then((searchResults) => {
+          setSearchOptions([...options, ...searchResults]);
+        })
+        .catch(function (error: any) {
+          console.error(error);
         });
-        return searchResults;
-      })
-      .then((searchResults) => {
-        setSearchOptions([...options, ...searchResults]);
-      })
-      .catch(function (error: any) {
-        console.error(error);
-      });
-
-    } else if(storeName === 'propertyStore') {
+    } else if (storeName === "propertyStore") {
       store
-      .fetchSearchResults(query)
-      .then((data) => {
-        data.forEach((searchResult: PropertyTextSearchResult) => {
-          searchResults.push({
-            id: searchResult.id,
-            label: (
-              <LabelComponent id={searchResult.id} label={searchResult.label}
-               description={searchResult.description} />
-            ),
-            filterlabel: `${searchResult.label} (${searchResult.id})`,
-            value: `property:${searchResult.id}`,
+        .fetchSearchResults(query)
+        .then((data) => {
+          data.forEach((searchResult: PropertyTextSearchResult) => {
+            searchResults.push({
+              id: searchResult.id,
+              label: (
+                <LabelComponent
+                  id={searchResult.id}
+                  label={searchResult.label}
+                  description={searchResult.description}
+                />
+              ),
+              filterlabel: `${searchResult.label} (${searchResult.id})`,
+              value: `property:${searchResult.id}`,
+            });
           });
+          return searchResults;
+        })
+        .then((searchResults) => {
+          setSearchOptions([...options, ...searchResults]);
+        })
+        .catch(function (error: any) {
+          console.error(error);
         });
-        return searchResults;
-      })
-      .then((searchResults) => {
-        setSearchOptions([...options, ...searchResults]);
-      })
-      .catch(function (error: any) {
-        console.error(error);
-      });
-
     } else {
       store
-      .fetchSearchResults(query)
-      .then((data) => {
-        data.forEach((searchResult: EntityTextSearchResult) => {
-          searchResults.push({
-            id: searchResult.id,
-            label: (
-              <LabelComponent id={searchResult.id} label={searchResult.label}
-               description={searchResult.description} />
-            ),
-            filterlabel: `${searchResult.label} (${searchResult.id})`,
-            value: `entity:${searchResult.id}`,
+        .fetchSearchResults(query)
+        .then((data) => {
+          data.forEach((searchResult: EntityTextSearchResult) => {
+            searchResults.push({
+              id: searchResult.id,
+              label: (
+                <LabelComponent
+                  id={searchResult.id}
+                  label={searchResult.label}
+                  description={searchResult.description}
+                />
+              ),
+              filterlabel: `${searchResult.label} (${searchResult.id})`,
+              value: `entity:${searchResult.id}`,
+            });
           });
+          return searchResults;
+        })
+        .then((searchResults) => {
+          setSearchOptions([...options, ...searchResults]);
+        })
+        .catch(function (error: any) {
+          console.error(error);
         });
-        return searchResults;
-      })
-      .then((searchResults) => {
-        setSearchOptions([...options, ...searchResults]);
-      })
-      .catch(function (error: any) {
-        console.error(error);
-      });
-
     }
-
-
-
-  } 
-
+  };
 
   return (
     <Select
@@ -196,14 +190,14 @@ function useSearchComponent(
       onSearch={debounce(onSearch, 300)}
       value={props.value === undefined ? undefined : `${props.value}`}
       onSelect={(value: any, option: SearchOptions) => {
-          store.fetchById(option.id).then(() => {
-            if(props !== undefined) {
-              props.onSelect?.(option.id)
-            } 
-          });
+        store.fetchById(option.id).then(() => {
+          if (props !== undefined) {
+            props.onSelect?.(option.id);
+          }
+        });
       }}
       onDeselect={(value: any, option: SearchOptions) => {
-        props.onDeselect?.(option.id)
+        props.onDeselect?.(option.id);
       }}
     />
   );
