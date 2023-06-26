@@ -45,12 +45,6 @@ export interface SearchOptions {
   type?: SMNodeType | "class" ;
 }
 
-export interface TextSearchResult {
-  id: string;
-  label: string;
-  description: string;
-}
-
 export type SearchValue = { type?: SMNodeType | "class"; id: string };
 
 export const NodeSearchComponent = withStyles(styles)(
