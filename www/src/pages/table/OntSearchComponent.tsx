@@ -48,39 +48,6 @@ function useSearchComponent(
   const store = useStores()[storeName];
   const [searchOptions, setSearchOptions] = useState<SearchOptions[]>();
 
-  // when the provided value is not in the store, fetch it
-  useEffect(() => {
-    if (props.value === undefined) {
-      return;
-    }
-
-    if (Array.isArray(props.value)) {
-      // leverage the fact that the three stores are not re-fetched
-      if (!store.refetch) {
-        store.fetchByIds(props.value);
-      } else {
-        store.fetchByIds(props.value.filter((id) => !store.records.has(id)));
-      }
-    } else if (store.get(props.value) === undefined) {
-      store.fetchById(props.value);
-    }
-  }, [props.value]);
-
-  // gather all options already in the store, leverage the fact
-  // that property store is readonly
-  const options = useMemo(() => {
-    const options: SearchOptions[] = [];
-    for (const r of store.iter()) {
-      options.push({
-        value: r.id,
-        label: r.readableLabel,
-        filterlabel: `${r.readableLabel} (${r.id})`,
-      } as any);
-    }
-    setSearchOptions([...options]);
-    return options;
-  }, [store.records.size]);
-
   const loaderOption: SearchOptions = {
     id: "",
     label: <Spin style={{ width: "100%", marginTop: "2px" }} size="large" />,
@@ -91,13 +58,12 @@ function useSearchComponent(
   // search for additional values if it's not in the list
   const onSearch = (query: string) => {
     if (query === "") {
-      setSearchOptions([...options]);
       return;
     }
     const searchResults: SearchOptions[] = [];
     loaderOption.filterlabel = query;
 
-    setSearchOptions([...options, loaderOption]);
+    setSearchOptions([loaderOption]);
     if (storeName === "classStore") {
       store
         .fetchSearchResults(query)
@@ -114,13 +80,13 @@ function useSearchComponent(
                 />
               ),
               filterlabel: `${searchResult.label} (${searchResult.id})`,
-              value: `class:${searchResult.id}`,
+              value: `${searchResult.id}`,
             });
           });
           return searchResults;
         })
         .then((searchResults) => {
-          setSearchOptions([...options, ...searchResults]);
+          setSearchOptions([...searchResults]);
         })
         .catch(function (error: any) {
           console.error(error);
@@ -140,13 +106,13 @@ function useSearchComponent(
                 />
               ),
               filterlabel: `${searchResult.label} (${searchResult.id})`,
-              value: `property:${searchResult.id}`,
+              value: `${searchResult.id}`,
             });
           });
           return searchResults;
         })
         .then((searchResults) => {
-          setSearchOptions([...options, ...searchResults]);
+          setSearchOptions([...searchResults]);
         })
         .catch(function (error: any) {
           console.error(error);
@@ -166,25 +132,26 @@ function useSearchComponent(
                 />
               ),
               filterlabel: `${searchResult.label} (${searchResult.id})`,
-              value: `entity:${searchResult.id}`,
+              value: `${searchResult.id}`,
             });
           });
           return searchResults;
         })
         .then((searchResults) => {
-          setSearchOptions([...options, ...searchResults]);
+          setSearchOptions([...searchResults]);
         })
         .catch(function (error: any) {
           console.error(error);
         });
     }
+    console.log(searchResults);
   };
 
   return (
     <Select
       allowClear={true}
       options={searchOptions}
-      onClear={() => setSearchOptions([...options])}
+      onClear={() => setSearchOptions([])}
       optionFilterProp="filterlabel"
       defaultActiveFirstOption={false}
       className={props.classes.selection}
