@@ -84,20 +84,19 @@ export const NodeSearchComponent = withStyles(styles)(
               });
             }
           } else {
-            for (const u of sm.graph.nodes) {
-              options.push({
-                type: u.nodetype,
-                id: u.id,
-                value: `${u.nodetype}:${u.id}`,
-                label: sm.graph.uriCount.label(u),
-                filterlabel: sm.graph.uriCount.label(u),
-                className: classes[u.nodetype],
-              });
-            }
+            options.push({
+              type: u.nodetype,
+              id: u.id,
+              value: `${u.nodetype}:${u.id}`,
+              label: sm.graph.uriCount.label(u),
+              filterlabel: sm.graph.uriCount.label(u),
+              className: classes[u.nodetype],
+            });
           }
         }
 
         setSearchOptions(options);
+        console.log(options);
         return options;
       }, [sm.graph.version]);
 
@@ -119,29 +118,24 @@ export const NodeSearchComponent = withStyles(styles)(
 
         setSearchOptions([...options, loaderOption]);
 
-        classStore
-          .fetchSearchResults(query)
-          .then((data) => {
-            data.forEach((searchResult: ClassTextSearchResult) => {
-              searchResults.push({
-                type: "class",
-                id: searchResult.id,
-                label: (
-                  <SearchOptionsComponent
-                    id={searchResult.id}
-                    description={searchResult.description}
-                    label={searchResult.label}
-                  />
-                ),
-                filterlabel: `${searchResult.label} (${searchResult.id})`,
-                value: `class:${searchResult.id}`,
-              });
+        classStore.fetchSearchResults(query).then((data) => {
+          data.forEach((searchResult: ClassTextSearchResult) => {
+            searchResults.push({
+              type: "class",
+              id: searchResult.id,
+              label: (
+                <SearchOptionsComponent
+                  id={searchResult.id}
+                  description={searchResult.description}
+                  label={searchResult.label}
+                />
+              ),
+              filterlabel: `${searchResult.label} (${searchResult.id})`,
+              value: `class:${searchResult.id}`,
             });
-            return searchResults;
-          })
-          .then((searchResults) => {
-            setSearchOptions([...options, ...searchResults]);
           });
+          setSearchOptions([...options, ...searchResults]);
+        });
       };
 
       return (
