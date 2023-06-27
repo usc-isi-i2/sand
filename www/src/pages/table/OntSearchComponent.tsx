@@ -74,6 +74,7 @@ function useSearchComponent(
       options.push({
         value: r.id,
         label: r.readableLabel,
+        filterlabel: `${r.readableLabel} (${r.id})`,
       } as any);
     }
     setSearchOptions([...options]);
@@ -190,11 +191,15 @@ function useSearchComponent(
       onSearch={debounce(onSearch, 300)}
       value={props.value === undefined ? undefined : `${props.value}`}
       onSelect={(value: any, option: SearchOptions) => {
-        store.fetchById(option.id).then(() => {
-          if (props !== undefined) {
-            props.onSelect?.(option.id);
-          }
-        });
+        if (option.id) {
+          store.fetchById(option.id).then(() => {
+            if (props !== undefined) {
+              props.onSelect?.(option.id);
+            }
+          });
+        } else {
+          props.onSelect?.(value);
+        }
       }}
       onDeselect={(value: any, option: SearchOptions) => {
         props.onDeselect?.(option.id);
