@@ -1,7 +1,7 @@
 import { RStore, SingleKeyUniqueIndex } from "gena-app";
 import { action, makeObservable, observable, runInAction } from "mobx";
 import { SERVER } from "../../env";
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 
 export interface Class {
   id: string;
@@ -52,10 +52,11 @@ export class ClassStore extends RStore<string, Class> {
   async fetchSearchResults(
     searchTest: string
   ): Promise<ClassTextSearchResult[]> {
-    let params: any = {
-      q: searchTest,
-    };
-    let resp: any = await axios.get(`${SERVER}/api/search/classes`, { params });
+    let resp: any = await axios.get(`${SERVER}/api/search/classes`, {
+      params: {
+        q: searchTest,
+      },
+    });
     return resp.data.items;
   }
 

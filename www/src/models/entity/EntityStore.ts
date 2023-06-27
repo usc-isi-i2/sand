@@ -23,11 +23,10 @@ export class EntityStore extends RStore<string, Entity> {
   async fetchSearchResults(
     searchTest: string
   ): Promise<EntityTextSearchResult[]> {
-    let params: any = {
-      q: searchTest,
-    };
     let resp: any = await axios.get(`${SERVER}/api/search/entities`, {
-      params,
+      params: {
+        q: searchTest,
+      },
     });
     return resp.data.items;
   }

@@ -45,10 +45,11 @@ export class PropertyStore extends RStore<string, Property> {
   async fetchSearchResults(
     searchTest: string
   ): Promise<PropertyTextSearchResult[]> {
-    let params: any = {
-      q: searchTest,
-    };
-    let resp: any = await axios.get(`${SERVER}/api/search/props`, { params });
+    let resp: any = await axios.get(`${SERVER}/api/search/props`, {
+      params: {
+        q: searchTest,
+      },
+    });
     return resp.data.items;
   }
 
