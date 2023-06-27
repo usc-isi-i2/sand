@@ -71,8 +71,8 @@ export const NodeSearchComponent = withStyles(styles)(
       const options = useMemo(() => {
         const options: SearchOptions[] = [];
 
-        if (classSearchOnly) {
-          for (const u of sm.graph.nodes) {
+        for (const u of sm.graph.nodes) {
+          if (classSearchOnly) {
             if (u.nodetype == "class_node") {
               options.push({
                 type: u.nodetype,
@@ -83,17 +83,17 @@ export const NodeSearchComponent = withStyles(styles)(
                 className: classes[u.nodetype],
               });
             }
-          }
-        } else {
-          for (const u of sm.graph.nodes) {
-            options.push({
-              type: u.nodetype,
-              id: u.id,
-              value: `${u.nodetype}:${u.id}`,
-              label: sm.graph.uriCount.label(u),
-              filterlabel: sm.graph.uriCount.label(u),
-              className: classes[u.nodetype],
-            });
+          } else {
+            for (const u of sm.graph.nodes) {
+              options.push({
+                type: u.nodetype,
+                id: u.id,
+                value: `${u.nodetype}:${u.id}`,
+                label: sm.graph.uriCount.label(u),
+                filterlabel: sm.graph.uriCount.label(u),
+                className: classes[u.nodetype],
+              });
+            }
           }
         }
 
