@@ -26,8 +26,9 @@ export class EntityStore extends RStore<string, Entity> {
     let params: any = {
       q: searchTest,
     };
-    let resp: any;
-    resp = await axios.get(`${SERVER}/api/search/entities`, { params });
+    let resp: any = await axios.get(`${SERVER}/api/search/entities`, {
+      params,
+    });
     return resp.data.items;
   }
 

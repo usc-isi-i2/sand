@@ -58,7 +58,7 @@ function useSearchComponent(
       id: "",
       label: <Spin style={{ width: "100%", marginTop: "2px" }} size="large" />,
       filterlabel: query,
-      value: ``,
+      value: "",
     };
 
     setSearchOptions([loaderOption]);
@@ -99,13 +99,17 @@ function useSearchComponent(
       showSearch={true}
       onSearch={debounce(onSearch, 300)}
       value={props.value === undefined ? undefined : props.value}
-      onSelect={(value: any, option: SearchOptions) => {
-        if (props !== undefined) {
-          store.fetchById(option.id).then(() => {
-            props.onSelect?.(option.id);
-          });
-        }
-      }}
+      onSelect={
+        props.onSelect === undefined
+          ? undefined
+          : (value: any, option: SearchOptions) => {
+              if (props !== undefined) {
+                store.fetchById(option.id).then(() => {
+                  props.onSelect?.(option.id);
+                });
+              }
+            }
+      }
       onDeselect={props.onDeselect as any}
     />
   );

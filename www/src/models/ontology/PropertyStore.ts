@@ -48,8 +48,7 @@ export class PropertyStore extends RStore<string, Property> {
     let params: any = {
       q: searchTest,
     };
-    let resp: any;
-    resp = await axios.get(`${SERVER}/api/search/props`, { params });
+    let resp: any = await axios.get(`${SERVER}/api/search/props`, { params });
     return resp.data.items;
   }
 

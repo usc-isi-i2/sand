@@ -55,8 +55,7 @@ export class ClassStore extends RStore<string, Class> {
     let params: any = {
       q: searchTest,
     };
-    let resp: any;
-    resp = await axios.get(`${SERVER}/api/search/classes`, { params });
+    let resp: any = await axios.get(`${SERVER}/api/search/classes`, { params });
     return resp.data.items;
   }
 

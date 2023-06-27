@@ -96,6 +96,7 @@ export const NodeSearchComponent = withStyles(styles)(
         }
 
         setSearchOptions(options);
+        console.log(options);
         return options;
       }, [sm.graph.version]);
 
@@ -111,8 +112,8 @@ export const NodeSearchComponent = withStyles(styles)(
           id: "",
           label: <Spin style={{ width: "100%" }} size="large" />,
           filterlabel: query,
-          value: ``,
-          className: ``,
+          value: "",
+          className: "",
         };
 
         setSearchOptions([...options, loaderOption]);
