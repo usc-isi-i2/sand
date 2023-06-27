@@ -49,12 +49,10 @@ export class ClassStore extends RStore<string, Class> {
    *
    * @returns Promise<SearchResult[]> if there is no search result from Wikidata API.
    */
-  async fetchSearchResults(
-    searchTest: string
-  ): Promise<ClassTextSearchResult[]> {
+  async findByName(query: string): Promise<ClassTextSearchResult[]> {
     let resp: any = await axios.get(`${SERVER}/api/search/classes`, {
       params: {
-        q: searchTest,
+        q: query,
       },
     });
     return resp.data.items;

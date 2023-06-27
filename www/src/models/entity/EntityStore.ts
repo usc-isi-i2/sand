@@ -20,12 +20,10 @@ export class EntityStore extends RStore<string, Entity> {
    *
    * @returns Promise<SearchResult[]> if there is no search result from Wikidata API.
    */
-  async fetchSearchResults(
-    searchTest: string
-  ): Promise<EntityTextSearchResult[]> {
+  async findByName(query: string): Promise<EntityTextSearchResult[]> {
     let resp: any = await axios.get(`${SERVER}/api/search/entities`, {
       params: {
-        q: searchTest,
+        q: query,
       },
     });
     return resp.data.items;

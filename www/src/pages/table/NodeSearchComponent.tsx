@@ -106,7 +106,6 @@ export const NodeSearchComponent = withStyles(styles)(
           setSearchOptions(options);
           return;
         }
-        const searchResults: SearchOptions[] = [];
         const loaderOption: SearchOptions = {
           type: "class",
           id: "",

@@ -53,7 +53,6 @@ function useSearchComponent(
     if (query === "") {
       return;
     }
-    const searchResults: SearchOptions[] = [];
     const loaderOption: SearchOptions = {
       id: "",
       label: <Spin style={{ width: "100%", marginTop: "2px" }} size="large" />,
@@ -62,7 +61,7 @@ function useSearchComponent(
     };
 
     setSearchOptions([loaderOption]);
-    store.fetchSearchResults(query).then((data) => {
+    store.findByName(query).then((data) => {
       let searchResults: SearchOptions[] = data.map(
         (
           searchResult:
@@ -103,11 +102,9 @@ function useSearchComponent(
         props.onSelect === undefined
           ? undefined
           : (value: any, option: SearchOptions) => {
-              if (props !== undefined) {
-                store.fetchById(option.id).then(() => {
-                  props.onSelect?.(option.id);
-                });
-              }
+              store.fetchById(option.id).then(() => {
+                props.onSelect?.(option.id);
+              });
             }
       }
       onDeselect={props.onDeselect as any}
