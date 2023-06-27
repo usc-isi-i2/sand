@@ -63,14 +63,14 @@ function useSearchComponent(
 
     setSearchOptions([loaderOption]);
     store.fetchSearchResults(query).then((data) => {
-      data.forEach(
+      let searchResults: SearchOptions[] = data.map(
         (
           searchResult:
             | ClassTextSearchResult
             | PropertyTextSearchResult
             | EntityTextSearchResult
         ) => {
-          searchResults.push({
+          return {
             id: searchResult.id,
             label: (
               <SearchOptionsComponent
@@ -81,7 +81,7 @@ function useSearchComponent(
             ),
             filterlabel: `${searchResult.label} (${searchResult.id})`,
             value: searchResult.id,
-          });
+          };
         }
       );
       setSearchOptions(searchResults);

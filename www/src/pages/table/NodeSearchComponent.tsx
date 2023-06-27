@@ -119,21 +119,23 @@ export const NodeSearchComponent = withStyles(styles)(
         setSearchOptions([...options, loaderOption]);
 
         classStore.fetchSearchResults(query).then((data) => {
-          data.forEach((searchResult: ClassTextSearchResult) => {
-            searchResults.push({
-              type: "class",
-              id: searchResult.id,
-              label: (
-                <SearchOptionsComponent
-                  id={searchResult.id}
-                  description={searchResult.description}
-                  label={searchResult.label}
-                />
-              ),
-              filterlabel: `${searchResult.label} (${searchResult.id})`,
-              value: `class:${searchResult.id}`,
-            });
-          });
+          let searchResults: SearchOptions[] = data.map(
+            (searchResult: ClassTextSearchResult) => {
+              return {
+                type: "class",
+                id: searchResult.id,
+                label: (
+                  <SearchOptionsComponent
+                    id={searchResult.id}
+                    description={searchResult.description}
+                    label={searchResult.label}
+                  />
+                ),
+                filterlabel: `${searchResult.label} (${searchResult.id})`,
+                value: `class:${searchResult.id}`,
+              };
+            }
+          );
           setSearchOptions([...options, ...searchResults]);
         });
       };
