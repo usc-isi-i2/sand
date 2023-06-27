@@ -62,77 +62,30 @@ function useSearchComponent(
     };
 
     setSearchOptions([loaderOption]);
-    if (storeName === "classStore") {
-      store
-        .fetchSearchResults(query)
-        .then((data) => {
-          data.forEach((searchResult: ClassTextSearchResult) => {
-            searchResults.push({
-              type: "class",
-              id: searchResult.id,
-              label: (
-                <SearchOptionsComponent
-                  id={searchResult.id}
-                  description={searchResult.description}
-                  label={searchResult.label}
-                />
-              ),
-              filterlabel: `${searchResult.label} (${searchResult.id})`,
-              value: searchResult.id,
-            });
+    store.fetchSearchResults(query).then((data) => {
+      data.forEach(
+        (
+          searchResult:
+            | ClassTextSearchResult
+            | PropertyTextSearchResult
+            | EntityTextSearchResult
+        ) => {
+          searchResults.push({
+            id: searchResult.id,
+            label: (
+              <SearchOptionsComponent
+                id={searchResult.id}
+                description={searchResult.description}
+                label={searchResult.label}
+              />
+            ),
+            filterlabel: `${searchResult.label} (${searchResult.id})`,
+            value: searchResult.id,
           });
-          return searchResults;
-        })
-        .then((searchResults) => {
-          setSearchOptions(searchResults);
-        });
-    } else if (storeName === "propertyStore") {
-      store
-        .fetchSearchResults(query)
-        .then((data) => {
-          data.forEach((searchResult: PropertyTextSearchResult) => {
-            searchResults.push({
-              id: searchResult.id,
-              label: (
-                <SearchOptionsComponent
-                  id={searchResult.id}
-                  label={searchResult.label}
-                  description={searchResult.description}
-                />
-              ),
-              filterlabel: `${searchResult.label} (${searchResult.id})`,
-              value: searchResult.id,
-            });
-          });
-          return searchResults;
-        })
-        .then((searchResults) => {
-          setSearchOptions(searchResults);
-        });
-    } else {
-      store
-        .fetchSearchResults(query)
-        .then((data) => {
-          data.forEach((searchResult: EntityTextSearchResult) => {
-            searchResults.push({
-              id: searchResult.id,
-              label: (
-                <SearchOptionsComponent
-                  id={searchResult.id}
-                  label={searchResult.label}
-                  description={searchResult.description}
-                />
-              ),
-              filterlabel: `${searchResult.label} (${searchResult.id})`,
-              value: searchResult.id,
-            });
-          });
-          return searchResults;
-        })
-        .then((searchResults) => {
-          setSearchOptions(searchResults);
-        });
-    }
+        }
+      );
+      setSearchOptions(searchResults);
+    });
   };
 
   return (

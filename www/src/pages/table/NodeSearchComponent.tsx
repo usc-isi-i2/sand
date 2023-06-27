@@ -96,7 +96,6 @@ export const NodeSearchComponent = withStyles(styles)(
         }
 
         setSearchOptions(options);
-        console.log(options);
         return options;
       }, [sm.graph.version]);
 
