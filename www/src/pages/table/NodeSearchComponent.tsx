@@ -72,27 +72,15 @@ export const NodeSearchComponent = withStyles(styles)(
         const options: SearchOptions[] = [];
 
         for (const u of sm.graph.nodes) {
-          if (classSearchOnly) {
-            if (u.nodetype == "class_node") {
-              options.push({
-                type: u.nodetype,
-                id: u.id,
-                value: `${u.nodetype}:${u.id}`,
-                label: sm.graph.uriCount.label(u),
-                filterlabel: sm.graph.uriCount.label(u),
-                className: classes[u.nodetype],
-              });
-            }
-          } else {
-            options.push({
-              type: u.nodetype,
-              id: u.id,
-              value: `${u.nodetype}:${u.id}`,
-              label: sm.graph.uriCount.label(u),
-              filterlabel: sm.graph.uriCount.label(u),
-              className: classes[u.nodetype],
-            });
-          }
+          if (classSearchOnly && !(u.nodetype == "class_node")) continue;
+          options.push({
+            type: u.nodetype,
+            id: u.id,
+            value: `${u.nodetype}:${u.id}`,
+            label: sm.graph.uriCount.label(u),
+            filterlabel: sm.graph.uriCount.label(u),
+            className: classes[u.nodetype],
+          });
         }
 
         setSearchOptions(options);
@@ -109,7 +97,7 @@ export const NodeSearchComponent = withStyles(styles)(
         const loaderOption: SearchOptions = {
           type: "class",
           id: "",
-          label: <Spin style={{ width: "100%" }} size="large" />,
+          label: <Spin style={{ width: "100%", marginTop: 3 }} size="large" />,
           filterlabel: query,
           value: "",
           className: "",

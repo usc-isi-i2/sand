@@ -55,7 +55,7 @@ function useSearchComponent(
     }
     const loaderOption: SearchOptions = {
       id: "",
-      label: <Spin style={{ width: "100%", marginTop: "2px" }} size="large" />,
+      label: <Spin style={{ width: "100%", marginTop: 3 }} size="large" />,
       filterlabel: query,
       value: "",
     };
@@ -103,7 +103,7 @@ function useSearchComponent(
           ? undefined
           : (value: any, option: SearchOptions) => {
               store.fetchById(option.id).then(() => {
-                props.onSelect!.(option.id);
+                props.onSelect!(option.id);
               });
             }
       }
