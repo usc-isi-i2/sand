@@ -117,7 +117,7 @@ export const NodeSearchComponent = withStyles(styles)(
 
         setSearchOptions([...options, loaderOption]);
 
-        classStore.fetchSearchResults(query).then((data) => {
+        classStore.findByName(query).then((data) => {
           let searchResults: SearchOptions[] = data.map(
             (searchResult: ClassTextSearchResult) => {
               return {
