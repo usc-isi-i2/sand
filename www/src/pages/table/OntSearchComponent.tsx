@@ -103,7 +103,7 @@ function useSearchComponent(
           ? undefined
           : (value: any, option: SearchOptions) => {
               store.fetchById(option.id).then(() => {
-                props.onSelect?.(option.id);
+                props.onSelect!.(option.id);
               });
             }
       }
