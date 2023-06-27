@@ -88,6 +88,7 @@ function useSearchComponent(
     value: ``,
   };
 
+  // search for additional values if it's not in the list
   const onSearch = (query: string) => {
     if (query === "") {
       setSearchOptions([...options]);
