@@ -3,7 +3,7 @@ import { Select, Spin } from "antd";
 import { observer } from "mobx-react";
 import { useEffect, useMemo, useState } from "react";
 import { useStores } from "../../models";
-import LabelComponent from "../../components/search/LabelComponent";
+import SearchOptionsComponent from "./SearchOptionsComponent";
 import { debounce } from "lodash";
 import { SearchOptions } from "./NodeSearchComponent";
 import { ClassTextSearchResult } from "../../models/ontology/ClassStore";
@@ -48,20 +48,18 @@ function useSearchComponent(
   const store = useStores()[storeName];
   const [searchOptions, setSearchOptions] = useState<SearchOptions[]>();
 
-  const loaderOption: SearchOptions = {
-    id: "",
-    label: <Spin style={{ width: "100%", marginTop: "2px" }} size="large" />,
-    filterlabel: ``,
-    value: ``,
-  };
-
   // search for additional values if it's not in the list
   const onSearch = (query: string) => {
     if (query === "") {
       return;
     }
     const searchResults: SearchOptions[] = [];
-    loaderOption.filterlabel = query;
+    const loaderOption: SearchOptions = {
+      id: "",
+      label: <Spin style={{ width: "100%", marginTop: "2px" }} size="large" />,
+      filterlabel: query,
+      value: ``,
+    };
 
     setSearchOptions([loaderOption]);
     if (storeName === "classStore") {
@@ -73,23 +71,20 @@ function useSearchComponent(
               type: "class",
               id: searchResult.id,
               label: (
-                <LabelComponent
+                <SearchOptionsComponent
                   id={searchResult.id}
                   description={searchResult.description}
                   label={searchResult.label}
                 />
               ),
               filterlabel: `${searchResult.label} (${searchResult.id})`,
-              value: `${searchResult.id}`,
+              value: searchResult.id,
             });
           });
           return searchResults;
         })
         .then((searchResults) => {
-          setSearchOptions([...searchResults]);
-        })
-        .catch(function (error: any) {
-          console.error(error);
+          setSearchOptions(searchResults);
         });
     } else if (storeName === "propertyStore") {
       store
@@ -99,23 +94,20 @@ function useSearchComponent(
             searchResults.push({
               id: searchResult.id,
               label: (
-                <LabelComponent
+                <SearchOptionsComponent
                   id={searchResult.id}
                   label={searchResult.label}
                   description={searchResult.description}
                 />
               ),
               filterlabel: `${searchResult.label} (${searchResult.id})`,
-              value: `${searchResult.id}`,
+              value: searchResult.id,
             });
           });
           return searchResults;
         })
         .then((searchResults) => {
-          setSearchOptions([...searchResults]);
-        })
-        .catch(function (error: any) {
-          console.error(error);
+          setSearchOptions(searchResults);
         });
     } else {
       store
@@ -125,26 +117,22 @@ function useSearchComponent(
             searchResults.push({
               id: searchResult.id,
               label: (
-                <LabelComponent
+                <SearchOptionsComponent
                   id={searchResult.id}
                   label={searchResult.label}
                   description={searchResult.description}
                 />
               ),
               filterlabel: `${searchResult.label} (${searchResult.id})`,
-              value: `${searchResult.id}`,
+              value: searchResult.id,
             });
           });
           return searchResults;
         })
         .then((searchResults) => {
-          setSearchOptions([...searchResults]);
-        })
-        .catch(function (error: any) {
-          console.error(error);
+          setSearchOptions(searchResults);
         });
     }
-    console.log(searchResults);
   };
 
   return (
@@ -157,21 +145,15 @@ function useSearchComponent(
       className={props.classes.selection}
       showSearch={true}
       onSearch={debounce(onSearch, 300)}
-      value={props.value === undefined ? undefined : `${props.value}`}
+      value={props.value === undefined ? undefined : props.value}
       onSelect={(value: any, option: SearchOptions) => {
-        if (option.id) {
+        if (props !== undefined) {
           store.fetchById(option.id).then(() => {
-            if (props !== undefined) {
-              props.onSelect?.(option.id);
-            }
+            props.onSelect?.(option.id);
           });
-        } else {
-          props.onSelect?.(value);
         }
       }}
-      onDeselect={(value: any, option: SearchOptions) => {
-        props.onDeselect?.(option.id);
-      }}
+      onDeselect={props.onDeselect as any}
     />
   );
 }

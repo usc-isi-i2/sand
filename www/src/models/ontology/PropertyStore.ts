@@ -42,21 +42,14 @@ export class PropertyStore extends RStore<string, Property> {
    *
    * @returns Promise<SearchResult[]> if there is no search result from Wikidata API.
    */
-
   async fetchSearchResults(
     searchTest: string
   ): Promise<PropertyTextSearchResult[]> {
     let params: any = {
-      q: `${searchTest}`,
+      q: searchTest,
     };
-
     let resp: any;
-    try {
-      resp = await axios.get(`${SERVER}/api/search/props`, { params });
-    } catch (error) {
-      throw error;
-    }
-
+    resp = await axios.get(`${SERVER}/api/search/props`, { params });
     return resp.data.items;
   }
 

@@ -7,7 +7,7 @@ import { ClassTextSearchResult } from "../../models/ontology/ClassStore";
 import { SemanticModel, useStores } from "../../models";
 import { SMNodeType } from "../../models/sm";
 import { debounce } from "lodash";
-import LabelComponent from "../../components/search/LabelComponent";
+import SearchOptionsComponent from "./SearchOptionsComponent";
 
 const styles = {
   selection: {
@@ -42,6 +42,7 @@ export interface SearchOptions {
   label: any;
   filterlabel: string;
   type?: SMNodeType | "class";
+  className?: string;
 }
 
 export type SearchValue = { type?: SMNodeType | "class"; id: string };
@@ -65,16 +66,6 @@ export const NodeSearchComponent = withStyles(styles)(
       const { classStore } = useStores();
       const [searchOptions, setSearchOptions] = useState<SearchOptions[]>();
 
-      // Loader Option to display Spin component to represent loader on
-      // searching the classes and entities
-      const loaderOption: SearchOptions = {
-        type: "class",
-        id: "",
-        label: <Spin style={{ width: "100%" }} size="large" />,
-        filterlabel: ``,
-        value: ``,
-      };
-
       // gather all options already in the store, leverage the fact
       // that property store is readonly
       const options = useMemo(() => {
@@ -90,7 +81,7 @@ export const NodeSearchComponent = withStyles(styles)(
                 label: sm.graph.uriCount.label(u),
                 filterlabel: sm.graph.uriCount.label(u),
                 className: classes[u.nodetype],
-              } as any);
+              });
             }
           }
         } else {
@@ -102,22 +93,29 @@ export const NodeSearchComponent = withStyles(styles)(
               label: sm.graph.uriCount.label(u),
               filterlabel: sm.graph.uriCount.label(u),
               className: classes[u.nodetype],
-            } as any);
+            });
           }
         }
 
-        setSearchOptions([...options]);
+        setSearchOptions(options);
         return options;
       }, [sm.graph.version]);
 
       // search for additional values if it's not in the list
       const onSearch = (query: string) => {
         if (query === "") {
-          setSearchOptions([...options]);
+          setSearchOptions(options);
           return;
         }
         const searchResults: SearchOptions[] = [];
-        loaderOption.filterlabel = query;
+        const loaderOption: SearchOptions = {
+          type: "class",
+          id: "",
+          label: <Spin style={{ width: "100%" }} size="large" />,
+          filterlabel: query,
+          value: ``,
+          className: ``,
+        };
 
         setSearchOptions([...options, loaderOption]);
 
@@ -129,7 +127,7 @@ export const NodeSearchComponent = withStyles(styles)(
                 type: "class",
                 id: searchResult.id,
                 label: (
-                  <LabelComponent
+                  <SearchOptionsComponent
                     id={searchResult.id}
                     description={searchResult.description}
                     label={searchResult.label}
@@ -143,9 +141,6 @@ export const NodeSearchComponent = withStyles(styles)(
           })
           .then((searchResults) => {
             setSearchOptions([...options, ...searchResults]);
-          })
-          .catch(function (error: any) {
-            console.error(error);
           });
       };
 
@@ -153,7 +148,7 @@ export const NodeSearchComponent = withStyles(styles)(
         <Select
           allowClear={true}
           options={searchOptions}
-          onClear={() => setSearchOptions([...options])}
+          onClear={() => setSearchOptions(options)}
           optionFilterProp="filterlabel"
           defaultActiveFirstOption={false}
           className={classes.selection}
