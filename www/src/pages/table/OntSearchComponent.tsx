@@ -98,6 +98,7 @@ function useSearchComponent(
       showSearch={true}
       onSearch={debounce(onSearch, 300)}
       value={props.value === undefined ? undefined : props.value}
+      filterOption={false}
       onSelect={
         props.onSelect === undefined
           ? undefined
