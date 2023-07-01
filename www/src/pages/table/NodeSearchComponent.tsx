@@ -141,6 +141,23 @@ export const NodeSearchComponent = withStyles(styles)(
           defaultActiveFirstOption={false}
           className={classes.selection}
           showSearch={true}
+          filterOption={(inputValue, option) => {
+            if (option!.type != "class") {
+              let label = option?.filterlabel.split(" ")[0]!;
+              if (
+                label
+                  .toLocaleLowerCase()
+                  .indexOf(inputValue.toLocaleLowerCase())
+              ) {
+                console.log(label, inputValue);
+                return false;
+              } else {
+                return true;
+              }
+            } else {
+              return true;
+            }
+          }}
           onSearch={debounce(onSearch, 300)}
           value={value === undefined ? undefined : `${value.type}:${value.id}`}
           onSelect={(value: any, option: SearchOptions) => {
