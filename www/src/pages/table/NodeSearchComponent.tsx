@@ -143,7 +143,7 @@ export const NodeSearchComponent = withStyles(styles)(
           showSearch={true}
           filterOption={(inputValue, option) => {
             if (option!.type != "class") {
-              let label = option?.filterlabel.split("(")[0]!;
+              let label = option?.filterlabel!;
               if (label.toLowerCase().indexOf(inputValue.toLowerCase()) >= 0) {
                 return true;
               } else {
