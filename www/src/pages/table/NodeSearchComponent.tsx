@@ -72,7 +72,11 @@ export const NodeSearchComponent = withStyles(styles)(
         const options: SearchOptions[] = [];
 
         for (const u of sm.graph.nodes) {
-          if (classSearchOnly && !(u.nodetype == "class_node")) continue;
+          if (
+            classSearchOnly &&
+            !(u.nodetype == "class_node" || u.nodetype == "literal_node")
+          )
+            continue;
           options.push({
             type: u.nodetype,
             id: u.id,
@@ -103,6 +107,7 @@ export const NodeSearchComponent = withStyles(styles)(
           className: "",
         };
 
+        console.log(options);
         setSearchOptions([...options, loaderOption]);
 
         classStore.findByName(query).then((data) => {
