@@ -56,7 +56,6 @@ function useSearchComponent(
     const loaderOption: SearchOptions = {
       id: "",
       label: <Spin style={{ width: "100%", marginTop: 3 }} size="large" />,
-      filterlabel: query,
       value: "",
     };
 
@@ -78,7 +77,6 @@ function useSearchComponent(
                 label={searchResult.label}
               />
             ),
-            filterlabel: `${searchResult.label} (${searchResult.id})`,
             value: searchResult.id,
           };
         }

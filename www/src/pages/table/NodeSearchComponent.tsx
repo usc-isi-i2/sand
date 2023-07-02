@@ -40,7 +40,6 @@ export interface SearchOptions {
   id: string;
   value: string;
   label: any;
-  filterlabel: string;
   type?: SMNodeType | "class";
   className?: string;
 }
@@ -82,7 +81,6 @@ export const NodeSearchComponent = withStyles(styles)(
             id: u.id,
             value: `${u.nodetype}:${u.id}`,
             label: sm.graph.uriCount.label(u),
-            filterlabel: sm.graph.uriCount.label(u),
             className: classes[u.nodetype],
           });
         }
@@ -101,12 +99,10 @@ export const NodeSearchComponent = withStyles(styles)(
           type: "class",
           id: "",
           label: <Spin style={{ width: "100%", marginTop: 3 }} size="large" />,
-          filterlabel: query,
           value: "",
           className: "",
         };
 
-        console.log(options);
         setSearchOptions([...options, loaderOption]);
 
         classStore.findByName(query).then((data) => {
@@ -122,7 +118,6 @@ export const NodeSearchComponent = withStyles(styles)(
                     label={searchResult.label}
                   />
                 ),
-                filterlabel: `${searchResult.label} (${searchResult.id})`,
                 value: `class:${searchResult.id}`,
               };
             }
@@ -141,12 +136,12 @@ export const NodeSearchComponent = withStyles(styles)(
           showSearch={true}
           filterOption={(inputValue, option) => {
             if (option!.type != "class") {
-              let label = option?.filterlabel!;
+              let label = option!.label!.toLowerCase();
               return (
                 inputValue
                   .split(" ")
                   .map((value) => {
-                    return label.toLowerCase().indexOf(value.toLowerCase());
+                    return label.indexOf(value.toLowerCase());
                   })
                   .filter((value) => value! < 0).length == 0
               );
