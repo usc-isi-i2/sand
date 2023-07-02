@@ -139,9 +139,10 @@ export const NodeSearchComponent = withStyles(styles)(
               let label = option!.label!.toLowerCase();
               return (
                 inputValue
+                  .toLowerCase()
                   .split(" ")
                   .map((value) => {
-                    return label.indexOf(value.toLowerCase());
+                    return label.indexOf(value);
                   })
                   .filter((value) => value! < 0).length == 0
               );
