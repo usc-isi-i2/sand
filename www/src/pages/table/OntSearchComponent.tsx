@@ -1,9 +1,14 @@
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { Select } from "antd";
+import { Select, Spin } from "antd";
 import { observer } from "mobx-react";
-import React, { useEffect, useMemo } from "react";
-import { SequentialFuncInvoker } from "../../misc";
+import { useEffect, useMemo, useState } from "react";
 import { useStores } from "../../models";
+import SearchOptionsComponent from "./SearchOptionsComponent";
+import { debounce } from "lodash";
+import { SearchOptions } from "./NodeSearchComponent";
+import { ClassTextSearchResult } from "../../models/ontology/ClassStore";
+import { PropertyTextSearchResult } from "../../models/ontology/PropertyStore";
+import { EntityTextSearchResult } from "../../models/entity/EntityStore";
 
 const styles = {
   selection: {
@@ -41,58 +46,65 @@ function useSearchComponent(
   props: SearchProps
 ) {
   const store = useStores()[storeName];
-  const seqInvoker = new SequentialFuncInvoker();
+  const [searchOptions, setSearchOptions] = useState<SearchOptions[]>();
 
-  // when the provided value is not in the store, fetch it
-  useEffect(() => {
-    if (props.value === undefined) {
+  // search for additional values if it's not in the list
+  const onSearch = (query: string) => {
+    if (query === "") {
       return;
     }
+    const loaderOption: SearchOptions = {
+      id: "",
+      label: <Spin style={{ width: "100%", marginTop: 3 }} size="large" />,
+      value: "",
+    };
 
-    if (Array.isArray(props.value)) {
-      // leverage the fact that the three stores are not re-fetched
-      if (!store.refetch) {
-        store.fetchByIds(props.value);
-      } else {
-        store.fetchByIds(props.value.filter((id) => !store.records.has(id)));
-      }
-    } else if (store.get(props.value) === undefined) {
-      store.fetchById(props.value);
-    }
-  }, [props.value]);
-
-  // gather all options already in the store, leverage the fact
-  // that property store is readonly
-  const options = useMemo(() => {
-    const options = [];
-    for (const r of store.iter()) {
-      options.push({
-        value: r.id,
-        label: r.readableLabel,
-      });
-    }
-    return options;
-  }, [store.records.size]);
-
-  // search for additional properties if it's not in the list
-  const onSearch = (query: string) => {
-    if (query === "") return;
-    seqInvoker.exec(() => {
-      return store.fetchById(query).then(() => 1);
+    setSearchOptions([loaderOption]);
+    store.findByName(query).then((data) => {
+      let searchResults: SearchOptions[] = data.map(
+        (
+          searchResult:
+            | ClassTextSearchResult
+            | PropertyTextSearchResult
+            | EntityTextSearchResult
+        ) => {
+          return {
+            id: searchResult.id,
+            label: (
+              <SearchOptionsComponent
+                id={searchResult.id}
+                description={searchResult.description}
+                label={searchResult.label}
+              />
+            ),
+            value: searchResult.id,
+          };
+        }
+      );
+      setSearchOptions(searchResults);
     });
   };
 
   return (
     <Select
-      mode={props.mode}
       allowClear={true}
-      options={options}
-      optionFilterProp="label"
+      options={searchOptions}
+      onClear={() => setSearchOptions([])}
+      defaultActiveFirstOption={false}
       className={props.classes.selection}
       showSearch={true}
-      onSearch={onSearch}
-      value={props.value}
-      onSelect={props.onSelect as any}
+      onSearch={debounce(onSearch, 300)}
+      value={props.value === undefined ? undefined : props.value}
+      filterOption={false}
+      onSelect={
+        props.onSelect === undefined
+          ? undefined
+          : (value: any, option: SearchOptions) => {
+              store.fetchById(option.id).then(() => {
+                props.onSelect!(option.id);
+              });
+            }
+      }
       onDeselect={props.onDeselect as any}
     />
   );

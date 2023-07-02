@@ -2,6 +2,14 @@ import { RStore, SingleKeyUniqueIndex } from "gena-app";
 import { action, makeObservable, observable, runInAction } from "mobx";
 import { SERVER } from "../../env";
 import { Property } from "./Property";
+import axios from "axios";
+
+export interface PropertyTextSearchResult {
+  id: string;
+  label: string;
+  description: string;
+  uri: string;
+}
 
 export class PropertyStore extends RStore<string, Property> {
   public doesNotExistURIs = new Set<string>();
@@ -28,6 +36,20 @@ export class PropertyStore extends RStore<string, Property> {
     const id = this.uriIndex.index.get(uri);
     return id !== undefined ? this.get(id)! : undefined;
   };
+
+  /**
+   * Get search results from the search API.
+   *
+   * @returns Promise<SearchResult[]>
+   */
+  async findByName(query: string): Promise<PropertyTextSearchResult[]> {
+    let resp: any = await axios.get(`${SERVER}/api/search/props`, {
+      params: {
+        q: query,
+      },
+    });
+    return resp.data.items;
+  }
 
   /**
    * Fetch a property by URI if it is not in the store.

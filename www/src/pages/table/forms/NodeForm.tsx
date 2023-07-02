@@ -350,6 +350,7 @@ export const DataNodeSubForm = observer(
             value={source}
             onSelect={setSource}
             onDeselect={() => setSource(undefined)}
+            classAndLiteralSearchOnly={true}
           />
         </Form.Item>
         <Form.Item

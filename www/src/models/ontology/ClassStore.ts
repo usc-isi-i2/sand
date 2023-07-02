@@ -1,6 +1,7 @@
 import { RStore, SingleKeyUniqueIndex } from "gena-app";
 import { action, makeObservable, observable, runInAction } from "mobx";
 import { SERVER } from "../../env";
+import axios, { AxiosRequestConfig } from "axios";
 
 export interface Class {
   id: string;
@@ -11,6 +12,13 @@ export interface Class {
   description: string;
   parents: string[];
   ancestors: Set<string>;
+}
+
+export interface ClassTextSearchResult {
+  id: string;
+  label: string;
+  description: string;
+  uri: string;
 }
 
 export class ClassStore extends RStore<string, Class> {
@@ -35,6 +43,20 @@ export class ClassStore extends RStore<string, Class> {
     const id = this.uriIndex.index.get(uri);
     return id !== undefined ? this.get(id)! : undefined;
   };
+
+  /**
+   * Get search results from the search API.
+   *
+   * @returns Promise<SearchResult[]>
+   */
+  async findByName(query: string): Promise<ClassTextSearchResult[]> {
+    let resp: any = await axios.get(`${SERVER}/api/search/classes`, {
+      params: {
+        q: query,
+      },
+    });
+    return resp.data.items;
+  }
 
   /**
    * Fetch a class by URI if it is not in the store.

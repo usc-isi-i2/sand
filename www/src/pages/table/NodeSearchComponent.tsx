@@ -1,11 +1,13 @@
 import { gold, green, purple } from "@ant-design/colors";
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { Select } from "antd";
+import { Select, Spin } from "antd";
 import { observer } from "mobx-react";
-import React, { useMemo } from "react";
-import { SequentialFuncInvoker } from "../../misc";
+import { useMemo, useState } from "react";
+import { ClassTextSearchResult } from "../../models/ontology/ClassStore";
 import { SemanticModel, useStores } from "../../models";
 import { SMNodeType } from "../../models/sm";
+import { debounce } from "lodash";
+import SearchOptionsComponent from "./SearchOptionsComponent";
 
 const styles = {
   selection: {
@@ -34,7 +36,15 @@ const styles = {
   },
 };
 
-export type SearchValue = { type: SMNodeType | "class"; id: string };
+export interface SearchOptions {
+  id: string;
+  value: string;
+  label: any;
+  type?: SMNodeType | "class";
+  className?: string;
+}
+
+export type SearchValue = { type?: SMNodeType | "class"; id: string };
 
 export const NodeSearchComponent = withStyles(styles)(
   observer(
@@ -44,62 +54,107 @@ export const NodeSearchComponent = withStyles(styles)(
       onDeselect,
       onSelect,
       classes,
+      classAndLiteralSearchOnly,
     }: {
       sm: SemanticModel;
       value?: SearchValue;
       onDeselect: (value: SearchValue) => void;
       onSelect: (value: SearchValue) => void;
+      classAndLiteralSearchOnly: boolean;
     } & WithStyles<typeof styles>) => {
       const { classStore } = useStores();
-      const seqInvoker = new SequentialFuncInvoker();
+      const [searchOptions, setSearchOptions] = useState<SearchOptions[]>();
 
       // gather all options already in the store, leverage the fact
       // that property store is readonly
       const options = useMemo(() => {
-        const options: ({
-          value: string;
-          label: string;
-        } & SearchValue)[] = [];
-        for (const r of classStore.iter()) {
-          options.push({
-            type: "class",
-            id: r.id,
-            value: `class:${r.id}`,
-            label: sm.graph.uriCount.nextLabel(r.uri, r.readableLabel),
-          });
-        }
+        const options: SearchOptions[] = [];
 
         for (const u of sm.graph.nodes) {
+          if (
+            classAndLiteralSearchOnly &&
+            !(u.nodetype == "class_node" || u.nodetype == "literal_node")
+          )
+            continue;
           options.push({
             type: u.nodetype,
             id: u.id,
             value: `${u.nodetype}:${u.id}`,
             label: sm.graph.uriCount.label(u),
             className: classes[u.nodetype],
-          } as any);
+          });
         }
+
+        setSearchOptions(options);
         return options;
-      }, [classStore.records.size]);
+      }, [sm.graph.version]);
 
       // search for additional values if it's not in the list
       const onSearch = (query: string) => {
-        if (query === "") return;
-        seqInvoker.exec(() => {
-          return classStore.fetchById(query).then(() => 1);
+        if (query === "") {
+          setSearchOptions(options);
+          return;
+        }
+        const loaderOption: SearchOptions = {
+          type: "class",
+          id: "",
+          label: <Spin style={{ width: "100%", marginTop: 3 }} size="large" />,
+          value: "",
+          className: "",
+        };
+
+        setSearchOptions([...options, loaderOption]);
+
+        classStore.findByName(query).then((data) => {
+          let searchResults: SearchOptions[] = data.map(
+            (searchResult: ClassTextSearchResult) => {
+              return {
+                type: "class",
+                id: searchResult.id,
+                label: (
+                  <SearchOptionsComponent
+                    id={searchResult.id}
+                    description={searchResult.description}
+                    label={searchResult.label}
+                  />
+                ),
+                value: `class:${searchResult.id}`,
+              };
+            }
+          );
+          setSearchOptions([...options, ...searchResults]);
         });
       };
 
       return (
         <Select
           allowClear={true}
-          options={options}
-          optionFilterProp="label"
+          options={searchOptions}
+          onClear={() => setSearchOptions(options)}
+          defaultActiveFirstOption={false}
           className={classes.selection}
           showSearch={true}
-          onSearch={onSearch}
+          filterOption={(inputValue, option) => {
+            if (option!.type != "class") {
+              let label = option!.label!.toLowerCase();
+              return inputValue
+                .toLowerCase()
+                .split(" ")
+                .every((value) => label.indexOf(value) >= 0);
+            } else {
+              return true;
+            }
+          }}
+          onSearch={debounce(onSearch, 300)}
           value={value === undefined ? undefined : `${value.type}:${value.id}`}
-          onSelect={(value: any, option: SearchValue) => {
-            onSelect({ type: option.type, id: option.id });
+          onSelect={(value: any, option: SearchOptions) => {
+            if (option.type == "class") {
+              classStore.fetchById(option.id).then(() => {
+                onSelect({ type: option.type, id: option.id });
+              });
+            } else {
+              onSelect({ type: option.type, id: option.id });
+            }
           }}
           onDeselect={(value: any, option: SearchValue) => {
             onDeselect({ type: option.type, id: option.id });

@@ -211,6 +211,7 @@ export const EdgeForm = withStyles(styles)(
               value={source}
               onSelect={setSource}
               onDeselect={() => setSource(undefined)}
+              classAndLiteralSearchOnly={true}
             />
           </Form.Item>
           <Form.Item
@@ -229,6 +230,7 @@ export const EdgeForm = withStyles(styles)(
               value={target}
               onSelect={setTarget}
               onDeselect={() => setTarget(undefined)}
+              classAndLiteralSearchOnly={false}
             />
           </Form.Item>
           <Form.Item
