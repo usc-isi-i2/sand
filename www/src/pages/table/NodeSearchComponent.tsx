@@ -55,13 +55,13 @@ export const NodeSearchComponent = withStyles(styles)(
       onDeselect,
       onSelect,
       classes,
-      classSearchOnly,
+      classAndLiteralSearchOnly,
     }: {
       sm: SemanticModel;
       value?: SearchValue;
       onDeselect: (value: SearchValue) => void;
       onSelect: (value: SearchValue) => void;
-      classSearchOnly: boolean;
+      classAndLiteralSearchOnly: boolean;
     } & WithStyles<typeof styles>) => {
       const { classStore } = useStores();
       const [searchOptions, setSearchOptions] = useState<SearchOptions[]>();
@@ -73,7 +73,7 @@ export const NodeSearchComponent = withStyles(styles)(
 
         for (const u of sm.graph.nodes) {
           if (
-            classSearchOnly &&
+            classAndLiteralSearchOnly &&
             !(u.nodetype == "class_node" || u.nodetype == "literal_node")
           )
             continue;
@@ -88,7 +88,6 @@ export const NodeSearchComponent = withStyles(styles)(
         }
 
         setSearchOptions(options);
-        console.log(options);
         return options;
       }, [sm.graph.version]);
 
@@ -137,25 +136,20 @@ export const NodeSearchComponent = withStyles(styles)(
           allowClear={true}
           options={searchOptions}
           onClear={() => setSearchOptions(options)}
-          optionFilterProp="filterlabel"
           defaultActiveFirstOption={false}
           className={classes.selection}
           showSearch={true}
           filterOption={(inputValue, option) => {
             if (option!.type != "class") {
               let label = option?.filterlabel!;
-              let inputTokensFilter = inputValue
-                .split(" ")
-                .map((value) => {
-                  return label.toLowerCase().indexOf(value.toLowerCase());
-                })
-                .filter((value) => value! < 0);
-
-              if (inputTokensFilter.length > 0) {
-                return false;
-              } else {
-                return true;
-              }
+              return (
+                inputValue
+                  .split(" ")
+                  .map((value) => {
+                    return label.toLowerCase().indexOf(value.toLowerCase());
+                  })
+                  .filter((value) => value! < 0).length == 0
+              );
             } else {
               return true;
             }

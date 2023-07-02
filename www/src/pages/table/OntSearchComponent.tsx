@@ -92,7 +92,6 @@ function useSearchComponent(
       allowClear={true}
       options={searchOptions}
       onClear={() => setSearchOptions([])}
-      optionFilterProp="filterlabel"
       defaultActiveFirstOption={false}
       className={props.classes.selection}
       showSearch={true}

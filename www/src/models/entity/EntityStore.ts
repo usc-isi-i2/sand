@@ -18,7 +18,7 @@ export class EntityStore extends RStore<string, Entity> {
   /**
    * Get search results from the search API.
    *
-   * @returns Promise<SearchResult[]>.
+   * @returns Promise<SearchResult[]>
    */
   async findByName(query: string): Promise<EntityTextSearchResult[]> {
     let resp: any = await axios.get(`${SERVER}/api/search/entities`, {
