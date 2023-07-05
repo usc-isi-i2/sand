@@ -24,7 +24,7 @@ WD_ONT_CLASSES = {
         uri=wdns.STATEMENT_URI,
         label=wdns.get_rel_uri(wdns.STATEMENT_URI),
         aliases=[],
-        description="",
+        description="Describes the claim of a statement and list references for this claim",
         parents=[],
     )
 }
