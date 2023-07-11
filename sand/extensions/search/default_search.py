@@ -15,11 +15,11 @@ class DefaultSearch(IEntitySearch, IOntologySearch):
 
     def local_search(self, default_entities: dict, search_text: str) -> List:
         """ performs local partial text search across default entities"""
-        query_tokens = re.findall("[a-zA-Z]+", search_text)
+        query_tokens = map(str.lower, re.findall("[a-zA-Z]+", search_text))
         search_results = []
         for key, entity in default_entities.items():
             label = entity.label.lower()
-            if all(list(map(lambda x: x.lower() in label, query_tokens))):
+            if all(list(map(lambda x: x in label, query_tokens))):
                 search_results.append(entity)
         return search_results
 
