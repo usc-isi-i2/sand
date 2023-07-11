@@ -26,7 +26,7 @@ def get_search(name: Literal['classes', 'entities', 'props']) -> Union[IEntitySe
         GetSearchCache.search = {}
         search_config = SETTINGS["search"]
         constructor = search_config[name]
-        GetSearchCache.search[name] = import_func(constructor)()
+        GetSearchCache.search[name] = import_func(constructor)().extended_wikidata_search()
 
     return GetSearchCache.search[name]
 
