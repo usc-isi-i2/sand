@@ -11,8 +11,10 @@ class AggregatedSearch(IEntitySearch, IOntologySearch):
 
     def add(self, search_obj: Union[IEntitySearch, IOntologySearch]):
         """adds a search object to the aggregated search"""
-        self.search_entity_objs.append(search_obj)
-        self.search_ontology_objs.append(search_obj)
+        if isinstance(search_obj, IEntitySearch):
+            self.search_entity_objs.append(search_obj)
+        if isinstance(search_obj, IOntologySearch):
+            self.search_ontology_objs.append(search_obj)
 
     def find_class_by_name(self, search_text: str) -> List[SearchResult]:
         """Performs generic class search based on name"""
