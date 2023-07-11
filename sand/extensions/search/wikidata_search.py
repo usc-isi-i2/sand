@@ -9,6 +9,14 @@ from sand.extensions.search.default_search import DefaultSearch
 from sand.extensions.search.aggregated_search import AggregatedSearch
 
 
+def extended_wikidata_search() -> Union[IEntitySearch, IOntologySearch]:
+    """extended version of wikidata search by aggregating default search"""
+    search = AggregatedSearch()
+    search.add(DefaultSearch())
+    search.add(WikidataSearch())
+    return search
+
+
 class WikidataSearch(IEntitySearch, IOntologySearch):
 
     def __init__(self):
@@ -24,13 +32,6 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
             "srprop": "snippet|titlesnippet"
         }
         self.ont_class_ar = None
-
-    def extended_wikidata_search(self) -> Union[IEntitySearch,IOntologySearch]:
-        """extended version of wikidata search by aggregating default search"""
-        search = AggregatedSearch()
-        search.add(DefaultSearch())
-        search.add(WikidataSearch())
-        return search
 
     def get_class_search_params(self, search_text: str) -> Dict:
         """Updates class search parameters for wikidata API"""
