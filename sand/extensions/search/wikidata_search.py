@@ -1,10 +1,20 @@
 import requests
-from typing import Dict, List
+from typing import Dict, List, Union
 import nh3
 from sand.extension_interface.search import IEntitySearch, IOntologySearch
 from sand.models.entity import Entity
 from sand.models.ontology import OntClass, OntProperty, OntClassAR
 from sand.models.search import SearchResult
+from sand.extensions.search.default_search import DefaultSearch
+from sand.extensions.search.aggregated_search import AggregatedSearch
+
+
+def extended_wikidata_search() -> Union[IEntitySearch, IOntologySearch]:
+    """extended version of wikidata search by aggregating default search"""
+    search = AggregatedSearch()
+    search.add(DefaultSearch())
+    search.add(WikidataSearch())
+    return search
 
 
 class WikidataSearch(IEntitySearch, IOntologySearch):
@@ -53,12 +63,12 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
     def find_class_by_name(self, search_text: str) -> List[SearchResult]:
         """
         Uses Wikidata API to search for classes using their name/text.
-        Uses local ID based class search to fetch label and description data.
         """
         request_params = self.get_class_search_params(search_text)
         api_data = requests.get(self.wikidata_url, request_params)
         search_results = api_data.json()['query']['search']
         payload_results = []
+
         for search_result in search_results:
             local_class_props = self.get_local_class_properties(search_result['title'])
             item = SearchResult(
@@ -76,6 +86,7 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         api_data = requests.get(self.wikidata_url, request_params)
         search_results = api_data.json()['query']['search']
         payload_results = []
+
         for search_result in search_results:
             item = SearchResult(
                 label=nh3.clean(search_result['titlesnippet'], tags=set()),
@@ -92,6 +103,7 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         api_data = requests.get(self.wikidata_url, request_params)
         search_results = api_data.json()['query']['search']
         payload_results = []
+
         for search_result in search_results:
             item = SearchResult(
                 label=nh3.clean(search_result['titlesnippet'], tags=set()),

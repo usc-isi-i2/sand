@@ -89,7 +89,7 @@ DEFAULT_ONT_PROPS = {
         label="rdfs:label",
         aliases=[],
         datatype="string",
-        description="",
+        description="Provides a human-readable version of a resource's name.",
         parents=[],
     )
 }
