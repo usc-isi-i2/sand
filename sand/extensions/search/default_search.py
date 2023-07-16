@@ -17,8 +17,10 @@ class DefaultSearch(IEntitySearch, IOntologySearch):
         """ performs local partial text search across default entities"""
         query_tokens = re.findall(r'[a-z]+|\d+', search_text.lower())
         search_results = []
+
         if not query_tokens:
             return search_results
+
         for entity in default_entities.values():
             label = entity.label.lower()
             if all(token in label for token in query_tokens):
