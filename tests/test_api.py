@@ -29,6 +29,10 @@ def test_api_search_entities(client):
     assert search_results[0]["id"] == "Q5"
     assert search_results[0]["label"] == "human"
 
+    resp = client.get('/api/search/entities?q=')
+    search_results = resp.json["items"]
+    assert len(search_results) == 0
+
 
 def test_api_search_classes(client):
     resp = client.get('/api/search/classes?q=human')
@@ -39,6 +43,10 @@ def test_api_search_classes(client):
     assert search_results[0]["id"] == "Q5"
     assert search_results[0]["label"] == "human"
 
+    resp = client.get('/api/search/classes?q=')
+    search_results = resp.json["items"]
+    assert len(search_results) == 0
+
 
 def test_api_search_properties(client):
     resp = client.get('/api/search/props?q=human')
@@ -48,6 +56,10 @@ def test_api_search_properties(client):
     assert len(search_results) == 10
     assert search_results[0]["id"] == "P2057"
     assert search_results[0]["label"] == "Human Metabolome Database ID"
+
+    resp = client.get('/api/search/props?q=')
+    search_results = resp.json["items"]
+    assert len(search_results) == 0
 
 
 def test_api_create_table(client):
