@@ -1,0 +1,112 @@
+{
+    "data": {
+        "edges": [
+            {
+                "approximation": false,
+                "label": "rdfs:label",
+                "source": "1",
+                "target": "0",
+                "uri": "http://www.w3.org/2000/01/rdf-schema#label"
+            },
+            {
+                "approximation": false,
+                "label": "rdfs:label",
+                "source": "3",
+                "target": "2",
+                "uri": "http://www.w3.org/2000/01/rdf-schema#label"
+            },
+            {
+                "approximation": false,
+                "label": "located in the administrative territorial entity (P131)",
+                "source": "1",
+                "target": "3",
+                "uri": "http://www.wikidata.org/prop/P131"
+            },
+            {
+                "approximation": false,
+                "label": "elevation above sea level (P2044)",
+                "source": "1",
+                "target": "4",
+                "uri": "http://www.wikidata.org/prop/P2044"
+            },
+            {
+                "approximation": false,
+                "label": "topographic prominence (P2660)",
+                "source": "1",
+                "target": "5",
+                "uri": "http://www.wikidata.org/prop/P2660"
+            },
+            {
+                "approximation": false,
+                "label": "country (P17)",
+                "source": "1",
+                "target": "7",
+                "uri": "http://www.wikidata.org/prop/P17"
+            },
+            {
+                "approximation": false,
+                "label": "country (P17)",
+                "source": "3",
+                "target": "6",
+                "uri": "http://www.wikidata.org/prop/P17"
+            }
+        ],
+        "nodes": [
+            {
+                "column_index": 1,
+                "id": "0",
+                "label": "Name",
+                "type": "data_node"
+            },
+            {
+                "approximation": false,
+                "id": "1",
+                "label": "mountain (Q8502)",
+                "type": "class_node",
+                "uri": "http://www.wikidata.org/entity/Q8502"
+            },
+            {
+                "column_index": 2,
+                "id": "2",
+                "label": "Province",
+                "type": "data_node"
+            },
+            {
+                "approximation": false,
+                "id": "3",
+                "label": "province of Vietnam (Q2824648)",
+                "type": "class_node",
+                "uri": "http://www.wikidata.org/entity/Q2824648"
+            },
+            {
+                "column_index": 4,
+                "id": "4",
+                "label": "Height above MSL (m)",
+                "type": "data_node"
+            },
+            {
+                "column_index": 5,
+                "id": "5",
+                "label": "Prominence (m)",
+                "type": "data_node"
+            },
+            {
+                "column_index": 0,
+                "id": "6",
+                "label": "Rank",
+                "type": "data_node"
+            },
+            {
+                "column_index": 3,
+                "id": "7",
+                "label": "Coordinate",
+                "type": "data_node"
+            }
+        ]
+    },
+    "description": "",
+    "id": 2,
+    "name": "sm-0",
+    "table": 1,
+    "version": 3
+}

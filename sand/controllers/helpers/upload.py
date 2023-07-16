@@ -54,7 +54,7 @@ def get_extension(filename: str) -> Optional[str]:
 
 def save_upload(project: Project, raw_tables: List[RawTable]) -> List[Table]:
     """Save the upload results to the database"""
-    with db:
+    with db.transaction():
         cursor = Table.select(Table.name).where(
             (Table.project == project) & (Table.name.in_([x.name for x in raw_tables]))
         )
