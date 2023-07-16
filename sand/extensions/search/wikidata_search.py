@@ -66,8 +66,12 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         """
         request_params = self.get_class_search_params(search_text)
         api_data = requests.get(self.wikidata_url, request_params)
-        search_results = api_data.json()['query']['search']
         payload_results = []
+
+        if "error" not in api_data.json():
+            search_results = api_data.json()['query']['search']
+        else:
+            return payload_results
 
         for search_result in search_results:
             local_class_props = self.get_local_class_properties(search_result['title'])
@@ -84,8 +88,12 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         """Uses Wikidata API to search for entities using their name/text."""
         request_params = self.get_entity_search_params(search_text)
         api_data = requests.get(self.wikidata_url, request_params)
-        search_results = api_data.json()['query']['search']
         payload_results = []
+
+        if "error" not in api_data.json():
+            search_results = api_data.json()['query']['search']
+        else:
+            return payload_results
 
         for search_result in search_results:
             item = SearchResult(
@@ -101,8 +109,12 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         """Uses Wikidata API to search for properties using their name/text."""
         request_params = self.get_props_search_params(search_text)
         api_data = requests.get(self.wikidata_url, request_params)
-        search_results = api_data.json()['query']['search']
         payload_results = []
+
+        if "error" not in api_data.json():
+            search_results = api_data.json()['query']['search']
+        else:
+            return payload_results
 
         for search_result in search_results:
             item = SearchResult(

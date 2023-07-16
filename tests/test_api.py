@@ -20,6 +20,36 @@ def test_api_get_semantic_model(client, load_db):
     assert sms[0]["data"]["nodes"][0]["label"] == "Name"
 
 
+def test_api_search_entities(client):
+    resp = client.get('/api/search/entities?q=human')
+    assert resp.status_code == 200
+    search_results = resp.json["items"]
+
+    assert len(search_results) == 10
+    assert search_results[0]["id"] == "Q5"
+    assert search_results[0]["label"] == "human"
+
+
+def test_api_search_classes(client):
+    resp = client.get('/api/search/classes?q=human')
+    assert resp.status_code == 200
+    search_results = resp.json["items"]
+
+    assert len(search_results) == 10
+    assert search_results[0]["id"] == "Q5"
+    assert search_results[0]["label"] == "human"
+
+
+def test_api_search_properties(client):
+    resp = client.get('/api/search/props?q=human')
+    assert resp.status_code == 200
+    search_results = resp.json["items"]
+
+    assert len(search_results) == 10
+    assert search_results[0]["id"] == "P2057"
+    assert search_results[0]["label"] == "Human Metabolome Database ID"
+
+
 def test_api_create_table(client):
     resp = client.post(
         "/api/table",

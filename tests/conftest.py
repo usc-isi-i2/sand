@@ -17,7 +17,6 @@ import json
 
 @pytest.fixture
 def client():
-
     try:
         init_db(":memory:")
         db.create_tables(all_tables, safe=False)
@@ -63,7 +62,8 @@ def load_db(client):
             'selected_tables': '[0]'
         }
         client.post(f'/api/project/{project_id}/upload', data=table_upload_data, content_type='multipart/form'
-                                                                                                     '-data')
+                                                                                              '-data')
+
         semantic_file_path = _ROOT_DIR / "tests/resources/data/dbload/highest_mountains_in_vn_sematincmodel.json"
         semantic_model_data = json.load(open(semantic_file_path))
         client.post('/api/semanticmodel', json=semantic_model_data)
