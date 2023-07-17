@@ -5,10 +5,9 @@ import json
 from sand.extension_interface.search import IEntitySearch, IOntologySearch
 from sand.models.entity import Entity
 from sand.models.ontology import OntClass, OntProperty, OntClassAR
-from sand.models.search import SearchResult, WikidataError, WikidataAPIError
+from sand.models.search import SearchResult, WikidataAPIError
 from sand.extensions.search.default_search import DefaultSearch
 from sand.extensions.search.aggregated_search import AggregatedSearch
-
 
 def extended_wikidata_search() -> Union[IEntitySearch, IOntologySearch]:
     """extended version of wikidata search by aggregating default search"""
@@ -72,13 +71,7 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         if "error" not in api_data.json():
             search_results = api_data.json()['query']['search']
         else:
-            error_data = api_data.json()
-            error = error_data['error']
-            served_by = error_data["servedby"]
-            wikidata_error = WikidataError(code=error['code'], info=error["info"])
-            wikidata_api_error = WikidataAPIError(error=wikidata_error, servedby=served_by)
-            payload_results.append(wikidata_api_error)
-            return payload_results
+            raise WikidataAPIError(**api_data.json())
 
         for search_result in search_results:
             local_class_props = self.get_local_class_properties(search_result['title'])
@@ -100,13 +93,7 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         if "error" not in api_data.json():
             search_results = api_data.json()['query']['search']
         else:
-            error_data = api_data.json()
-            error = error_data['error']
-            served_by = error_data["servedby"]
-            wikidata_error = WikidataError(code=error['code'], info=error["info"])
-            wikidata_api_error = WikidataAPIError(error=wikidata_error, servedby=served_by)
-            payload_results.append(wikidata_api_error)
-            return payload_results
+            raise WikidataAPIError(**api_data.json())
 
         for search_result in search_results:
             item = SearchResult(
@@ -127,13 +114,7 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         if "error" not in api_data.json():
             search_results = api_data.json()['query']['search']
         else:
-            error_data = api_data.json()
-            error = error_data['error']
-            served_by = error_data["servedby"]
-            wikidata_error = WikidataError(code=error['code'], info=error["info"])
-            wikidata_api_error = WikidataAPIError(error=wikidata_error, servedby=served_by)
-            payload_results.append(wikidata_api_error)
-            return payload_results
+            raise WikidataAPIError(**api_data.json())
 
         for search_result in search_results:
             item = SearchResult(

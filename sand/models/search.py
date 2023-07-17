@@ -11,14 +11,8 @@ class SearchResult:
     description: str
     uri: str
 
-
 @dataclass
-class WikidataError:
-    code: str
-    info: str
-
-@dataclass
-class WikidataAPIError:
-    error: WikidataError
+class WikidataAPIError(Exception):
+    error: dict
     servedby: str
 

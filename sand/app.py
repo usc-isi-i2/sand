@@ -20,6 +20,8 @@ from sand.serializer import (
     serialize_entity,
     serialize_property,
 )
+from werkzeug.exceptions import HTTPException
+import json
 
 app = generate_app(
     [
@@ -54,5 +56,7 @@ app = generate_app(
     ],
     os.path.dirname(__file__),
 )
+
+
 
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # maximum upload of 16 MB
