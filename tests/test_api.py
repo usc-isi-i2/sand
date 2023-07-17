@@ -10,7 +10,7 @@ def test_api_get_entity(client):
     assert resp.status_code == 404
 
 
-def test_api_get_semantic_model(client, load_db):
+def test_api_get_semantic_model(client, example_db):
     resp = client.get("/api/semanticmodel?limit=1000&offset=0&table=1")
     assert resp.status_code == 200
     sms = resp.json["items"]
@@ -21,17 +21,17 @@ def test_api_get_semantic_model(client, load_db):
 
 
 def test_api_search_entities(client):
-    resp = client.get('/api/search/entities?q=human')
+    resp = client.get('/api/search/entities?q=united states')
     assert resp.status_code == 200
     search_results = resp.json["items"]
 
     assert len(search_results) == 10
-    assert search_results[0]["id"] == "Q5"
-    assert search_results[0]["label"] == "human"
+    assert search_results[0]["id"] == "Q30"
+    assert search_results[0]["label"] == "United States of America"
 
     resp = client.get('/api/search/entities?q=')
-    search_results = resp.json["items"]
-    assert len(search_results) == 0
+    search_results = resp.json[0]["error"]
+    assert search_results["code"] == "missingparam"
 
 
 def test_api_search_classes(client):
@@ -49,17 +49,17 @@ def test_api_search_classes(client):
 
 
 def test_api_search_properties(client):
-    resp = client.get('/api/search/props?q=human')
+    resp = client.get('/api/search/props?q=location')
     assert resp.status_code == 200
     search_results = resp.json["items"]
 
     assert len(search_results) == 10
-    assert search_results[0]["id"] == "P2057"
-    assert search_results[0]["label"] == "Human Metabolome Database ID"
+    assert search_results[0]["id"] == "P276"
+    assert search_results[0]["label"] == "location"
 
     resp = client.get('/api/search/props?q=')
-    search_results = resp.json["items"]
-    assert len(search_results) == 0
+    search_results = resp.json[0]["error"]
+    assert search_results["code"] == "missingparam"
 
 
 def test_api_create_table(client):

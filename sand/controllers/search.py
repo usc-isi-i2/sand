@@ -1,18 +1,20 @@
+import json
 import threading
 from typing import Dict, List, Union, Literal
 from flask.blueprints import Blueprint
 from sm.misc.funcs import import_func
 from sand.config import SETTINGS
-from flask import request, jsonify
+from flask import request, jsonify, abort
 
 from sand.extension_interface.search import IEntitySearch, IOntologySearch
-from sand.models.search import SearchResult
+from sand.models.search import SearchResult, WikidataError, WikidataAPIError
 from gena.serializer import get_dataclass_serializer
 
 search_bp = Blueprint("search", "search")
 
 GetSearchCache = threading.local()
 serializer = get_dataclass_serializer(SearchResult)
+error_serializer = get_dataclass_serializer(WikidataError)
 
 
 def get_search(name: Literal['classes', 'entities', 'props']) -> Union[IEntitySearch, IOntologySearch]:
@@ -37,6 +39,8 @@ def search_classes():
     search_text = request.args.get('q')
     wikidata_search = get_search('classes')
     search_results = wikidata_search.find_class_by_name(search_text)
+    if search_results and isinstance(search_results[0], WikidataAPIError):
+        return jsonify(search_results), 502
     serialized_payload = [serializer(item) for item in search_results]
     return jsonify({'items': serialized_payload})
 
@@ -47,6 +51,8 @@ def search_entities():
     search_text = request.args.get('q')
     wikidata_search = get_search('entities')
     search_results = wikidata_search.find_entity_by_name(search_text)
+    if search_results and isinstance(search_results[0], WikidataAPIError):
+        return jsonify(search_results), 502
     serialized_payload = [serializer(item) for item in search_results]
     return jsonify({'items': serialized_payload})
 
@@ -57,5 +63,7 @@ def search_props():
     search_text = request.args.get('q')
     wikidata_search = get_search('props')
     search_results = wikidata_search.find_props_by_name(search_text)
+    if search_results and isinstance(search_results[0], WikidataAPIError):
+        return jsonify(search_results), 502
     serialized_payload = [serializer(item) for item in search_results]
     return jsonify({'items': serialized_payload})

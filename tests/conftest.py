@@ -44,7 +44,7 @@ def client():
 
 
 @pytest.fixture
-def load_db(client):
+def example_db(client):
     try:
         from sand.config import _ROOT_DIR
 
