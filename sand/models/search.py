@@ -10,9 +10,3 @@ class SearchResult:
     id: str
     description: str
     uri: str
-
-@dataclass
-class WikidataAPIError(Exception):
-    error: dict
-    servedby: str
-

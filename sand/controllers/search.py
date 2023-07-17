@@ -7,19 +7,13 @@ from sand.config import SETTINGS
 from flask import request, jsonify, abort
 
 from sand.extension_interface.search import IEntitySearch, IOntologySearch
-from sand.models.search import SearchResult, WikidataAPIError
+from sand.models.search import SearchResult
 from gena.serializer import get_dataclass_serializer
 
 search_bp = Blueprint("search", "search")
 
 GetSearchCache = threading.local()
 serializer = get_dataclass_serializer(SearchResult)
-
-
-@search_bp.errorhandler(WikidataAPIError)
-def handle_exception(e):
-    """Return JSON instead of HTML for HTTP errors, for wikidata"""
-    return jsonify(e), 502
 
 
 def get_search(name: Literal['classes', 'entities', 'props']) -> Union[IEntitySearch, IOntologySearch]:
@@ -44,8 +38,6 @@ def search_classes():
     search_text = request.args.get('q')
     wikidata_search = get_search('classes')
     search_results = wikidata_search.find_class_by_name(search_text)
-    if search_results and isinstance(search_results[0], WikidataAPIError):
-        return jsonify(search_results), 502
     serialized_payload = [serializer(item) for item in search_results]
     return jsonify({'items': serialized_payload})
 
@@ -66,7 +58,5 @@ def search_props():
     search_text = request.args.get('q')
     wikidata_search = get_search('props')
     search_results = wikidata_search.find_props_by_name(search_text)
-    if search_results and isinstance(search_results[0], WikidataAPIError):
-        return jsonify(search_results), 502
     serialized_payload = [serializer(item) for item in search_results]
     return jsonify({'items': serialized_payload})
