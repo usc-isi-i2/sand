@@ -30,8 +30,8 @@ def test_api_search_entities(client):
     assert search_results[0]["label"] == "United States of America"
 
     resp = client.get('/api/search/entities?q=')
-    search_results = resp.json[0]["error"]
-    assert search_results["code"] == "missingparam"
+    search_results = resp.json["items"]
+    assert len(search_results) == 0
 
 
 def test_api_search_classes(client):
@@ -58,8 +58,8 @@ def test_api_search_properties(client):
     assert search_results[0]["label"] == "location"
 
     resp = client.get('/api/search/props?q=')
-    search_results = resp.json[0]["error"]
-    assert search_results["code"] == "missingparam"
+    search_results = resp.json["items"]
+    assert len(search_results) == 0
 
 
 def test_api_create_table(client):
