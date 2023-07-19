@@ -24,16 +24,6 @@ def client():
         from sand.config import SETTINGS, _ROOT_DIR
         from sand.app import app
 
-        externaldb = _ROOT_DIR / "tests/resources/data/databases"
-
-        filtered_setings = {k: v for k, v in SETTINGS.items() if k in ['entity', 'ont_classes', 'ont_props']}
-        for cfg in filtered_setings.values():
-            cfg["args"]["dbfile"] = os.path.join(
-                externaldb, Path(cfg["args"]["dbfile"]).name
-            )
-            assert os.path.exists(cfg["args"]["dbfile"]), cfg["args"]["dbfile"]
-            cfg["args"]["proxy"] = False
-
         app.config["TESTING"] = True
 
         with app.test_client() as client:
@@ -41,6 +31,54 @@ def client():
     finally:
         db.drop_tables(all_tables)
         db.close()
+
+
+@pytest.fixture
+def load_kg_db(client):
+    try:
+        from sand.config import SETTINGS, _ROOT_DIR
+        from kgdata.wikidata import db
+        from kgdata.wikidata.models.wdentity import WDEntity
+        from sm.misc.funcs import import_attr
+        import os
+
+        wikidata_path = _ROOT_DIR / "tests/resources/data/kgdb"
+
+        with open(wikidata_path / "entities.jsonl") as entity_file:
+            from kgdata.wikidata.models.wdentity import WDEntity
+            entity_data = json.load(entity_file)
+            wd_entity = WDEntity.from_dict(entity_data)
+            entity_store = dict()
+            entity_store[entity_data['id']] = wd_entity
+            from sand.models.entity import ENTITY_AR
+            from hugedict.chained_mapping import ChainedMapping
+            ENTITY_AR = ChainedMapping(entity_store, import_attr(SETTINGS['entity']["default"]))
+
+        with open(wikidata_path / "classes.jsonl") as class_file:
+            from kgdata.wikidata.models.wdclass import WDClass
+            class_data = json.load(class_file)
+            wd_class = WDClass.from_dict(class_data)
+            class_store = dict()
+            class_store[entity_data['id']] = wd_class
+            from sand.models.ontology import CLASS_AR
+            from hugedict.chained_mapping import ChainedMapping
+            CLASS_AR = ChainedMapping(class_store, import_attr(SETTINGS['ont_classes']["default"]))
+
+
+        with open(wikidata_path / "props.jsonl") as props_file:
+            from kgdata.wikidata.models.wdproperty import WDProperty
+            props_data = json.load(props_file)
+            wd_props = WDProperty.from_dict(props_data)
+            props_store = dict()
+            props_store[props_data['id']] = wd_props
+            from sand.models.ontology import PROP_AR
+            from hugedict.chained_mapping import ChainedMapping
+            PROP_AR = ChainedMapping(props_store, import_attr(SETTINGS['ont_props']["default"]))
+
+        yield None
+    finally:
+        pass
+
 
 
 @pytest.fixture

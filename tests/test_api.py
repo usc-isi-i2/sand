@@ -10,7 +10,7 @@ def test_api_get_entity(client):
     assert resp.status_code == 404
 
 
-def test_api_get_semantic_model(client, example_db):
+def test_api_get_semantic_model(client, example_db, load_kg_db):
     resp = client.get("/api/semanticmodel?limit=1000&offset=0&table=1")
     assert resp.status_code == 200
     sms = resp.json["items"]
