@@ -10,4 +10,3 @@ class SearchResult:
     id: str
     description: str
     uri: str
-

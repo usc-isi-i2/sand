@@ -1,12 +1,14 @@
 import requests
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Any
 import nh3
+import json
 from sand.extension_interface.search import IEntitySearch, IOntologySearch
 from sand.models.entity import Entity
 from sand.models.ontology import OntClass, OntProperty, OntClassAR
 from sand.models.search import SearchResult
 from sand.extensions.search.default_search import DefaultSearch
 from sand.extensions.search.aggregated_search import AggregatedSearch
+from werkzeug.exceptions import HTTPException, BadRequest, ServiceUnavailable
 
 
 def extended_wikidata_search() -> Union[IEntitySearch, IOntologySearch]:
@@ -61,13 +63,20 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         return props_params
 
     def find_class_by_name(self, search_text: str) -> List[SearchResult]:
-        """
-        Uses Wikidata API to search for classes using their name/text.
-        """
+        """Uses Wikidata API to search for classes using their name/text."""
+        if len(search_text.strip()) == 0:
+            return []
+
         request_params = self.get_class_search_params(search_text)
         api_data = requests.get(self.wikidata_url, request_params)
-        search_results = api_data.json()['query']['search']
         payload_results = []
+
+        api_data_json = api_data.json()
+
+        if "error" not in api_data.json():
+            search_results = api_data.json()['query']['search']
+        else:
+            raise ServiceUnavailable(description=api_data_json['error']['info'])
 
         for search_result in search_results:
             local_class_props = self.get_local_class_properties(search_result['title'])
@@ -80,12 +89,21 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
             payload_results.append(item)
         return payload_results
 
-    def find_entity_by_name(self, search_text: str) -> List[SearchResult]:
+    def find_entity_by_name(self, search_text: str) -> Any:
         """Uses Wikidata API to search for entities using their name/text."""
+        if len(search_text.strip()) == 0:
+            return []
+
         request_params = self.get_entity_search_params(search_text)
         api_data = requests.get(self.wikidata_url, request_params)
-        search_results = api_data.json()['query']['search']
         payload_results = []
+
+        api_data_json = api_data.json()
+
+        if "error" not in api_data_json:
+            search_results = api_data_json['query']['search']
+        else:
+            raise ServiceUnavailable(description=api_data_json['error']['info'])
 
         for search_result in search_results:
             item = SearchResult(
@@ -99,10 +117,19 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
 
     def find_props_by_name(self, search_text: str) -> List[SearchResult]:
         """Uses Wikidata API to search for properties using their name/text."""
+        if len(search_text.strip()) == 0:
+            return []
+
         request_params = self.get_props_search_params(search_text)
         api_data = requests.get(self.wikidata_url, request_params)
-        search_results = api_data.json()['query']['search']
         payload_results = []
+
+        api_data_json = api_data.json()
+
+        if "error" not in api_data.json():
+            search_results = api_data.json()['query']['search']
+        else:
+            raise ServiceUnavailable(description=api_data_json['error']['info'])
 
         for search_result in search_results:
             item = SearchResult(

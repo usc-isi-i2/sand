@@ -1,9 +1,10 @@
+import json
 import threading
 from typing import Dict, List, Union, Literal
 from flask.blueprints import Blueprint
 from sm.misc.funcs import import_func
 from sand.config import SETTINGS
-from flask import request, jsonify
+from flask import request, jsonify, abort
 
 from sand.extension_interface.search import IEntitySearch, IOntologySearch
 from sand.models.search import SearchResult
@@ -24,9 +25,9 @@ def get_search(name: Literal['classes', 'entities', 'props']) -> Union[IEntitySe
 
     if not hasattr(GetSearchCache, "search"):
         GetSearchCache.search = {}
-        search_config = SETTINGS["search"]
-        constructor = search_config[name]
-        GetSearchCache.search[name] = import_func(constructor)()
+    search_config = SETTINGS["search"]
+    constructor = search_config[name]
+    GetSearchCache.search[name] = import_func(constructor)()
 
     return GetSearchCache.search[name]
 

@@ -1,6 +1,7 @@
 import os
 
 import sm.outputs.semantic_model as O
+from flask import jsonify
 from gena import generate_api, generate_app, generate_readonly_api_4dict
 from hugedict.chained_mapping import ChainedMapping
 from sm.misc.funcs import import_attr
@@ -20,6 +21,8 @@ from sand.serializer import (
     serialize_entity,
     serialize_property,
 )
+from werkzeug.exceptions import HTTPException
+import json
 
 app = generate_app(
     [
@@ -54,5 +57,15 @@ app = generate_app(
     ],
     os.path.dirname(__file__),
 )
+
+
+@app.errorhandler(HTTPException)
+def handle_exception(e):
+    """Return JSON instead of HTML for HTTP errors."""
+    return jsonify({
+        "status": "error",
+        "message": str(e),
+    }), e.code
+
 
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # maximum upload of 16 MB

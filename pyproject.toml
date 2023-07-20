@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "web-sand"
-version = "2.1.14"
+version = "2.1.15"
 description = "UI for browsing/editing semantic descriptions"
 authors = ["Binh Vu <binh@toan2.com>"]
 repository = "https://github.com/usc-isi-i2/sand"
@@ -15,7 +15,7 @@ include = ["sand/www/**/*"]
 sand = 'sand.__main__:cli'
 
 [tool.poetry.dependencies]
-python = ">=3.8"
+python = ">=3.8,<4.0"
 kgdata = "^3.8.0"
 sem-desc = "^4.4.2"
 peewee = "^3.15.2"
