@@ -1,32 +1,33 @@
+import threading
 from dataclasses import dataclass
 from functools import partial
 from typing import List, Optional
 
+import sm.outputs.semantic_model as O
+from drepr.engine import OutputFormat
+from flask import jsonify, make_response, request
 from gena import generate_api
 from gena.deserializer import (
     generate_deserializer,
     get_dataclass_deserializer,
     get_deserializer_from_type,
 )
-from sand.models import SemanticModel, Table, TableRow
-from sand.models.ontology import OntClassAR, OntPropertyAR
-from sand.models.table import Link
-from sand.extensions.export.drepr.main import DreprExport
-from sand.serializer import (
-    get_label,
-)
-import threading
-from sand.extension_interface.export import IExport
-from sm.misc.funcs import import_func
-from sand.config import SETTINGS
-import sm.outputs.semantic_model as O
-from flask import jsonify, request, make_response
 from peewee import DoesNotExist, fn
-from drepr.engine import OutputFormat
+from sm.misc.funcs import import_func
 from werkzeug.exceptions import BadRequest, NotFound
 
+from sand.config import SETTINGS
+from sand.extension_interface.export import IExport
+from sand.extensions.export.drepr.main import DreprExport
+from sand.models import SemanticModel, Table, TableRow
+from sand.models.ontology import OntClassAR, OntPropertyAR
+from sand.models.table import ContentHierarchy, Link
+from sand.serializer import get_label
 
-def deser_context_tree(value):
+
+def deser_context_tree(value) -> list[ContentHierarchy]:
+    if len(value) == 0:
+        return []
     raise NotImplementedError()
 
 
@@ -139,7 +140,7 @@ def export_table_data(id: int):
     rows: List[TableRow] = list(TableRow.select().where(TableRow.table == table))
 
     # export the data using drepr library
-    content = get_export('default').export_data(table, rows, sm.data, OutputFormat.TTL)
+    content = get_export("default").export_data(table, rows, sm.data, OutputFormat.TTL)
     resp = make_response(content)
     resp.headers["Content-Type"] = "text/ttl; charset=utf-8"
     if request.args.get("attachment", "false") == "true":
@@ -171,13 +172,13 @@ def update_cell_link(id: int, column: int):
     if "links" not in request_json:
         raise KeyError(f"Field 'links' is required")
     if not isinstance(request_json["links"], list) or not all(
-            isinstance(link, dict) for link in request_json["links"]
+        isinstance(link, dict) for link in request_json["links"]
     ):
         raise KeyError(f"Field 'links' must be a list of dictionaries")
 
     if (
-            len(request_json["links"]) > 0
-            and "candidate_entities" not in request_json["links"][0]
+        len(request_json["links"]) > 0
+        and "candidate_entities" not in request_json["links"][0]
     ):
         # add back the candidate so we can deserialize them
         for link in request_json["links"]:

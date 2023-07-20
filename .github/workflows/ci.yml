@@ -20,9 +20,12 @@ jobs:
       - name: setup dependencies
         run: |
           pip install poetry
-          # poetry install
-      # - name: run test
-      #   run: poetry run pytest -x
+          poetry lock --no-update
+          poetry install
+      - name: run test
+        run: |
+          pip install pytest
+          pytest -xs tests/
       - name: build www
         working-directory: www
         run: |

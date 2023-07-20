@@ -21,7 +21,7 @@ def test_api_get_semantic_model(client, example_db):
 
 
 def test_api_search_entities(client):
-    resp = client.get('/api/search/entities?q=united states')
+    resp = client.get("/api/search/entities?q=united states")
     assert resp.status_code == 200
     search_results = resp.json["items"]
 
@@ -29,13 +29,13 @@ def test_api_search_entities(client):
     assert search_results[0]["id"] == "Q30"
     assert search_results[0]["label"] == "United States of America"
 
-    resp = client.get('/api/search/entities?q=')
+    resp = client.get("/api/search/entities?q=")
     search_results = resp.json["items"]
     assert len(search_results) == 0
 
 
 def test_api_search_classes(client):
-    resp = client.get('/api/search/classes?q=human')
+    resp = client.get("/api/search/classes?q=human")
     assert resp.status_code == 200
     search_results = resp.json["items"]
 
@@ -43,13 +43,13 @@ def test_api_search_classes(client):
     assert search_results[0]["id"] == "Q5"
     assert search_results[0]["label"] == "human"
 
-    resp = client.get('/api/search/classes?q=')
+    resp = client.get("/api/search/classes?q=")
     search_results = resp.json["items"]
     assert len(search_results) == 0
 
 
 def test_api_search_properties(client):
-    resp = client.get('/api/search/props?q=location')
+    resp = client.get("/api/search/props?q=location")
     assert resp.status_code == 200
     search_results = resp.json["items"]
 
@@ -57,12 +57,12 @@ def test_api_search_properties(client):
     assert search_results[0]["id"] == "P276"
     assert search_results[0]["label"] == "location"
 
-    resp = client.get('/api/search/props?q=')
+    resp = client.get("/api/search/props?q=")
     search_results = resp.json["items"]
     assert len(search_results) == 0
 
 
-def test_api_create_table(client):
+def test_api_create_table(client, example_db):
     resp = client.post(
         "/api/table",
         json={
