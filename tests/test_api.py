@@ -1,16 +1,16 @@
 def test_api_get_entity(client):
-    resp = client.get("/api/entities/Q5")
+    resp = client.get("/api/entities/Q30")
     assert resp.status_code == 200
 
     record = resp.json
-    assert record["id"] == "Q5"
-    assert record["label"]["lang2value"]["en"] == "human"
+    assert record["id"] == "Q30"
+    assert record["label"]["lang2value"]["en"] == "United States of America"
 
     resp = client.get("/api/entities/Q1928381920192")
     assert resp.status_code == 404
 
 
-def test_api_get_semantic_model(client, example_db, load_kg_db):
+def test_api_get_semantic_model(client, example_db):
     resp = client.get("/api/semanticmodel?limit=1000&offset=0&table=1")
     assert resp.status_code == 200
     sms = resp.json["items"]

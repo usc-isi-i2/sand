@@ -1,6 +1,6 @@
 from pathlib import Path
 import pytest, os, uuid, shutil
-from typing import List
+from typing import List, Dict
 
 from sand.models.base import db, init_db
 from sand.models import all_tables
@@ -12,7 +12,76 @@ from sand.controllers.helpers.upload import (
     parse_upload,
     save_upload,
 )
+from sand.models.base import StoreWrapper
+from sand.extensions.wikidata import (
+    identity,
+    qnode_deser,
+    get_wdclass_id,
+    ont_class_deser,
+    get_wdprop_id,
+    ont_prop_deser
+)
 import json
+
+TEST_CONFIG = {
+    "entity": {
+        "constructor": "tests.conftest.get_entity_db_test",
+        "dbfile": "entities.jsonl"
+    },
+    "ont_classes": {
+        "constructor": "tests.conftest.get_ontclass_db_test",
+        "dbfile": "classes.jsonl"
+    },
+    "ont_props": {
+        "constructor": "tests.conftest.get_ontprops_db_test",
+        "dbfile": "props.jsonl"
+    }
+}
+
+
+def get_entity_db_test(dbfile, proxy=False) -> StoreWrapper:
+    from kgdata.wikidata.models.wdentity import WDEntity
+    with open(dbfile) as dbfile_fp:
+        entity_store = dict()
+        for line in dbfile_fp:
+            entity_data = json.loads(line.strip())  # fix multiple load
+            wd_entity = WDEntity.from_dict(entity_data)
+            entity_store[entity_data['id']] = wd_entity
+        return StoreWrapper(
+            entity_store,
+            key_deser=identity,
+            val_deser=qnode_deser,
+        )
+
+
+def get_ontclass_db_test(dbfile, proxy=False) -> StoreWrapper:
+    from kgdata.wikidata.models.wdclass import WDClass
+    with open(dbfile) as dbfile_fp:
+        class_store = dict()
+        for line in dbfile_fp:
+            class_data = json.loads(line.strip())
+            wd_class = WDClass.from_dict(class_data)
+            class_store[class_data['id']] = wd_class
+        return StoreWrapper(
+            class_store,
+            key_deser=get_wdclass_id,
+            val_deser=ont_class_deser,
+        )
+
+
+def get_ontprops_db_test(dbfile, proxy=False) -> StoreWrapper:
+    from kgdata.wikidata.models.wdproperty import WDProperty
+    with open(dbfile) as dbfile_fp:
+        props_store = dict()
+        for line in dbfile_fp:
+            props_data = json.loads(line.strip())
+            wd_props = WDProperty.from_dict(props_data)
+            props_store[props_data['id']] = wd_props
+        return StoreWrapper(
+            props_store,
+            key_deser=get_wdprop_id,
+            val_deser=ont_prop_deser,
+        )
 
 
 @pytest.fixture
@@ -21,64 +90,33 @@ def client():
         init_db(":memory:")
         db.create_tables(all_tables, safe=False)
 
+        import sys
         from sand.config import SETTINGS, _ROOT_DIR
+
+        if _ROOT_DIR not in sys.path:
+            sys.path.append(_ROOT_DIR)
+
+
+        externaldb = _ROOT_DIR / "tests/resources/data/kgdb"
+
+        for key, test_cfg in TEST_CONFIG.items():
+            cfg = SETTINGS[key]
+            cfg["constructor"] = test_cfg["constructor"]
+            cfg["args"]["dbfile"] = os.path.join(
+                externaldb, Path(test_cfg["dbfile"]).name
+            )
+            cfg["args"]["proxy"] = False
+
         from sand.app import app
-
         app.config["TESTING"] = True
-
         with app.test_client() as client:
             yield client
     finally:
+        import sys
+        from sand.config import _ROOT_DIR
+        sys.path.remove(_ROOT_DIR)
         db.drop_tables(all_tables)
         db.close()
-
-
-@pytest.fixture
-def load_kg_db(client):
-    try:
-        from sand.config import SETTINGS, _ROOT_DIR
-        from kgdata.wikidata import db
-        from kgdata.wikidata.models.wdentity import WDEntity
-        from sm.misc.funcs import import_attr
-        import os
-
-        wikidata_path = _ROOT_DIR / "tests/resources/data/kgdb"
-
-        with open(wikidata_path / "entities.jsonl") as entity_file:
-            from kgdata.wikidata.models.wdentity import WDEntity
-            entity_data = json.load(entity_file)
-            wd_entity = WDEntity.from_dict(entity_data)
-            entity_store = dict()
-            entity_store[entity_data['id']] = wd_entity
-            from sand.models.entity import ENTITY_AR
-            from hugedict.chained_mapping import ChainedMapping
-            ENTITY_AR = ChainedMapping(entity_store, import_attr(SETTINGS['entity']["default"]))
-
-        with open(wikidata_path / "classes.jsonl") as class_file:
-            from kgdata.wikidata.models.wdclass import WDClass
-            class_data = json.load(class_file)
-            wd_class = WDClass.from_dict(class_data)
-            class_store = dict()
-            class_store[entity_data['id']] = wd_class
-            from sand.models.ontology import CLASS_AR
-            from hugedict.chained_mapping import ChainedMapping
-            CLASS_AR = ChainedMapping(class_store, import_attr(SETTINGS['ont_classes']["default"]))
-
-
-        with open(wikidata_path / "props.jsonl") as props_file:
-            from kgdata.wikidata.models.wdproperty import WDProperty
-            props_data = json.load(props_file)
-            wd_props = WDProperty.from_dict(props_data)
-            props_store = dict()
-            props_store[props_data['id']] = wd_props
-            from sand.models.ontology import PROP_AR
-            from hugedict.chained_mapping import ChainedMapping
-            PROP_AR = ChainedMapping(props_store, import_attr(SETTINGS['ont_props']["default"]))
-
-        yield None
-    finally:
-        pass
-
 
 
 @pytest.fixture

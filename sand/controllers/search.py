@@ -25,9 +25,9 @@ def get_search(name: Literal['classes', 'entities', 'props']) -> Union[IEntitySe
 
     if not hasattr(GetSearchCache, "search"):
         GetSearchCache.search = {}
-        search_config = SETTINGS["search"]
-        constructor = search_config[name]
-        GetSearchCache.search[name] = import_func(constructor)()
+    search_config = SETTINGS["search"]
+    constructor = search_config[name]
+    GetSearchCache.search[name] = import_func(constructor)()
 
     return GetSearchCache.search[name]
 
