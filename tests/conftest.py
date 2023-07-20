@@ -1,18 +1,9 @@
+import json
 from pathlib import Path
-import pytest, os, uuid, shutil
-from typing import List, Dict
 
-from sand.models.base import db, init_db
-from sand.models import all_tables
-from werkzeug.datastructures import FileStorage
-from sand.controllers.helpers.upload import (
-    CSVParserOpts,
-    UploadingTable,
-    get_extension,
-    parse_upload,
-    save_upload,
-)
-from sand.models.base import StoreWrapper
+import os
+import pytest
+
 from sand.extensions.wikidata import (
     identity,
     qnode_deser,
@@ -21,7 +12,9 @@ from sand.extensions.wikidata import (
     get_wdprop_id,
     ont_prop_deser
 )
-import json
+from sand.models import all_tables
+from sand.models.base import StoreWrapper
+from sand.models.base import db, init_db
 
 TEST_CONFIG = {
     "entity": {
