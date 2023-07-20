@@ -25,7 +25,7 @@ from sand.models.table import ContentHierarchy, Link
 from sand.serializer import get_label
 
 
-def deser_context_tree(value) -> list[ContentHierarchy]:
+def deser_context_tree(value) -> List[ContentHierarchy]:
     if len(value) == 0:
         return []
     raise NotImplementedError()
