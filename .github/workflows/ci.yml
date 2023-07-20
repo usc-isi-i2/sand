@@ -24,8 +24,7 @@ jobs:
           poetry install
       - name: run test
         run: |
-          pip install pytest
-          pytest -xs tests/
+          poetry run pytest -xs tests/
       - name: build www
         working-directory: www
         run: |
