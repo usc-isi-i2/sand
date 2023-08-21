@@ -19,6 +19,7 @@ def transform_map(transform_func, data, tolerance):
     transformed_data = []
     exec_tolerance = tolerance
     for path, value in data:
+        value = value[0]
         tdata = dict()
         tdata["path"] = path
         tdata["value"] = value
@@ -27,16 +28,13 @@ def transform_map(transform_func, data, tolerance):
             tdata["ok"] = result
             transformed_data.append(tdata)
         except Exception as err:
-            # fix this.
-            if exec_tolerance == 0:
-                break
-
             (exc, value, tb) = sys.exc_info()
             tb = tb.tb_next  # Skip *this* frame
             tdata["error"] = "".join(traceback.format_exception(exc, value, tb))
             transformed_data.append(tdata)
             exec_tolerance -= 1
-            continue
+            if exec_tolerance == 0:
+                return transformed_data
     return transformed_data
 
 
@@ -45,6 +43,7 @@ def transform_filter(transform_func, data, tolerance):
     exec_tolerance = tolerance
     for path, value in data:
         tdata = dict()
+        value = value[0]
         tdata["path"] = path
         tdata["value"] = value
         try:
@@ -54,14 +53,13 @@ def transform_filter(transform_func, data, tolerance):
             tdata["ok"] = result
             transformed_data.append(tdata)
         except Exception as err:
-            if exec_tolerance == 0:
-                break
-            pattern = re.compile(r".*:.*", re.MULTILINE)
-            filtered_error = "\n".join(re.findall(pattern, traceback.format_exc()))
-            tdata["error"] = filtered_error
+            (exc, value, tb) = sys.exc_info()
+            tb = tb.tb_next  # Skip *this* frame
+            tdata["error"] = "".join(traceback.format_exception(exc, value, tb))
             transformed_data.append(tdata)
             exec_tolerance -= 1
-            continue
+            if exec_tolerance == 0:
+                return transformed_data
     return transformed_data
 
 
@@ -70,6 +68,7 @@ def transform_split(transform_func, data, tolerance):
     exec_tolerance = tolerance
     for path, value in data:
         tdata = dict()
+        value = value[0]
         tdata["path"] = path
         tdata["value"] = value
         try:
@@ -79,19 +78,36 @@ def transform_split(transform_func, data, tolerance):
             tdata["ok"] = result
             transformed_data.append(tdata)
         except Exception as err:
-            if exec_tolerance == 0:
-                break
-            pattern = re.compile(r".*:.*", re.MULTILINE)
-            filtered_error = "\n".join(re.findall(pattern, traceback.format_exc()))
-            tdata["error"] = filtered_error
+            (exc, value, tb) = sys.exc_info()
+            tb = tb.tb_next  # Skip *this* frame
+            tdata["error"] = "".join(traceback.format_exception(exc, value, tb))
             transformed_data.append(tdata)
             exec_tolerance -= 1
-            continue
+            if exec_tolerance == 0:
+                return transformed_data
     return transformed_data
 
 
 def transform_concatenate(transform_func, data, tolerance):
-    pass
+    transformed_data = []
+    exec_tolerance = tolerance
+    for path, value in data:
+        tdata = dict()
+        tdata["path"] = path
+        tdata["value"] = value
+        try:
+            result = transform_func(value)
+            tdata["ok"] = result
+            transformed_data.append(tdata)
+        except Exception as err:
+            (exc, value, tb) = sys.exc_info()
+            tb = tb.tb_next  # Skip *this* frame
+            tdata["error"] = "".join(traceback.format_exception(exc, value, tb))
+            transformed_data.append(tdata)
+            exec_tolerance -= 1
+            if exec_tolerance == 0:
+                return transformed_data
+    return transformed_data
 
 
 @transform_bp.route(
@@ -115,18 +131,19 @@ def transform(table_id: int):
     loc = {}
     # add test case for incorrect user function.
     compiled_result = compile_restricted_function("value", code, "transform")
+    if compiled_result.errors:
+        raise BadRequest("\n".join(compiled_result.errors))
+
     exec(compiled_result.code, safe_globals, loc)
     # capture error wrong function.
     transform_func = loc["transform"]
 
-    col_index = table.columns.index(datapath)
+    col_index_list = [table.columns.index(column) for column in datapath]
 
-    data = []
-
-    for table_row in table_rows:
-        data.append(table_row.row[col_index])
-
-    data = ((table_row.index, table_row.row[col_index]) for table_row in table_rows)
+    data = [
+        [table_row.index, [table_row.row[col_index] for col_index in col_index_list]]
+        for table_row in table_rows
+    ]
 
     if transform_type not in ["map", "filter", "split", "concatenate"]:
         raise BadRequest("Invalid value for `type` ")
@@ -137,6 +154,7 @@ def transform(table_id: int):
                 raise BadRequest(
                     "For transform type map the outputpath should be a single column"
                 )
+
         transformed_data = transform_map(transform_func, data, tolerance)
 
     elif transform_type == "filter":
@@ -156,6 +174,6 @@ def transform(table_id: int):
 
     elif transform_type == "concatenate":
         # throw error
-        transformed_data = None
+        transformed_data = transform_concatenate(transform_func, data, tolerance)
 
     return jsonify(transformed_data)
