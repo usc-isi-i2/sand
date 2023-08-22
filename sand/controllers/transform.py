@@ -10,6 +10,7 @@ from RestrictedPython import compile_restricted_function, safe_globals
 from werkzeug.exceptions import BadRequest
 
 from sand.models.table import Link, Table, TableRow
+from sand.models.transform import Context
 
 transform_bp = Blueprint("transform", "transform")
 USER_DEFINE_FUNCTION_NAME = ""
@@ -18,13 +19,13 @@ USER_DEFINE_FUNCTION_NAME = ""
 def transform_map(transform_func, data, tolerance):
     transformed_data = []
     exec_tolerance = tolerance
-    for path, value in data:
+    for path, value, context in data:
         value = value[0]
         tdata = dict()
         tdata["path"] = path
         tdata["value"] = value
         try:
-            result = transform_func(value)
+            result = transform_func(value, context)
             tdata["ok"] = result
             transformed_data.append(tdata)
         except Exception as err:
@@ -41,13 +42,13 @@ def transform_map(transform_func, data, tolerance):
 def transform_filter(transform_func, data, tolerance):
     transformed_data = []
     exec_tolerance = tolerance
-    for path, value in data:
+    for path, value, context in data:
         tdata = dict()
         value = value[0]
         tdata["path"] = path
         tdata["value"] = value
         try:
-            result = transform_func(value)
+            result = transform_func(value, context)
             if type(result) != bool:
                 raise BadRequest("filter transform function must return boolean value")
             tdata["ok"] = result
@@ -66,13 +67,13 @@ def transform_filter(transform_func, data, tolerance):
 def transform_split(transform_func, data, tolerance):
     transformed_data = []
     exec_tolerance = tolerance
-    for path, value in data:
+    for path, value, context in data:
         tdata = dict()
         value = value[0]
         tdata["path"] = path
         tdata["value"] = value
         try:
-            result = transform_func(value)
+            result = transform_func(value, context)
             if type(result) != list:
                 raise BadRequest("filter transform function must return list")
             tdata["ok"] = result
@@ -91,12 +92,12 @@ def transform_split(transform_func, data, tolerance):
 def transform_concatenate(transform_func, data, tolerance):
     transformed_data = []
     exec_tolerance = tolerance
-    for path, value in data:
+    for path, value, context in data:
         tdata = dict()
         tdata["path"] = path
         tdata["value"] = value
         try:
-            result = transform_func(value)
+            result = transform_func(value, context)
             tdata["ok"] = result
             transformed_data.append(tdata)
         except Exception as err:
@@ -121,6 +122,9 @@ def transform(table_id: int):
     transform_type = request.json["type"]
     mode = request.json["mode"]
     datapath = request.json["datapath"]
+    if type(datapath) != list and type(datapath) == str:
+        datapath = [datapath]
+
     code = request.json["code"]
     tolerance = request.json["tolerance"]
     outputpath = None
@@ -129,24 +133,31 @@ def transform(table_id: int):
     rows = request.json["rows"]
 
     loc = {}
-    # add test case for incorrect user function.
-    compiled_result = compile_restricted_function("value", code, "transform")
+
+    # overriding inbuilt _getitem_ guard function
+    def custom_getitem_guard(iterable, index):
+        return iterable[index]
+
+    # update safe_globals to enable _getitem_
+    safe_globals.update({'_getitem_': custom_getitem_guard})
+
+    compiled_result = compile_restricted_function("value,context", code, "<function>")
     if compiled_result.errors:
         raise BadRequest("\n".join(compiled_result.errors))
 
     exec(compiled_result.code, safe_globals, loc)
-    # capture error wrong function.
-    transform_func = loc["transform"]
+
+    transform_func = loc["<function>"]
 
     col_index_list = [table.columns.index(column) for column in datapath]
 
-    data = [
-        [table_row.index, [table_row.row[col_index] for col_index in col_index_list]]
-        for table_row in table_rows
-    ]
+    data = [[table_row.index, [table_row.row[col_index] for col_index in col_index_list],
+             Context(index=table_row.index, row=table_row.row)] for table_row in table_rows]
 
     if transform_type not in ["map", "filter", "split", "concatenate"]:
         raise BadRequest("Invalid value for `type` ")
+
+    transformed_data = None
 
     if transform_type == "map":
         if outputpath:
@@ -173,7 +184,7 @@ def transform(table_id: int):
         transformed_data = transform_split(transform_func, data, tolerance)
 
     elif transform_type == "concatenate":
-        # throw error
+
         transformed_data = transform_concatenate(transform_func, data, tolerance)
 
     return jsonify(transformed_data)

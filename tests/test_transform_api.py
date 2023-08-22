@@ -41,6 +41,49 @@ def test_api_transform_map_single_line(client, example_db):
     assert response == transformed_data
 
 
+def test_api_transform_map_single_line_context(client, example_db):
+    resp = client.post(
+        "/api/transform/1/transformations",
+        json={
+            "type": "map",
+            "mode": "restrictedpython",
+            "datapath": ["Tên"],
+            "code": "return value.upper() + context.row[2]",
+            "tolerance": 3,
+            "rows": 5,
+        },
+    )
+
+    transformed_data = [{'ok': 'FANSIPANLào Cai', 'path': 0, 'value': 'Fansipan'},
+                        {'ok': 'PUTALENGLai Châu', 'path': 1, 'value': 'Putaleng'},
+                        {'ok': 'PU SI LUNGLai Châu', 'path': 2, 'value': 'Pu Si Lung'},
+                        {'ok': 'KỶ QUAN SAN (BẠCH MỘC LƯƠNG TỬ)Lào Cai', 'path': 3,
+                         'value': 'Kỷ Quan San (Bạch Mộc Lương Tử)'},
+                        {'ok': 'KHANG SU VĂNLai Châu', 'path': 4, 'value': 'Khang Su Văn'},
+                        {'ok': 'TẢ LIÊN (CỔ TRÂU)Lai Châu', 'path': 5, 'value': 'Tả Liên (Cổ Trâu)'},
+                        {'ok': 'PHÚ LƯƠNG (TẢ CHÌ NHÙ)Yên Bái', 'path': 6, 'value': 'Phú Lương (Tả Chì Nhù)'},
+                        {'ok': 'NHÌU CÔ SANLào Cai', 'path': 7, 'value': 'Nhìu Cô San'},
+                        {'ok': 'LÙNG CÚNGYên Bái', 'path': 8, 'value': 'Lùng Cúng'},
+                        {'ok': 'NAM KANG HO TAOLai Châu', 'path': 9, 'value': 'Nam Kang Ho Tao'},
+                        {'ok': 'TÀ XÙASơn La', 'path': 10, 'value': 'Tà Xùa'},
+                        {'ok': 'LẢO THẨNLào Cai', 'path': 11, 'value': 'Lảo Thẩn'},
+                        {'ok': 'PHU XAI LAI LENGNghệ An', 'path': 12, 'value': 'Phu Xai Lai Leng'},
+                        {'ok': 'NGỌC LINH (NGOK LINH)Kon Tum', 'path': 13, 'value': 'Ngọc Linh (Ngok Linh)'},
+                        {'ok': 'PHU TRALai Châu', 'path': 14, 'value': 'Phu Tra'},
+                        {'ok': 'TÂY CÔN LĨNHHà Giang', 'path': 15, 'value': 'Tây Côn Lĩnh'},
+                        {'ok': 'CHƯ YANG SINĐắk Lắk', 'path': 16, 'value': 'Chư Yang Sin'},
+                        {'ok': 'KIỀU LIÊU TIHà Giang', 'path': 17, 'value': 'Kiều Liêu Ti'},
+                        {'ok': 'MƯỜNG HOONGKon Tum', 'path': 18, 'value': 'Mường Hoong'},
+                        {'ok': 'RÀO CỎHà Tĩnh', 'path': 19, 'value': 'Rào Cỏ'},
+                        {'ok': 'NGOK PHANKon Tum', 'path': 20, 'value': 'Ngok Phan'},
+                        {'ok': 'NGOK LUM HEOQuảng Nam', 'path': 21, 'value': 'Ngok Lum Heo'},
+                        {'ok': 'NGOK KRINHKon Tum', 'path': 22, 'value': 'Ngok Krinh'}]
+
+    response = resp.json
+    assert resp.status_code == 200
+    assert len(response) == len(transformed_data)
+    assert response == transformed_data
+
 def test_api_transform_map_single_line_fail(client, example_db):
     resp = client.post(
         "/api/transform/1/transformations",
@@ -55,17 +98,17 @@ def test_api_transform_map_single_line_fail(client, example_db):
         },
     )
     transformed_data = [{'error': 'Traceback (most recent call last):\n'
-                                  '  File "<string>", line 1, in transform\n'
+                                  '  File "<string>", line 1, in <function>\n'
                                   'TypeError: can only concatenate str (not "int") to str\n',
                          'path': 0,
                          'value': 'Fansipan'},
                         {'error': 'Traceback (most recent call last):\n'
-                                  '  File "<string>", line 1, in transform\n'
+                                  '  File "<string>", line 1, in <function>\n'
                                   'TypeError: can only concatenate str (not "int") to str\n',
                          'path': 1,
                          'value': 'Putaleng'},
                         {'error': 'Traceback (most recent call last):\n'
-                                  '  File "<string>", line 1, in transform\n'
+                                  '  File "<string>", line 1, in <function>\n'
                                   'TypeError: can only concatenate str (not "int") to str\n',
                          'path': 2,
                          'value': 'Pu Si Lung'}]
@@ -95,19 +138,19 @@ return value+1
         },
     )
     transformed_data = [{'error': 'Traceback (most recent call last):\n'
-                                  '  File "<string>", line 4, in transform\n'
+                                  '  File "<string>", line 4, in <function>\n'
                                   '  File "<string>", line 2, in error_func\n'
                                   'ZeroDivisionError: division by zero\n',
                          'path': 0,
                          'value': 'Fansipan'},
                         {'error': 'Traceback (most recent call last):\n'
-                                  '  File "<string>", line 4, in transform\n'
+                                  '  File "<string>", line 4, in <function>\n'
                                   '  File "<string>", line 2, in error_func\n'
                                   'ZeroDivisionError: division by zero\n',
                          'path': 1,
                          'value': 'Putaleng'},
                         {'error': 'Traceback (most recent call last):\n'
-                                  '  File "<string>", line 4, in transform\n'
+                                  '  File "<string>", line 4, in <function>\n'
                                   '  File "<string>", line 2, in error_func\n'
                                   'ZeroDivisionError: division by zero\n',
                          'path': 2,
@@ -143,7 +186,7 @@ return value+1
     transformed_data = [{
         'error': 'Traceback (most recent call last):\n  File "<string>", line 3, in error_func\nZeroDivisionError: '
                  'division by zero\n\nDuring handling of the above exception, another exception '
-                 'occurred:\n\nTraceback (most recent call last):\n  File "<string>", line 6, in transform\n  File '
+                 'occurred:\n\nTraceback (most recent call last):\n  File "<string>", line 6, in <function>\n  File '
                  '"<string>", line 5, in error_func\nAssertionError\n',
         'path': 0,
         'value': 'Fansipan'},
@@ -151,14 +194,14 @@ return value+1
             'error': 'Traceback (most recent call last):\n  File "<string>", line 3, '
                      'in error_func\nZeroDivisionError: division by zero\n\nDuring handling of the above exception, '
                      'another exception occurred:\n\nTraceback (most recent call last):\n  File "<string>", line 6, '
-                     'in transform\n  File "<string>", line 5, in error_func\nAssertionError\n',
+                     'in <function>\n  File "<string>", line 5, in error_func\nAssertionError\n',
             'path': 1,
             'value': 'Putaleng'},
         {
             'error': 'Traceback (most recent call last):\n  File "<string>", line 3, '
                      'in error_func\nZeroDivisionError: division by zero\n\nDuring handling of the above exception, '
                      'another exception occurred:\n\nTraceback (most recent call last):\n  File "<string>", line 6, '
-                     'in transform\n  File "<string>", line 5, in error_func\nAssertionError\n',
+                     'in <function>\n  File "<string>", line 5, in error_func\nAssertionError\n',
             'path': 2,
             'value': 'Pu Si Lung'}]
     response = resp.json
@@ -269,17 +312,18 @@ def test_api_transform_filter_single_line_fail(client, example_db):
         },
     )
     transformed_data = [{'error': 'Traceback (most recent call last):\n'
-                                  '  File "<string>", line 1, in transform\n'
+                                  '  File "<string>", line 1, in <function>\n'
                                   "TypeError: unsupported operand type(s) for +: 'int' and 'str'\n",
                          'path': 0,
                          'value': 'Fansipan'},
                         {'error': 'Traceback (most recent call last):\n'
-                                  '  File "<string>", line 1, in transform\n'
+                                  '  File "<string>", line 1, in <function>\n'
                                   "TypeError: unsupported operand type(s) for +: 'int' and 'str'\n",
                          'path': 1,
                          'value': 'Putaleng'},
                         {'error': 'Traceback (most recent call last):\n'
-                                  '  File "<string>", line 1, in transform\n'
+                                  '  File "<string>", line 1, in <function>'
+                                  '\n'
                                   "TypeError: unsupported operand type(s) for +: 'int' and 'str'\n",
                          'path': 2,
                          'value': 'Pu Si Lung'}]
@@ -352,7 +396,7 @@ def test_api_transform_concatenate_single_line(client, example_db):
             "type": "concatenate",
             "mode": "restrictedpython",
             "datapath": ["Tên", "Tọa độ"],
-            "code": "return ''.join(value)",
+            "code": "return value[0] + value[1]",
             "tolerance": 3,
             "rows": 5,
         },
@@ -430,5 +474,48 @@ return value+1
                         'status': 'error'}
     response = resp.json
     assert resp.status_code == 400
+    assert len(response) == len(transformed_data)
+    assert response == transformed_data
+
+
+def test_api_transform_map_single_line_str(client, example_db):
+    resp = client.post(
+        "/api/transform/1/transformations",
+        json={
+            "type": "map",
+            "mode": "restrictedpython",
+            "datapath": "Tên",
+            "code": "return value.upper()",
+            "tolerance": 3,
+            "rows": 5,
+        },
+    )
+    transformed_data = [{'ok': 'FANSIPAN', 'path': 0, 'value': 'Fansipan'},
+                        {'ok': 'PUTALENG', 'path': 1, 'value': 'Putaleng'},
+                        {'ok': 'PU SI LUNG', 'path': 2, 'value': 'Pu Si Lung'},
+                        {'ok': 'KỶ QUAN SAN (BẠCH MỘC LƯƠNG TỬ)',
+                         'path': 3,
+                         'value': 'Kỷ Quan San (Bạch Mộc Lương Tử)'},
+                        {'ok': 'KHANG SU VĂN', 'path': 4, 'value': 'Khang Su Văn'},
+                        {'ok': 'TẢ LIÊN (CỔ TRÂU)', 'path': 5, 'value': 'Tả Liên (Cổ Trâu)'},
+                        {'ok': 'PHÚ LƯƠNG (TẢ CHÌ NHÙ)', 'path': 6, 'value': 'Phú Lương (Tả Chì Nhù)'},
+                        {'ok': 'NHÌU CÔ SAN', 'path': 7, 'value': 'Nhìu Cô San'},
+                        {'ok': 'LÙNG CÚNG', 'path': 8, 'value': 'Lùng Cúng'},
+                        {'ok': 'NAM KANG HO TAO', 'path': 9, 'value': 'Nam Kang Ho Tao'},
+                        {'ok': 'TÀ XÙA', 'path': 10, 'value': 'Tà Xùa'},
+                        {'ok': 'LẢO THẨN', 'path': 11, 'value': 'Lảo Thẩn'},
+                        {'ok': 'PHU XAI LAI LENG', 'path': 12, 'value': 'Phu Xai Lai Leng'},
+                        {'ok': 'NGỌC LINH (NGOK LINH)', 'path': 13, 'value': 'Ngọc Linh (Ngok Linh)'},
+                        {'ok': 'PHU TRA', 'path': 14, 'value': 'Phu Tra'},
+                        {'ok': 'TÂY CÔN LĨNH', 'path': 15, 'value': 'Tây Côn Lĩnh'},
+                        {'ok': 'CHƯ YANG SIN', 'path': 16, 'value': 'Chư Yang Sin'},
+                        {'ok': 'KIỀU LIÊU TI', 'path': 17, 'value': 'Kiều Liêu Ti'},
+                        {'ok': 'MƯỜNG HOONG', 'path': 18, 'value': 'Mường Hoong'},
+                        {'ok': 'RÀO CỎ', 'path': 19, 'value': 'Rào Cỏ'},
+                        {'ok': 'NGOK PHAN', 'path': 20, 'value': 'Ngok Phan'},
+                        {'ok': 'NGOK LUM HEO', 'path': 21, 'value': 'Ngok Lum Heo'},
+                        {'ok': 'NGOK KRINH', 'path': 22, 'value': 'Ngok Krinh'}]
+    response = resp.json
+    assert resp.status_code == 200
     assert len(response) == len(transformed_data)
     assert response == transformed_data
