@@ -45,44 +45,42 @@ def test_api_transform_map_single_line_context(client, example_db):
     resp = client.post(
         "/api/transform/1/transformations",
         json={
-            "type": "map",
+            "type": "filter",
             "mode": "restrictedpython",
             "datapath": ["Tên"],
-            "code": "return value.upper() + context.row[2]",
+            "code": "return True if int(context.row[4]) > 800 else False",
             "tolerance": 3,
             "rows": 5,
         },
     )
 
-    transformed_data = [{'ok': 'FANSIPANLào Cai', 'path': 0, 'value': 'Fansipan'},
-                        {'ok': 'PUTALENGLai Châu', 'path': 1, 'value': 'Putaleng'},
-                        {'ok': 'PU SI LUNGLai Châu', 'path': 2, 'value': 'Pu Si Lung'},
-                        {'ok': 'KỶ QUAN SAN (BẠCH MỘC LƯƠNG TỬ)Lào Cai', 'path': 3,
-                         'value': 'Kỷ Quan San (Bạch Mộc Lương Tử)'},
-                        {'ok': 'KHANG SU VĂNLai Châu', 'path': 4, 'value': 'Khang Su Văn'},
-                        {'ok': 'TẢ LIÊN (CỔ TRÂU)Lai Châu', 'path': 5, 'value': 'Tả Liên (Cổ Trâu)'},
-                        {'ok': 'PHÚ LƯƠNG (TẢ CHÌ NHÙ)Yên Bái', 'path': 6, 'value': 'Phú Lương (Tả Chì Nhù)'},
-                        {'ok': 'NHÌU CÔ SANLào Cai', 'path': 7, 'value': 'Nhìu Cô San'},
-                        {'ok': 'LÙNG CÚNGYên Bái', 'path': 8, 'value': 'Lùng Cúng'},
-                        {'ok': 'NAM KANG HO TAOLai Châu', 'path': 9, 'value': 'Nam Kang Ho Tao'},
-                        {'ok': 'TÀ XÙASơn La', 'path': 10, 'value': 'Tà Xùa'},
-                        {'ok': 'LẢO THẨNLào Cai', 'path': 11, 'value': 'Lảo Thẩn'},
-                        {'ok': 'PHU XAI LAI LENGNghệ An', 'path': 12, 'value': 'Phu Xai Lai Leng'},
-                        {'ok': 'NGỌC LINH (NGOK LINH)Kon Tum', 'path': 13, 'value': 'Ngọc Linh (Ngok Linh)'},
-                        {'ok': 'PHU TRALai Châu', 'path': 14, 'value': 'Phu Tra'},
-                        {'ok': 'TÂY CÔN LĨNHHà Giang', 'path': 15, 'value': 'Tây Côn Lĩnh'},
-                        {'ok': 'CHƯ YANG SINĐắk Lắk', 'path': 16, 'value': 'Chư Yang Sin'},
-                        {'ok': 'KIỀU LIÊU TIHà Giang', 'path': 17, 'value': 'Kiều Liêu Ti'},
-                        {'ok': 'MƯỜNG HOONGKon Tum', 'path': 18, 'value': 'Mường Hoong'},
-                        {'ok': 'RÀO CỎHà Tĩnh', 'path': 19, 'value': 'Rào Cỏ'},
-                        {'ok': 'NGOK PHANKon Tum', 'path': 20, 'value': 'Ngok Phan'},
-                        {'ok': 'NGOK LUM HEOQuảng Nam', 'path': 21, 'value': 'Ngok Lum Heo'},
-                        {'ok': 'NGOK KRINHKon Tum', 'path': 22, 'value': 'Ngok Krinh'}]
+    transformed_data = [{'ok': True, 'path': 0, 'value': 'Fansipan'}, {'ok': True, 'path': 1, 'value': 'Putaleng'},
+                        {'ok': True, 'path': 2, 'value': 'Pu Si Lung'},
+                        {'ok': True, 'path': 3, 'value': 'Kỷ Quan San (Bạch Mộc Lương Tử)'},
+                        {'ok': True, 'path': 4, 'value': 'Khang Su Văn'},
+                        {'ok': True, 'path': 5, 'value': 'Tả Liên (Cổ Trâu)'},
+                        {'ok': True, 'path': 6, 'value': 'Phú Lương (Tả Chì Nhù)'},
+                        {'ok': True, 'path': 7, 'value': 'Nhìu Cô San'}, {'ok': True, 'path': 8, 'value': 'Lùng Cúng'},
+                        {'ok': True, 'path': 9, 'value': 'Nam Kang Ho Tao'},
+                        {'ok': True, 'path': 10, 'value': 'Tà Xùa'}, {'ok': True, 'path': 11, 'value': 'Lảo Thẩn'},
+                        {'ok': True, 'path': 12, 'value': 'Phu Xai Lai Leng'},
+                        {'ok': True, 'path': 13, 'value': 'Ngọc Linh (Ngok Linh)'},
+                        {'ok': True, 'path': 14, 'value': 'Phu Tra'}, {'ok': True, 'path': 15, 'value': 'Tây Côn Lĩnh'},
+                        {
+                            'error': 'Traceback (most recent call last):\n'
+                                     '  File "<string>", line 1, in <function>\n'
+                                     'ValueError: invalid literal for int() with base 10: \'2420-2422\'\n',
+                            'path': 16, 'value': 'Chư Yang Sin'}, {'ok': True, 'path': 17, 'value': 'Kiều Liêu Ti'},
+                        {'ok': True, 'path': 18, 'value': 'Mường Hoong'}, {'ok': True, 'path': 19, 'value': 'Rào Cỏ'},
+                        {'ok': True, 'path': 20, 'value': 'Ngok Phan'},
+                        {'ok': True, 'path': 21, 'value': 'Ngok Lum Heo'},
+                        {'ok': True, 'path': 22, 'value': 'Ngok Krinh'}]
 
     response = resp.json
     assert resp.status_code == 200
     assert len(response) == len(transformed_data)
     assert response == transformed_data
+
 
 def test_api_transform_map_single_line_fail(client, example_db):
     resp = client.post(
