@@ -531,3 +531,29 @@ def test_api_transform_map_single_line_str(client, example_db):
     assert resp.status_code == 200
     assert len(response) == len(transformed_data)
     assert response == transformed_data
+
+
+def test_api_transform_restrictedpython_compilation_error():
+    code = """
+def error_func():
+result = 1/0
+
+error_func()
+return value+1
+    """.strip()
+
+    from sand.controllers.transform import compile_function
+    captured_error = None
+    try:
+        transform_func = compile_function(code)
+    except Exception as e:
+        import sys
+        import traceback
+        (exc, value, tb) = sys.exc_info()
+        tb = tb.tb_next.tb_next
+        captured_error = "".join(traceback.format_exception(exc, value, tb))
+
+    expected_error = "werkzeug.exceptions.BadRequest: 400 Bad Request: Line 2: IndentationError: expected an indented "\
+                     "block at statement: 'result = 1/0'\n"
+
+    assert captured_error == expected_error
