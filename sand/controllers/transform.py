@@ -13,30 +13,34 @@ from sand.models.table import Link, Table, TableRow
 from sand.models.transform import Context, Tdata, TransformRequestPayload
 from gena.deserializer import get_dataclass_deserializer
 
-deserializer = get_dataclass_deserializer(TransformRequestPayload, {})
-
 transform_bp = Blueprint("transform", "transform")
-USER_DEFINE_FUNCTION_NAME = ""
+deserializer = get_dataclass_deserializer(TransformRequestPayload, {})
 
 
 def filter_traceback_errors() -> str:
-    """Filters traceback errors, removes sensitive information"""
+    """Filters traceback errors, removes sensitive information
+
+        Args:
+
+        Returns:
+            Error String without the sensitive information.
+    """
     (exc, value, tb) = sys.exc_info()
     tb = tb.tb_next
     return "".join(traceback.format_exception(exc, value, tb))
 
 
 def transform_map(transform_func: Callable[[Any, Context], Any], data: Iterable[List[Union[int, List, Context]]],
-                  tolerance: int) -> List:
+                  tolerance: int) -> List[Tdata]:
     """Implements map transform, performs map operation over each cell, for a given column
 
         Args:
             transform_func: User defined python function defined by the user
-            data: Column data along with context object
+            data: iterable with Column data and context object
             tolerance: contains the API request data
 
         Returns:
-            transformed_data (str): List of data transformed after applying map transform
+            list of Tdata objects, data transformed after applying map transform
     """
     transformed_data = []
     for path, value, context in data:
@@ -56,8 +60,20 @@ def transform_map(transform_func: Callable[[Any, Context], Any], data: Iterable[
 
 
 def transform_filter(transform_func: Callable[[Any, Context], Any], data: Iterable[List[Union[int, List, Context]]],
-                     tolerance: int) -> List:
-    """Implements filter transform, performs filter operation over each cell, for a given column"""
+                     tolerance: int) -> List[Tdata]:
+    """Implements filter transform, performs filter operation over each cell, for a given column
+
+        Args:
+            transform_func: User defined python function defined by the user
+            data: iterable with Column data and context object
+            tolerance: contains the API request data
+
+        Returns:
+            list of Tdata objects, data transformed after applying filter transform
+
+        Raises:
+            BadRequest: An error occurred when the transform_func on execution, does not return a boolean
+    """
     transformed_data = []
     for path, value, context in data:
         value = value[0]
@@ -78,8 +94,20 @@ def transform_filter(transform_func: Callable[[Any, Context], Any], data: Iterab
 
 
 def transform_split(transform_func: Callable[[Any, Context], Any], data: Iterable[List[Union[int, List, Context]]],
-                    tolerance: int) -> List:
-    """Implements split transform, performs split operation over each cell, for a given column"""
+                    tolerance: int) -> List[Tdata]:
+    """Implements split transform, performs split operation over each cell, for a given column
+
+        Args:
+            transform_func: User defined python function defined by the user
+            data: iterable with Column data and context object
+            tolerance: contains the API request data
+
+        Returns:
+            list of Tdata objects, data transformed after applying split transform
+
+        Raises:
+            BadRequest: An error occurred when transform_func on execution, does not return a list
+    """
     transformed_data = []
     for path, value, context in data:
         value = value[0]
@@ -101,8 +129,16 @@ def transform_split(transform_func: Callable[[Any, Context], Any], data: Iterabl
 
 def transform_concatenate(transform_func: Callable[[Any, Context], Any],
                           data: Iterable[List[Union[int, List, Context]]], tolerance: int) -> List:
-    """Implements concatenate transform, performs concatenate operation over each cell, for a given column"""
+    """Implements concatenate transform, performs concatenate operation over each cell, for a given column
 
+        Args:
+            transform_func: User defined python function defined by the user
+            data: iterable with Column data and context object
+            tolerance: contains the API request data
+
+        Returns:
+            list of Tdata objects, data transformed after applying concatenate transform
+    """
     transformed_data = []
     for path, value, context in data:
         tdata = Tdata(path=path, value=value)
@@ -121,12 +157,30 @@ def transform_concatenate(transform_func: Callable[[Any, Context], Any],
 
 # overriding inbuilt _getitem_ guard function
 def custom_getitem_guard(obj: Any, index: int) -> Any:
-    """Implements __getitem__ restrictedpython policy and wraps _getitem_ function"""
+    """Implements __getitem__ restrictedpython policy and wraps _getitem_ function
+
+        Args:
+            obj: object that has __getitem__ implementation in python
+            index: index of the element that can be accessed from obj
+
+        Returns:
+            object element at position index
+    """
     return obj[index]
 
 
 def compile_function(code: str) -> Callable:
-    """Executes code in string in a restricted mode using restrictedpython"""
+    """Executes code in string in a restricted mode using restrictedpython
+
+        Args:
+            code: object that has __getitem__ implementation in python
+
+        Returns:
+            Callable function that wraps the code as a function body
+
+        Raises:
+            BadRequest: An error occurred when the code has compilation error
+    """
     loc = {}
     safe_globals.update({'_getitem_': custom_getitem_guard})
     compiled_result = compile_restricted_function("value,context", code, "<function>")
@@ -155,11 +209,8 @@ def transform(table_id: int):
         request.json["rows"] = len(table_rows)
 
     request_data = deserializer(request.json)
-
     transform_func = compile_function(request_data.code)
-
     col_index_list = [table.columns.index(column) for column in request_data.datapath]
-
     data = ([table_row.index, [table_row.row[col_index] for col_index in col_index_list],
              Context(index=table_row.index, row=table_row.row)] for table_row in table_rows[:request_data.rows])
 
