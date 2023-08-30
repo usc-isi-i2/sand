@@ -7,7 +7,6 @@ def test_api_transform_map_single_line(client, example_db):
             "datapath": ["Tên"],
             "code": "return value.upper()",
             "tolerance": 3,
-            "rows": 5,
         },
     )
     transformed_data = [{'ok': 'FANSIPAN', 'path': 0, 'value': 'Fansipan'},
@@ -41,6 +40,32 @@ def test_api_transform_map_single_line(client, example_db):
     assert response == transformed_data
 
 
+def test_api_transform_map_single_line_rows(client, example_db):
+    resp = client.post(
+        "/api/transform/1/transformations",
+        json={
+            "type": "map",
+            "mode": "restrictedpython",
+            "datapath": ["Tên"],
+            "code": "return value.upper()",
+            "tolerance": 3,
+            "rows": 5
+        },
+    )
+    transformed_data = [{'ok': 'FANSIPAN', 'path': 0, 'value': 'Fansipan'},
+                        {'ok': 'PUTALENG', 'path': 1, 'value': 'Putaleng'},
+                        {'ok': 'PU SI LUNG', 'path': 2, 'value': 'Pu Si Lung'},
+                        {'ok': 'KỶ QUAN SAN (BẠCH MỘC LƯƠNG TỬ)',
+                         'path': 3,
+                         'value': 'Kỷ Quan San (Bạch Mộc Lương Tử)'},
+                        {'ok': 'KHANG SU VĂN', 'path': 4, 'value': 'Khang Su Văn'}]
+
+    response = resp.json
+    assert resp.status_code == 200
+    assert len(response) == len(transformed_data)
+    assert response == transformed_data
+
+
 def test_api_transform_map_single_line_context(client, example_db):
     resp = client.post(
         "/api/transform/1/transformations",
@@ -50,7 +75,6 @@ def test_api_transform_map_single_line_context(client, example_db):
             "datapath": ["Tên"],
             "code": "return True if int(context.row[4]) > 800 else False",
             "tolerance": 3,
-            "rows": 5,
         },
     )
 
@@ -92,7 +116,6 @@ def test_api_transform_map_single_line_fail(client, example_db):
             "code": "return value+1",
             "tolerance": 3,
             "outputpath": ["new col data"],
-            "rows": 5,
         },
     )
     transformed_data = [{'error': 'Traceback (most recent call last):\n'
@@ -132,7 +155,6 @@ return value+1
     """.strip(),
             "tolerance": 3,
             "outputpath": ["new col data"],
-            "rows": 5,
         },
     )
     transformed_data = [{'error': 'Traceback (most recent call last):\n'
@@ -178,7 +200,6 @@ return value+1
     """.strip(),
             "tolerance": 3,
             "outputpath": ["new col data"],
-            "rows": 5,
         },
     )
     transformed_data = [{
@@ -217,7 +238,6 @@ def test_api_transform_map_multiline(client, example_db):
             "datapath": ["Tên"],
             "code": "if len(value)>10:\n\treturn value\nelse:\n\treturn 'false'",
             "tolerance": 3,
-            "rows": 5,
         },
     )
     transformed_data = [{'ok': 'false', 'path': 0, 'value': 'Fansipan'},
@@ -260,7 +280,6 @@ def test_api_transform_filter_multiline(client, example_db):
             "datapath": ["Tên"],
             "code": "if len(value)>15:\n\treturn True\nelse:\n\treturn False",
             "tolerance": 3,
-            "rows": 5,
         },
     )
 
@@ -306,7 +325,6 @@ def test_api_transform_filter_single_line_fail(client, example_db):
             "code": "return len(value)+str(5)",
             "tolerance": 3,
             "outputpath": ["new col data"],
-            "rows": 5,
         },
     )
     transformed_data = [{'error': 'Traceback (most recent call last):\n'
@@ -341,7 +359,6 @@ def test_api_transform_split_single_line(client, example_db):
             "code": "return value.split('(')",
             "outputpath": ["FirstCol", "SecondCol"],
             "tolerance": 3,
-            "rows": 5,
         },
     )
     transformed_data = [
@@ -396,7 +413,6 @@ def test_api_transform_concatenate_single_line(client, example_db):
             "datapath": ["Tên", "Tọa độ"],
             "code": "return value[0] + value[1]",
             "tolerance": 3,
-            "rows": 5,
         },
     )
     transformed_data = [{'ok': 'Fansipan22°20′51″B 103°49′3″Đ',
@@ -463,7 +479,6 @@ error_func()
 return value+1
     """.strip(),
             "tolerance": 3,
-            "rows": 5,
         },
     )
 
@@ -485,7 +500,6 @@ def test_api_transform_map_single_line_str(client, example_db):
             "datapath": "Tên",
             "code": "return value.upper()",
             "tolerance": 3,
-            "rows": 5,
         },
     )
     transformed_data = [{'ok': 'FANSIPAN', 'path': 0, 'value': 'Fansipan'},

@@ -2,8 +2,7 @@ import json
 import re
 import sys
 import traceback
-from typing import Dict, List, Callable, Any
-from collections.abc import Iterable
+from typing import Dict, List, Callable, Any, Union, Iterable
 
 from flask import jsonify, request
 from flask.blueprints import Blueprint
@@ -11,7 +10,10 @@ from RestrictedPython import compile_restricted_function, safe_globals
 from werkzeug.exceptions import BadRequest
 
 from sand.models.table import Link, Table, TableRow
-from sand.models.transform import Context
+from sand.models.transform import Context, Tdata, TransformRequestPayload
+from gena.deserializer import get_dataclass_deserializer
+
+deserializer = get_dataclass_deserializer(TransformRequestPayload, {})
 
 transform_bp = Blueprint("transform", "transform")
 USER_DEFINE_FUNCTION_NAME = ""
@@ -24,14 +26,22 @@ def filter_traceback_errors() -> str:
     return "".join(traceback.format_exception(exc, value, tb))
 
 
-def transform_map(transform_func: Callable, data: List, tolerance: int) -> List:
-    """Implements map transform, performs map operation over each cell, for a given column"""
+def transform_map(transform_func: Callable[[Any, Context], Any], data: Iterable[List[Union[int, List, Context]]],
+                  tolerance: int) -> List:
+    """Implements map transform, performs map operation over each cell, for a given column
+
+        Args:
+            transform_func: User defined python function defined by the user
+            data: Column data along with context object
+            tolerance: contains the API request data
+
+        Returns:
+            transformed_data (str): List of data transformed after applying map transform
+    """
     transformed_data = []
     for path, value, context in data:
         value = value[0]
-        tdata = dict()
-        tdata["path"] = path
-        tdata["value"] = value
+        tdata = Tdata(path=path, value=value)
         try:
             result = transform_func(value, context)
             tdata["ok"] = result
@@ -45,14 +55,13 @@ def transform_map(transform_func: Callable, data: List, tolerance: int) -> List:
     return transformed_data
 
 
-def transform_filter(transform_func: Callable, data: List, tolerance: int) -> List:
+def transform_filter(transform_func: Callable[[Any, Context], Any], data: Iterable[List[Union[int, List, Context]]],
+                     tolerance: int) -> List:
     """Implements filter transform, performs filter operation over each cell, for a given column"""
     transformed_data = []
     for path, value, context in data:
-        tdata = dict()
         value = value[0]
-        tdata["path"] = path
-        tdata["value"] = value
+        tdata = Tdata(path=path, value=value)
         try:
             result = transform_func(value, context)
             if not isinstance(result, bool):
@@ -68,14 +77,13 @@ def transform_filter(transform_func: Callable, data: List, tolerance: int) -> Li
     return transformed_data
 
 
-def transform_split(transform_func: Callable, data: List, tolerance: int) -> List:
+def transform_split(transform_func: Callable[[Any, Context], Any], data: Iterable[List[Union[int, List, Context]]],
+                    tolerance: int) -> List:
     """Implements split transform, performs split operation over each cell, for a given column"""
     transformed_data = []
     for path, value, context in data:
-        tdata = dict()
         value = value[0]
-        tdata["path"] = path
-        tdata["value"] = value
+        tdata = Tdata(path=path, value=value)
         try:
             result = transform_func(value, context)
             if not isinstance(result, Iterable):
@@ -91,14 +99,13 @@ def transform_split(transform_func: Callable, data: List, tolerance: int) -> Lis
     return transformed_data
 
 
-def transform_concatenate(transform_func: Callable, data: List, tolerance: int) -> List:
+def transform_concatenate(transform_func: Callable[[Any, Context], Any],
+                          data: Iterable[List[Union[int, List, Context]]], tolerance: int) -> List:
     """Implements concatenate transform, performs concatenate operation over each cell, for a given column"""
 
     transformed_data = []
     for path, value, context in data:
-        tdata = dict()
-        tdata["path"] = path
-        tdata["value"] = value
+        tdata = Tdata(path=path, value=value)
         try:
             result = transform_func(value, context)
             tdata["ok"] = result
@@ -140,55 +147,48 @@ def transform(table_id: int):
     table_rows: List[TableRow] = list(
         TableRow.select().where(TableRow.table == table).order_by(TableRow.index)
     )
-    transform_type = request.json["type"]
-    mode = request.json["mode"]
-    datapath = request.json["datapath"]
-    if isinstance(datapath, str):
-        datapath = [datapath]
 
-    code = request.json["code"]
-    tolerance = request.json["tolerance"]
-    outputpath = None
-    if "outputpath" in request.json:
-        outputpath = request.json["outputpath"]
-    rows = request.json["rows"]
+    if isinstance(request.json["datapath"], str):
+        request.json["datapath"] = [request.json["datapath"]]
 
-    if transform_type not in ["map", "filter", "split", "concatenate"]:
-        raise BadRequest("Invalid value for `type` ")
+    if "rows" not in request.json:
+        request.json["rows"] = len(table_rows)
 
-    transform_func = compile_function(code)
+    request_data = deserializer(request.json)
 
-    col_index_list = [table.columns.index(column) for column in datapath]
+    transform_func = compile_function(request_data.code)
 
-    data = [[table_row.index, [table_row.row[col_index] for col_index in col_index_list],
-             Context(index=table_row.index, row=table_row.row)] for table_row in table_rows]
+    col_index_list = [table.columns.index(column) for column in request_data.datapath]
+
+    data = ([table_row.index, [table_row.row[col_index] for col_index in col_index_list],
+             Context(index=table_row.index, row=table_row.row)] for table_row in table_rows[:request_data.rows])
 
     transformed_data = None
 
-    if transform_type == "map":
-        if outputpath:
-            if len(outputpath) != 1:
+    if request_data.type == "map":
+        if request_data.outputpath:
+            if len(request_data.outputpath) != 1:
                 raise BadRequest(
                     "For transform type map the outputpath should be a single column"
                 )
-        transformed_data = transform_map(transform_func, data, tolerance)
+        transformed_data = transform_map(transform_func, data, request_data.tolerance)
 
-    elif transform_type == "filter":
-        if outputpath:
-            if len(outputpath) != 1:
+    elif request_data.type == "filter":
+        if request_data.outputpath:
+            if len(request_data.outputpath) != 1:
                 raise BadRequest(
                     "For transform type map the outputpath should be a single column"
                 )
-        transformed_data = transform_filter(transform_func, data, tolerance)
+        transformed_data = transform_filter(transform_func, data, request_data.tolerance)
 
-    elif transform_type == "split":
-        if outputpath is None:
+    elif request_data.type == "split":
+        if request_data.outputpath is None:
             raise BadRequest(
                 "transform type split needs to have outputpath defined in the request body"
             )
-        transformed_data = transform_split(transform_func, data, tolerance)
+        transformed_data = transform_split(transform_func, data, request_data.tolerance)
 
-    elif transform_type == "concatenate":
-        transformed_data = transform_concatenate(transform_func, data, tolerance)
+    elif request_data.type == "concatenate":
+        transformed_data = transform_concatenate(transform_func, data, request_data.tolerance)
 
     return jsonify(transformed_data)
