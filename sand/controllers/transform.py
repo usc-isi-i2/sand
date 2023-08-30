@@ -2,7 +2,7 @@ import json
 import re
 import sys
 import traceback
-from typing import Dict, List, Callable, Any, Union, Iterable
+from typing import Dict, List, Callable, Any, Union, Iterable, Tuple
 
 from flask import jsonify, request
 from flask.blueprints import Blueprint
@@ -30,7 +30,7 @@ def filter_traceback_errors() -> str:
     return "".join(traceback.format_exception(exc, value, tb))
 
 
-def transform_map(transform_func: Callable[[Any, Context], Any], data: Iterable[List[Union[int, List, Context]]],
+def transform_map(transform_func: Callable[[Any, Context], Any], data: Iterable[Tuple[int, List, Context]],
                   tolerance: int) -> List[Tdata]:
     """Implements map transform, performs map operation over each cell, for a given column
 
@@ -59,7 +59,7 @@ def transform_map(transform_func: Callable[[Any, Context], Any], data: Iterable[
     return transformed_data
 
 
-def transform_filter(transform_func: Callable[[Any, Context], Any], data: Iterable[List[Union[int, List, Context]]],
+def transform_filter(transform_func: Callable[[Any, Context], Any], data: Iterable[Tuple[int, List, Context]],
                      tolerance: int) -> List[Tdata]:
     """Implements filter transform, performs filter operation over each cell, for a given column
 
@@ -93,7 +93,7 @@ def transform_filter(transform_func: Callable[[Any, Context], Any], data: Iterab
     return transformed_data
 
 
-def transform_split(transform_func: Callable[[Any, Context], Any], data: Iterable[List[Union[int, List, Context]]],
+def transform_split(transform_func: Callable[[Any, Context], Any], data: Iterable[Tuple[int, List, Context]],
                     tolerance: int) -> List[Tdata]:
     """Implements split transform, performs split operation over each cell, for a given column
 
@@ -128,7 +128,7 @@ def transform_split(transform_func: Callable[[Any, Context], Any], data: Iterabl
 
 
 def transform_concatenate(transform_func: Callable[[Any, Context], Any],
-                          data: Iterable[List[Union[int, List, Context]]], tolerance: int) -> List:
+                          data: Iterable[Tuple[int, List, Context]], tolerance: int) -> List:
     """Implements concatenate transform, performs concatenate operation over each cell, for a given column
 
         Args:
