@@ -18,7 +18,7 @@ class TransformRequestPayload:
     datapath: Union[str, List[str]]
     code: str
     tolerance: int
-    rows: int
+    rows: Optional[int]
     outputpath: Optional[Union[str, List[str]]] = None
 
 
