@@ -226,16 +226,14 @@ def transform(table_id: int):
     transformed_data = None
 
     if request_data.type == "map":
-        if request_data.outputpath:
-            if len(request_data.outputpath) != 1:
+        if request_data.outputpath and len(request_data.outputpath) != 1:
                 raise BadRequest(
                     "For transform type map the outputpath should be a single column"
                 )
         transformed_data = transform_map(transform_func, data, request_data.tolerance)
 
     elif request_data.type == "filter":
-        if request_data.outputpath:
-            if len(request_data.outputpath) != 1:
+        if request_data.outputpath and len(request_data.outputpath) != 1:
                 raise BadRequest(
                     "For transform type map the outputpath should be a single column"
                 )
