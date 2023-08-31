@@ -42,7 +42,7 @@ Item = Any
 ItemIndex = int
 
 
-def transform_map(transform_func: Callable[[Any, Context], Any], data: Tuple[ItemIndex, Item, Context],
+def transform_map(transform_func: Callable[[Any, Context], Any], data: Iterable[Tuple[ItemIndex, Item, Context]],
                   tolerance: int) -> List[Tdata]:
     """Implements map transform, performs map operation over each cell, for a given column
 
@@ -71,7 +71,7 @@ def transform_map(transform_func: Callable[[Any, Context], Any], data: Tuple[Ite
     return transformed_data
 
 
-def transform_filter(transform_func: Callable[[Any, Context], Any], data: Tuple[ItemIndex, Item, Context],
+def transform_filter(transform_func: Callable[[Any, Context], Any], data: Iterable[Tuple[ItemIndex, Item, Context]],
                      tolerance: int) -> List[Tdata]:
     """Implements filter transform, performs filter operation over each cell, for a given column
 
@@ -105,7 +105,7 @@ def transform_filter(transform_func: Callable[[Any, Context], Any], data: Tuple[
     return transformed_data
 
 
-def transform_split(transform_func: Callable[[Any, Context], Any], data: Tuple[ItemIndex, Item, Context],
+def transform_split(transform_func: Callable[[Any, Context], Any], data: Iterable[Tuple[ItemIndex, Item, Context]],
                     tolerance: int) -> List[Tdata]:
     """Implements split transform, performs split operation over each cell, for a given column
 
@@ -140,7 +140,7 @@ def transform_split(transform_func: Callable[[Any, Context], Any], data: Tuple[I
 
 
 def transform_concatenate(transform_func: Callable[[Any, Context], Any],
-                          data: Tuple[ItemIndex, Item, Context], tolerance: int) -> List:
+                          data: Iterable[Tuple[ItemIndex, Item, Context]], tolerance: int) -> List:
     """Implements concatenate transform, performs concatenate operation over each cell, for a given column
 
         Args:
@@ -227,16 +227,16 @@ def transform(table_id: int):
 
     if request_data.type == "map":
         if request_data.outputpath and len(request_data.outputpath) != 1:
-                raise BadRequest(
-                    "For transform type map the outputpath should be a single column"
-                )
+            raise BadRequest(
+                "For transform type map the outputpath should be a single column"
+            )
         transformed_data = transform_map(transform_func, data, request_data.tolerance)
 
     elif request_data.type == "filter":
         if request_data.outputpath and len(request_data.outputpath) != 1:
-                raise BadRequest(
-                    "For transform type map the outputpath should be a single column"
-                )
+            raise BadRequest(
+                "For transform type map the outputpath should be a single column"
+            )
         transformed_data = transform_filter(transform_func, data, request_data.tolerance)
 
     elif request_data.type == "split":

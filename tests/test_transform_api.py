@@ -66,6 +66,28 @@ def test_api_transform_map_single_line_rows(client, example_db):
     assert response == transformed_data
 
 
+def test_api_transform_map_outputpath(client, example_db):
+    resp = client.post(
+        "/api/transform/1/transformations",
+        json={
+            "type": "map",
+            "mode": "restrictedpython",
+            "datapath": ["Tên"],
+            "code": "return value.upper()",
+            "tolerance": 3,
+            "outputpath": ["Name", "Age"],
+            "rows": 5
+        },
+    )
+    transformed_data = {'message': '400 Bad Request: For transform type map the outputpath should be a single column',
+ 'status': 'error'}
+
+    response = resp.json
+    assert resp.status_code == 400
+    assert len(response) == len(transformed_data)
+    assert response == transformed_data
+
+
 def test_api_transform_map_single_line_context(client, example_db):
     resp = client.post(
         "/api/transform/1/transformations",
