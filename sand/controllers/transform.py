@@ -1,8 +1,7 @@
-import json
-import re
 import sys
 import traceback
-from typing import Dict, List, Callable, Any, Union, Iterable, Tuple
+from typing import Dict, List, Callable, Any, Union, Iterable, Tuple, Optional, Literal
+from typing_extensions import NotRequired, TypedDict
 from dataclasses import dataclass
 
 from flask import jsonify, request
@@ -11,11 +10,9 @@ from RestrictedPython import compile_restricted_function, safe_globals
 from werkzeug.exceptions import BadRequest
 
 from sand.models.table import Link, Table, TableRow
-from sand.models.transform import Tdata, TransformRequestPayload
 from gena.deserializer import get_dataclass_deserializer
 
 transform_bp = Blueprint("transform", "transform")
-transform_request_deserializer = get_dataclass_deserializer(TransformRequestPayload, {})
 
 
 @dataclass
@@ -23,6 +20,28 @@ class Context:
     """ Context dataclass to access the row of the cell that is being transformed."""
     index: int
     row: List[Union[str, float]]
+
+
+@dataclass
+class TransformRequestPayload:
+    """Request Payload dataclass to validate the request obtained from the API call"""
+    type: Literal["map", "filter", "split", "concatenate"]
+    mode: str
+    datapath: Union[str, List[str]]
+    code: str
+    tolerance: int
+    rows: Optional[int] = None
+    outputpath: Optional[Union[str, List[str]]] = None
+
+
+transform_request_deserializer = get_dataclass_deserializer(TransformRequestPayload, {})
+
+
+class Tdata(TypedDict):
+    path: int
+    value: Union[str, List[str]]
+    ok: NotRequired[Union[List, int, str, Iterable]]
+    error: NotRequired[str]
 
 
 def filter_traceback_errors() -> str:
@@ -220,8 +239,8 @@ def transform(table_id: int):
     request_data = transform_request_deserializer(request.json)
     transform_func = compile_function(request_data.code)
     col_index_list = [table.columns.index(column) for column in request_data.datapath]
-    data = ([table_row.index, [table_row.row[col_index] for col_index in col_index_list],
-             Context(index=table_row.index, row=table_row.row)] for table_row in table_rows[:request_data.rows])
+    data = ((table_row.index, [table_row.row[col_index] for col_index in col_index_list],
+             Context(index=table_row.index, row=table_row.row)) for table_row in table_rows[:request_data.rows])
 
     transformed_data = None
 
