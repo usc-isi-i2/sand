@@ -2,10 +2,9 @@ import requests
 from typing import Dict, List, Union, Any
 import nh3
 import json
-from sand.extension_interface.search import IEntitySearch, IOntologySearch
+from sand.extension_interface.search import IEntitySearch, IOntologySearch, SearchResult
 from sand.models.entity import Entity
 from sand.models.ontology import OntClass, OntProperty, OntClassAR
-from sand.models.search import SearchResult
 from sand.extensions.search.default_search import DefaultSearch
 from sand.extensions.search.aggregated_search import AggregatedSearch
 from werkzeug.exceptions import HTTPException, BadRequest, ServiceUnavailable

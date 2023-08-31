@@ -1,8 +1,7 @@
 from typing import List
 import re
-from sand.extension_interface.search import IEntitySearch, IOntologySearch
+from sand.extension_interface.search import IEntitySearch, IOntologySearch, SearchResult
 from sm.misc.funcs import import_attr
-from sand.models.search import SearchResult
 from sand.config import SETTINGS
 
 
