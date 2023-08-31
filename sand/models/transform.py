@@ -4,13 +4,6 @@ from typing_extensions import NotRequired, TypedDict
 
 
 @dataclass
-class Context:
-    """ Context dataclass to access the row of the cell that is being transformed."""
-    index: int
-    row: list
-
-
-@dataclass
 class TransformRequestPayload:
     """Request Payload dataclass to validate the request obtained from the API call"""
     type: Literal["map", "filter", "split", "concatenate"]
@@ -18,12 +11,12 @@ class TransformRequestPayload:
     datapath: Union[str, List[str]]
     code: str
     tolerance: int
-    rows: Optional[int]
+    rows: Optional[int] = None
     outputpath: Optional[Union[str, List[str]]] = None
 
 
 class Tdata(TypedDict):
-    path: str
-    value: str
+    path: int
+    value: Union[str, List[str]]
     ok: NotRequired[Union[List, int, str, Iterable]]
     error: NotRequired[str]
