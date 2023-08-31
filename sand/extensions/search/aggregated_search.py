@@ -1,6 +1,5 @@
 from typing import List, Union
-from sand.extension_interface.search import IEntitySearch, IOntologySearch
-from sand.models.search import SearchResult
+from sand.extension_interface.search import IEntitySearch, IOntologySearch, SearchResult
 
 
 class AggregatedSearch(IEntitySearch, IOntologySearch):

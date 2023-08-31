@@ -15,7 +15,8 @@ include = ["sand/www/**/*"]
 sand = 'sand.__main__:cli'
 
 [tool.poetry.dependencies]
-python = ">=3.8,<4.0"
+# restricting the upper bound python version to 3.12, due to RestrictedPython dependency.
+python = ">=3.8,<3.12"
 kgdata = "^3.8.0"
 sem-desc = "^4.4.2"
 peewee = "^3.15.2"
@@ -28,6 +29,7 @@ orjson = ">= 3.9.0, < 4.0.0"
 drepr = "^2.10.0"
 rsoup = "^3.0.2"
 nh3 = "^0.2.13"
+RestrictedPython = "^6.1"
 
 lat_lon_parser = "^1.3.0"
 

@@ -1,12 +1,24 @@
 from abc import ABC, abstractmethod
 from typing import List
-from sand.models.search import SearchResult
+from dataclasses import dataclass
+
+
+@dataclass
+class SearchResult:
+    """
+    Search Result dataclass to save the values of each search result in a search
+    """
+    label: str
+    id: str
+    description: str
+    uri: str
 
 
 class IEntitySearch(ABC):
     """ Entity Search Interface to support searches from multiple
         KG datastores.
     """
+
     @abstractmethod
     def find_entity_by_name(self, search_text: str) -> List[SearchResult]:
         """Search Entity using name"""

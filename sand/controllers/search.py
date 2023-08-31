@@ -7,7 +7,7 @@ from sand.config import SETTINGS
 from flask import request, jsonify, abort
 
 from sand.extension_interface.search import IEntitySearch, IOntologySearch
-from sand.models.search import SearchResult
+from sand.extension_interface.search import SearchResult
 from gena.serializer import get_dataclass_serializer
 
 search_bp = Blueprint("search", "search")
