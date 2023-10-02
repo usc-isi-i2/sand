@@ -6,7 +6,7 @@ import { LoadingComponent, NotFoundComponent } from "gena-app";
 import { routes } from "../../../routes";
 import React, { useEffect,useRef, useMemo, useState } from "react";
 import Editor, { DiffEditor, useMonaco, loader } from '@monaco-editor/react';
-import {TranformTable, useStores } from "../../../models";
+import {TransformTable, useStores } from "../../../models";
 
 const styles = {
     table: {
@@ -241,7 +241,7 @@ export const TransformForm = withStyles(styles)(
           defaultSize="small"
           bordered={true}
           request={async (params, sort, filter) => {
-            var tab : TranformTable = {id: 1, row_id: 1, previous_value: "lower", transformed_value: "upper"};
+            var tab : TransformTable = {id: 1, row_id: 1, previous_value: "lower", transformed_value: "upper"};
             return  await {
               data: [tab].map(table2row),
               success: true,
@@ -259,7 +259,7 @@ export const TransformForm = withStyles(styles)(
         );
 
     }));
-    function table2row(tbl: TranformTable) {
+    function table2row(tbl: TransformTable) {
         return {
             row_id: tbl.row_id,
             previous_value: tbl.previous_value,

@@ -120,6 +120,7 @@ export const MenuBar = observer(
         openForm({ type: "node", sm });
       },
       openAddEdgeForm: () => openForm({ type: "edge", sm }),
+      openTransformFrom: () => openForm({type: "transform"}),
       predict: () => {
         assistantService.predict(table).then(() => {
           tableRef.current?.reload();
@@ -266,6 +267,9 @@ export const MenuBar = observer(
           </Button>
           <Button size="small" onClick={funcs.openAddEdgeForm}>
             Add edge
+          </Button>
+          <Button size="small" onClick={funcs.openTransformFrom}>
+            Transform
           </Button>
           <Button size="small" onClick={funcs.predict}>
             Predict

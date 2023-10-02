@@ -14,6 +14,12 @@ export interface Table extends Record<number> {
   contextHierarchy: ContentHierarchy[];
 }
 
+export interface TransformTable extends Record<number> {
+  row_id: number;
+  previous_value: string;
+  transformed_value: string;
+}
+
 export class TableRow implements Record<number> {
   id: number;
   table: number;
