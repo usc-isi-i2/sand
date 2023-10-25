@@ -4,15 +4,12 @@ import {Button,Radio,Typography,Menu,Tag,Space,Table,Modal,Form,Input,Col,Row,Se
 import { observer } from "mobx-react";
 import ProTable, { ActionType } from "@ant-design/pro-table";
 import { LoadingComponent, NotFoundComponent } from "gena-app";
-import { routes } from "../../../routes";
 import React, { useEffect, useRef, useMemo, useState } from "react";
-import Editor, { DiffEditor, useMonaco, loader } from "@monaco-editor/react";
+import Editor from "@monaco-editor/react";
 import { TransformTable, useStores } from "../../../models";
 import { SERVER } from "../../../env";
-import axios, { AxiosRequestConfig } from "axios";
-import type { ColumnsType } from "antd/es/table";
-import { includes } from "lodash";
-import { BorderAll } from "@mui/icons-material";
+import axios from "axios";
+
 
 const styles = {
   table: {
@@ -143,7 +140,7 @@ export const TransformForm = withStyles(styles)(
       transformPayload.type = form.getFieldValue("type");
       transformPayload.code = editorData;
       transformPayload.mode = "restrictedpython";
-      transformPayload.datapath = form.getFieldValue("datapath")[0];
+      transformPayload.datapath = form.getFieldValue("datapath");
       transformPayload.outputpath = form.getFieldValue("outputpath");
       transformPayload.tolerance = form.getFieldValue("tolerance");
       transformPayload.rows = form.getFieldValue("rows");
