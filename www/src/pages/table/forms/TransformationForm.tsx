@@ -9,6 +9,7 @@ import Editor from "@monaco-editor/react";
 import { TransformTable, useStores } from "../../../models";
 import { SERVER } from "../../../env";
 import axios from "axios";
+import { Padding } from "@mui/icons-material";
 
 
 const styles = {
@@ -127,11 +128,15 @@ export const TransformForm = withStyles(styles)(
       },
     ];
 
+    const filterErrorMessage = (errorMessage: string) => {
+      return errorMessage.split(':').splice(1).join(':').trim();
+    }
+
     const postData = async (payload: TPayload) => {
       let resp: any = await axios
         .post(`${SERVER}/api/transform/1/transformations`, payload)
         .then((res) => res.data)
-        .catch((error) => error.response.data.message);
+        .catch((error) => filterErrorMessage(error.response.data.message));
       return resp;
     };
 
@@ -252,6 +257,7 @@ export const TransformForm = withStyles(styles)(
               name="onerror"
               label="on error"
               rules={[{ required: true }]}
+              initialValue={2}
             >
               <Radio.Group>
                 <Radio value={1}>Set To Blank</Radio>
@@ -288,8 +294,8 @@ export const TransformForm = withStyles(styles)(
                 pagination={{ pageSize: 4 }}
               />
             ) : result ? (
-              <Tag color={"volcano"}>
-                <pre>{result}</pre>
+              <Tag style={{padding: "0px"}} color={"volcano"}>
+                <pre style={{margin: "5px"}}>{result}</pre>
               </Tag>
             ) : (
               <></>
