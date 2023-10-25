@@ -15,9 +15,10 @@ export interface Table extends Record<number> {
 }
 
 export interface TransformTable extends Record<number> {
-  row_id: number;
-  previous_value: string;
-  transformed_value: string;
+  path: number;
+  value: string;
+  ok: string;
+  error: string;
 }
 
 export class TableRow implements Record<number> {
