@@ -75,7 +75,7 @@ export const MenuBar = observer(
     }
 
     const sm = semanticmodel.sms[semanticmodel.index];
-
+    const tableId = routes.table.useURLParams()!.tableId;
     const funcs = {
       saveModel: () => {
         if (SemanticModel.isDraft(sm)) {
@@ -120,7 +120,7 @@ export const MenuBar = observer(
         openForm({ type: "node", sm });
       },
       openAddEdgeForm: () => openForm({ type: "edge", sm }),
-      openTransformFrom: () => openForm({type: "transform"}),
+      openTransformationFrom: () => openForm({type: "transformation", tableId: tableId}),
       predict: () => {
         assistantService.predict(table).then(() => {
           tableRef.current?.reload();
@@ -262,14 +262,14 @@ export const MenuBar = observer(
           <Button size="small" onClick={graphRef.current?.recenter}>
             Center graph (C)
           </Button>
+          <Button size="small" onClick={funcs.openTransformationFrom}>
+            Add Transformation
+          </Button>
           <Button size="small" onClick={funcs.openAddNodeForm}>
             Add node
           </Button>
           <Button size="small" onClick={funcs.openAddEdgeForm}>
             Add edge
-          </Button>
-          <Button size="small" onClick={funcs.openTransformFrom}>
-            Transform
           </Button>
           <Button size="small" onClick={funcs.predict}>
             Predict

@@ -64,7 +64,8 @@ export function useStores(): IStore {
 
 export type { Property, DataType } from "./ontology/Property";
 export type { SMEdge, SMNode } from "./sm/SMGraph";
-export type { Table, TransformTable, TableRow } from "./table";
+export type { Table, TableRow } from "./table";
+export type {TransformationTable} from "./transformationTable";
 export {
   ProjectStore,
   TableStore,
