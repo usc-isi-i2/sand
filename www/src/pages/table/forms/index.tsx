@@ -33,8 +33,7 @@ export function openForm(
       break;
     case "transformation":
       content = <TransformationForm {...args} />;
-      console.log(args);
-      title = "Tranfomation Form";
+      title = "Transformation Form";
       break;
 
   }

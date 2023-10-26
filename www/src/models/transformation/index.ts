@@ -1,3 +1,3 @@
 export * from "./TransformationStore";
-export * from "./TransformationTable"
+export * from "./TransformationResult"
 

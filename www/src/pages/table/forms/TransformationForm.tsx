@@ -18,25 +18,10 @@ import { useRef, useState } from "react";
 import Editor from "@monaco-editor/react";
 import { TransformationTable, useStores } from "../../../models";
 import {
-  postData,
-  TPayload,
-} from "../../../models/transformationTable/TransformationStore";
+  TPayload
+} from "../../../models/transformation/TransformationStore";
 
 const styles = {
-  table: {
-    "& div.ant-table-container": {
-      border: "1px solid #bbb",
-      borderRadius: 4,
-      borderLeft: "1px solid #bbb !important",
-    },
-    "& div.ant-card-body": {
-      paddingLeft: 0,
-      paddingRight: 0,
-    },
-    "& th": {
-      fontWeight: 600,
-    },
-  },
 };
 
 export interface TransformationFormProps {
@@ -53,6 +38,7 @@ export const TransformationForm = withStyles(styles)(
       const onDone = () => Modal.destroyAll();
       const actionRef = useRef<ActionType>();
       const [form] = Form.useForm();
+      const { transformationStore } = useStores();
 
       const options = {
         autoIndent: "full",
@@ -74,8 +60,6 @@ export const TransformationForm = withStyles(styles)(
         cursorStyle: "line",
         automaticLayout: true,
       };
-
-      const { Option } = Select;
       const [result, setResult] = useState<TransformationTable[] | undefined>();
       const [editorData, setEditorData] = useState<string | undefined>();
 
@@ -117,7 +101,7 @@ export const TransformationForm = withStyles(styles)(
         transformPayload.tolerance = form.getFieldValue("tolerance");
         transformPayload.rows = form.getFieldValue("rows");
 
-        let response = await postData(tableId, transformPayload);
+        let response = await transformationStore.postData(tableId, transformPayload);
         setResult(response);
       };
 
@@ -130,11 +114,11 @@ export const TransformationForm = withStyles(styles)(
           <Row gutter={16} justify="start">
             <Col span={4}>
               <Form.Item name="type" label="type" rules={[{ required: true }]}>
-                <Select placeholder="Transformation Type" allowClear>
-                  <Option value="map">Map</Option>
-                  <Option value="filter">Filter</Option>
-                  <Option value="split">Split</Option>
-                  <Option value="concatenate">Concatenate</Option>
+                <Select placeholder="Transformation Type" allowClear={true}>
+                  <Select.Option value="map">Map</Select.Option>
+                  <Select.Option value="filter">Filter</Select.Option>
+                  <Select.Option value="split">Split</Select.Option>
+                  <Select.Option value="concatenate">Concatenate</Select.Option>
                 </Select>
               </Form.Item>
             </Col>
@@ -146,7 +130,7 @@ export const TransformationForm = withStyles(styles)(
               >
                 <Select
                   mode="tags"
-                  allowClear
+                  allowClear={true}
                   style={{
                     width: "100%",
                   }}
@@ -163,7 +147,7 @@ export const TransformationForm = withStyles(styles)(
               >
                 <Select
                   mode="tags"
-                  allowClear
+                  allowClear={true}
                   style={{
                     width: "100%",
                   }}
@@ -177,15 +161,10 @@ export const TransformationForm = withStyles(styles)(
               <Form.Item
                 label="Language : Restricted Python"
                 labelCol={{ span: 24 }}
-                style={{ fontWeight: "500", padding: "0px" }}
+                style={{ fontWeight: 500, padding: 0 }}
               >
                 <div style={{ border: "1px solid #ccc" }}>
-                  <Editor
-                    height="25vh"
-                    defaultLanguage="python"
-                    onChange={handleEditorChange}
-                    options={options}
-                  />
+                  <CustomEditor onChange={handleEditorChange} />
                 </div>
               </Form.Item>
             </Col>
@@ -224,7 +203,7 @@ export const TransformationForm = withStyles(styles)(
                 name="onerror"
                 label="on error"
                 rules={[{ required: true }]}
-                initialValue={2}
+                initialValue={4}
               >
                 <Radio.Group>
                   <Radio value={1}>Set To Blank</Radio>
@@ -260,8 +239,8 @@ export const TransformationForm = withStyles(styles)(
                   dataSource={result.map(table2row)}
                   pagination={{ pageSize: 4 }}
                 />
-              ) : result ? (
-                <Tag style={{ padding: "0px" }} color={"volcano"}>
+              ) : result!=undefined ? (
+                <Tag style={{ padding: 0 }} color={"volcano"}>
                   <pre style={{ margin: "5px" }}>{result}</pre>
                 </Tag>
               ) : (
@@ -274,6 +253,47 @@ export const TransformationForm = withStyles(styles)(
     }
   )
 );
+
+
+type CustomEditorProps = {
+  onChange?: (value: string | undefined) => void;
+}
+
+export const CustomEditor: React.FC<CustomEditorProps> = ({ 
+  onChange 
+}) => {
+  const options = {
+    autoIndent: "full",
+    contextmenu: true,
+    fontFamily: "monospace",
+    fontSize: 13,
+    lineHeight: 24,
+    matchBrackets: "always",
+    minimap: {
+      enabled: false,
+    },
+    scrollbar: {
+      horizontalSliderSize: 4,
+      verticalSliderSize: 18,
+    },
+    selectOnLineNumbers: true,
+    roundedSelection: false,
+    readOnly: false,
+    cursorStyle: "line",
+    automaticLayout: true,
+  };
+
+
+  return (
+    <Editor
+      height="25vh"
+      defaultLanguage="python"
+      onChange={onChange}
+      options={options}
+    />
+  );
+}
+
 function table2row(tbl: TransformationTable) {
   return {
     key: tbl.path,
