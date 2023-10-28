@@ -17,7 +17,7 @@ export class TransformationStore extends SimpleCRUDStore<number, Transformation>
     return errorMessage.split(':').splice(1).join(':').trim();
   }
 
-  async testTransformation(id: number, payload: TPayload): Promise<TransformationResult[] | undefined> {
+  async testTransformation(id: number, payload: Transformation): Promise<TransformationResult[] | undefined> {
     let resp: any = await axios
       .post(`${SERVER}/api/transform/1/transformations`, payload)
       .then((res) => res.data)
@@ -26,7 +26,7 @@ export class TransformationStore extends SimpleCRUDStore<number, Transformation>
   };
 }
 
-export class TPayload {
+export class Transformation {
   public type?: string;
   public mode?: string;
   public datapath?: string[];

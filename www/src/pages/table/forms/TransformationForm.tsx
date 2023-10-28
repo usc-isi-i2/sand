@@ -18,7 +18,7 @@ import { useRef, useState } from "react";
 import Editor from "@monaco-editor/react";
 import { TransformationTable, useStores } from "../../../models";
 import {
-  TPayload
+  Transformation
 } from "../../../models/transformation/TransformationStore";
 
 const styles = {
@@ -70,7 +70,7 @@ export const TransformationForm = withStyles(styles)(
       ];
 
       const onExecute = async () => {
-        const transformPayload = new TPayload();
+        const transformPayload = new Transformation();
         transformPayload.type = form.getFieldValue("type");
         transformPayload.code = form.getFieldValue("code");
         transformPayload.mode = "restrictedpython";
