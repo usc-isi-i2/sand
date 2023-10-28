@@ -16,8 +16,11 @@ import { observer } from "mobx-react";
 import { ActionType } from "@ant-design/pro-table";
 import { useRef, useState } from "react";
 import Editor from "@monaco-editor/react";
-import { TransformationResult, useStores } from "../../../models";
-import { TestTransformationRequest } from "../../../models";
+import {
+  TransformationResult,
+  useStores,
+  Transformation,
+} from "../../../models";
 
 const styles = {};
 
@@ -69,18 +72,20 @@ export const TransformationForm = withStyles(styles)(
       ];
 
       const onExecute = async () => {
-        const transformPayload = new TestTransformationRequest();
-        transformPayload.type = form.getFieldValue("type");
-        transformPayload.code = form.getFieldValue("code");
-        transformPayload.mode = "restrictedpython";
-        transformPayload.datapath = form.getFieldValue("datapath");
-        transformPayload.outputpath = form.getFieldValue("outputpath");
-        transformPayload.tolerance = form.getFieldValue("tolerance");
-        transformPayload.rows = form.getFieldValue("rows");
+        const transformationPayload: Transformation = {
+          id: -1,
+          tableId: tableId,
+          type: form.getFieldValue("type"),
+          code: form.getFieldValue("code"),
+          mode: "restrictedpython",
+          datapath: form.getFieldValue("datapath"),
+          outputpath: form.getFieldValue("outputpath"),
+          tolerance: form.getFieldValue("tolerance"),
+          rows: form.getFieldValue("rows"),
+        };
 
         let response = await transformationStore.testTransformation(
-          tableId,
-          transformPayload
+          transformationPayload
         );
         setResult(response);
       };

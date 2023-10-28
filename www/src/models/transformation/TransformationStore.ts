@@ -1,10 +1,17 @@
-import { SimpleCRUDStore } from "gena-app";
+import { SimpleCRUDStore, CRUDStore, Record } from "gena-app";
 import { SERVER } from "../../env";
 import { TransformationResult } from "./TransformationResult";
 import axios from "axios";
 
-export interface Transformation {
-  id: number;
+export interface Transformation extends Record<number> {
+  type: string;
+  mode: string;
+  tableId: number;
+  datapath: string[];
+  code: string | undefined;
+  outputpath: string[] | undefined;
+  tolerance: number;
+  rows: number;
 }
 
 export class TransformationStore extends SimpleCRUDStore<
@@ -16,23 +23,15 @@ export class TransformationStore extends SimpleCRUDStore<
   }
 
   async testTransformation(
-    id: number,
-    payload: TestTransformationRequest
+    payload: Transformation
   ): Promise<TransformationResult[] | undefined> {
     let resp: any = await axios
-      .post(`${SERVER}/api/transform/${id}/transformations`, payload)
+      .post(
+        `${SERVER}/api/transform/${payload.tableId}/transformations`,
+        payload
+      )
       .then((res) => res.data)
       .catch((error) => error.response.data.message);
     return resp;
   }
-}
-
-export class TestTransformationRequest {
-  public type?: string;
-  public mode?: string;
-  public datapath?: string[];
-  public code?: string | undefined;
-  public outputpath?: string[] | undefined;
-  public tolerance?: number;
-  public rows?: number;
 }
