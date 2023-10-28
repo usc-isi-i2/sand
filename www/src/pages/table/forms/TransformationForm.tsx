@@ -17,12 +17,9 @@ import { ActionType } from "@ant-design/pro-table";
 import { useRef, useState } from "react";
 import Editor from "@monaco-editor/react";
 import { TransformationResult, useStores } from "../../../models";
-import {
-  Transformation
-} from "../../../models/transformation/TransformationStore";
+import { Transformation } from "../../../models/transformation/TransformationStore";
 
-const styles = {
-};
+const styles = {};
 
 export interface TransformationFormProps {
   type: string;
@@ -39,7 +36,9 @@ export const TransformationForm = withStyles(styles)(
       const actionRef = useRef<ActionType>();
       const [form] = Form.useForm();
       const { transformationStore } = useStores();
-      const [result, setResult] = useState<TransformationResult[] | undefined>();
+      const [result, setResult] = useState<
+        TransformationResult[] | undefined
+      >();
 
       const columns = [
         { dataIndex: "row_id", title: "Row ID" },
@@ -79,7 +78,10 @@ export const TransformationForm = withStyles(styles)(
         transformPayload.tolerance = form.getFieldValue("tolerance");
         transformPayload.rows = form.getFieldValue("rows");
 
-        let response = await transformationStore.testTransformation(tableId, transformPayload);
+        let response = await transformationStore.testTransformation(
+          tableId,
+          transformPayload
+        );
         setResult(response);
       };
 
@@ -133,7 +135,7 @@ export const TransformationForm = withStyles(styles)(
           <Row justify="center" align="top">
             <Col span={24}>
               <Form.Item
-                name = "code"
+                name="code"
                 label="Language : Restricted Python"
                 labelCol={{ span: 24 }}
                 style={{ fontWeight: 500, padding: 0 }}
@@ -229,12 +231,11 @@ export const TransformationForm = withStyles(styles)(
 
 export const CustomEditor = ({
   value,
-  onChange
+  onChange,
 }: {
   value?: string;
   onChange?: (value: string | undefined) => void;
 }) => {
-
   const options = {
     autoIndent: "full",
     contextmenu: true,
@@ -258,16 +259,16 @@ export const CustomEditor = ({
 
   return (
     <div style={{ border: "1px solid #ccc" }}>
-    <Editor
-      height="25vh"
-      defaultLanguage="python"
-      onChange={onChange}
-      options={options}
-      value={value}
-    />
+      <Editor
+        height="25vh"
+        defaultLanguage="python"
+        onChange={onChange}
+        options={options}
+        value={value}
+      />
     </div>
   );
-}
+};
 function table2row(tbl: TransformationResult) {
   return {
     key: tbl.path,

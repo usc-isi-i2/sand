@@ -64,11 +64,10 @@ export const StoreContext = createContext<IStore>(stores);
 export function useStores(): IStore {
   return React.useContext(StoreContext);
 }
-
 export type { Property, DataType } from "./ontology/Property";
 export type { SMEdge, SMNode } from "./sm/SMGraph";
 export type { Table, TableRow } from "./table";
-export type { TransformationResult as TransformationTable } from "./transformation";
+export type { TransformationResult } from "./transformation";
 export {
   ProjectStore,
   TableStore,
