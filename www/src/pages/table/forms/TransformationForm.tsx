@@ -16,7 +16,7 @@ import { observer } from "mobx-react";
 import { ActionType } from "@ant-design/pro-table";
 import { useRef, useState } from "react";
 import Editor from "@monaco-editor/react";
-import { TransformationTable, useStores } from "../../../models";
+import { TransformationResult, useStores } from "../../../models";
 import {
   Transformation
 } from "../../../models/transformation/TransformationStore";
@@ -39,7 +39,7 @@ export const TransformationForm = withStyles(styles)(
       const actionRef = useRef<ActionType>();
       const [form] = Form.useForm();
       const { transformationStore } = useStores();
-      const [result, setResult] = useState<TransformationTable[] | undefined>();
+      const [result, setResult] = useState<TransformationResult[] | undefined>();
 
       const columns = [
         { dataIndex: "row_id", title: "Row ID" },
@@ -268,7 +268,7 @@ export const CustomEditor = ({
     </div>
   );
 }
-function table2row(tbl: TransformationTable) {
+function table2row(tbl: TransformationResult) {
   return {
     key: tbl.path,
     row_id: tbl.path + 1,
