@@ -1,7 +1,10 @@
 import { Modal } from "antd";
 import { EdgeForm, EdgeFormProps } from "./EdgeForm";
 import { NodeForm, NodeFormProps } from "./NodeForm";
-import { TransformationForm, TransformationFormProps } from "./TransformationForm";
+import {
+  TransformationForm,
+  TransformationFormProps,
+} from "./TransformationForm";
 
 interface TypedEdgeFormProps extends EdgeFormProps {
   type: "edge";
@@ -34,9 +37,11 @@ export function openForm(
       break;
     case "transformation":
       content = <TransformationForm {...args} />;
-      title = args.transformationId === undefined ? "Add Transformation" : "Update Transformation";
+      title =
+        args.transformationId === undefined
+          ? "Add Transformation"
+          : "Update Transformation";
       break;
-
   }
 
   Modal.info({

@@ -3,30 +3,31 @@ import { SERVER } from "../../env";
 import { TransformationResult } from "./TransformationResult";
 import axios from "axios";
 
-
 export interface Transformation {
   id: number;
-};
+}
 
-export class TransformationStore extends SimpleCRUDStore<number, Transformation> {
+export class TransformationStore extends SimpleCRUDStore<
+  number,
+  Transformation
+> {
   constructor() {
     super(`${SERVER}/api/transformation`, undefined, false);
   }
 
-  public filterErrorMessage(errorMessage: string): string {
-    return errorMessage.split(':').splice(1).join(':').trim();
-  }
-
-  async testTransformation(id: number, payload: Transformation): Promise<TransformationResult[] | undefined> {
+  async testTransformation(
+    id: number,
+    payload: TestTransformationRequest
+  ): Promise<TransformationResult[] | undefined> {
     let resp: any = await axios
       .post(`${SERVER}/api/transform/${id}/transformations`, payload)
       .then((res) => res.data)
-      .catch((error) => this.filterErrorMessage(error.response.data.message));
+      .catch((error) => error.response.data.message);
     return resp;
-  };
+  }
 }
 
-export class Transformation {
+export class TestTransformationRequest {
   public type?: string;
   public mode?: string;
   public datapath?: string[];
@@ -35,4 +36,3 @@ export class Transformation {
   public tolerance?: number;
   public rows?: number;
 }
-

@@ -6,7 +6,11 @@ import { Entity, EntityStore } from "./entity";
 import { ClassStore } from "./ontology/ClassStore";
 import { PropertyStore } from "./ontology/PropertyStore";
 import { Project, ProjectStore } from "./project";
-import { TransformationStore } from "./transformation"
+import {
+  TransformationStore,
+  TestTransformationRequest,
+} from "./transformation";
+
 import {
   DraftSemanticModel,
   SemanticModel,
@@ -79,6 +83,7 @@ export {
   ClassStore,
   EntityStore,
   TransformationStore,
+  TestTransformationRequest,
   SemanticModel,
   SMGraph,
   URICount,

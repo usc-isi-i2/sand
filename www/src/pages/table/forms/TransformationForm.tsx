@@ -17,7 +17,7 @@ import { ActionType } from "@ant-design/pro-table";
 import { useRef, useState } from "react";
 import Editor from "@monaco-editor/react";
 import { TransformationResult, useStores } from "../../../models";
-import { Transformation } from "../../../models/transformation/TransformationStore";
+import { TestTransformationRequest } from "../../../models";
 
 const styles = {};
 
@@ -69,7 +69,7 @@ export const TransformationForm = withStyles(styles)(
       ];
 
       const onExecute = async () => {
-        const transformPayload = new Transformation();
+        const transformPayload = new TestTransformationRequest();
         transformPayload.type = form.getFieldValue("type");
         transformPayload.code = form.getFieldValue("code");
         transformPayload.mode = "restrictedpython";
@@ -211,7 +211,7 @@ export const TransformationForm = withStyles(styles)(
                 <Table
                   style={{ border: "1px solid #ccc" }}
                   columns={columns}
-                  dataSource={result.map(table2row)}
+                  dataSource={result.map(transformationResult2row)}
                   pagination={{ pageSize: 4 }}
                 />
               ) : result != undefined ? (
@@ -269,7 +269,8 @@ export const CustomEditor = ({
     </div>
   );
 };
-function table2row(tbl: TransformationResult) {
+
+function transformationResult2row(tbl: TransformationResult) {
   return {
     key: tbl.path,
     row_id: tbl.path + 1,
