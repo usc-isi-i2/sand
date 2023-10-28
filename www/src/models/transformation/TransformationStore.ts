@@ -1,6 +1,6 @@
 import { SimpleCRUDStore } from "gena-app";
 import { SERVER } from "../../env";
-import {TransformationTable} from "./TransformationResult";
+import { TransformationResult } from "./TransformationResult";
 import axios from "axios";
 
 
@@ -12,12 +12,12 @@ export class TransformationStore extends SimpleCRUDStore<number, Transformation>
   constructor() {
     super(`${SERVER}/api/transformation`, undefined, false);
   }
- 
-  public filterErrorMessage(errorMessage: string) : string {
+
+  public filterErrorMessage(errorMessage: string): string {
     return errorMessage.split(':').splice(1).join(':').trim();
   }
-  
-  async postData(id : number, payload: TPayload) : Promise<TransformationTable[]|undefined> {
+
+  async testTransformation(id: number, payload: TPayload): Promise<TransformationResult[] | undefined> {
     let resp: any = await axios
       .post(`${SERVER}/api/transform/1/transformations`, payload)
       .then((res) => res.data)
@@ -27,12 +27,12 @@ export class TransformationStore extends SimpleCRUDStore<number, Transformation>
 }
 
 export class TPayload {
-    public type?: string;
-    public mode?: string;
-    public datapath?: string[];
-    public code?: string | undefined;
-    public outputpath?: string[] | undefined;
-    public tolerance?: number;
-    public rows?: number;
-  }
+  public type?: string;
+  public mode?: string;
+  public datapath?: string[];
+  public code?: string | undefined;
+  public outputpath?: string[] | undefined;
+  public tolerance?: number;
+  public rows?: number;
+}
 

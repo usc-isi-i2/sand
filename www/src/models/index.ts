@@ -6,7 +6,7 @@ import { Entity, EntityStore } from "./entity";
 import { ClassStore } from "./ontology/ClassStore";
 import { PropertyStore } from "./ontology/PropertyStore";
 import { Project, ProjectStore } from "./project";
-import {TransformationStore} from "./transformation"
+import { TransformationStore } from "./transformation"
 import {
   DraftSemanticModel,
   SemanticModel,
@@ -68,7 +68,7 @@ export function useStores(): IStore {
 export type { Property, DataType } from "./ontology/Property";
 export type { SMEdge, SMNode } from "./sm/SMGraph";
 export type { Table, TableRow } from "./table";
-export type {TransformationTable} from "./transformation";
+export type { TransformationResult as TransformationTable } from "./transformation";
 export {
   ProjectStore,
   TableStore,

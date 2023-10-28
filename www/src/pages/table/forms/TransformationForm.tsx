@@ -39,29 +39,7 @@ export const TransformationForm = withStyles(styles)(
       const actionRef = useRef<ActionType>();
       const [form] = Form.useForm();
       const { transformationStore } = useStores();
-
-      const options = {
-        autoIndent: "full",
-        contextmenu: true,
-        fontFamily: "monospace",
-        fontSize: 13,
-        lineHeight: 24,
-        matchBrackets: "always",
-        minimap: {
-          enabled: false,
-        },
-        scrollbar: {
-          horizontalSliderSize: 4,
-          verticalSliderSize: 18,
-        },
-        selectOnLineNumbers: true,
-        roundedSelection: false,
-        readOnly: false,
-        cursorStyle: "line",
-        automaticLayout: true,
-      };
       const [result, setResult] = useState<TransformationTable[] | undefined>();
-      const [editorData, setEditorData] = useState<string | undefined>();
 
       const columns = [
         { dataIndex: "row_id", title: "Row ID" },
@@ -94,20 +72,16 @@ export const TransformationForm = withStyles(styles)(
       const onExecute = async () => {
         const transformPayload = new TPayload();
         transformPayload.type = form.getFieldValue("type");
-        transformPayload.code = editorData;
+        transformPayload.code = form.getFieldValue("code");
         transformPayload.mode = "restrictedpython";
         transformPayload.datapath = form.getFieldValue("datapath");
         transformPayload.outputpath = form.getFieldValue("outputpath");
         transformPayload.tolerance = form.getFieldValue("tolerance");
         transformPayload.rows = form.getFieldValue("rows");
 
-        let response = await transformationStore.postData(tableId, transformPayload);
+        let response = await transformationStore.testTransformation(tableId, transformPayload);
         setResult(response);
       };
-
-      function handleEditorChange(value: string | undefined) {
-        setEditorData(value);
-      }
 
       return (
         <Form form={form}>
@@ -159,13 +133,12 @@ export const TransformationForm = withStyles(styles)(
           <Row justify="center" align="top">
             <Col span={24}>
               <Form.Item
+                name = "code"
                 label="Language : Restricted Python"
                 labelCol={{ span: 24 }}
                 style={{ fontWeight: 500, padding: 0 }}
               >
-                <div style={{ border: "1px solid #ccc" }}>
-                  <CustomEditor onChange={handleEditorChange} />
-                </div>
+                <CustomEditor />
               </Form.Item>
             </Col>
           </Row>
@@ -239,7 +212,7 @@ export const TransformationForm = withStyles(styles)(
                   dataSource={result.map(table2row)}
                   pagination={{ pageSize: 4 }}
                 />
-              ) : result!=undefined ? (
+              ) : result != undefined ? (
                 <Tag style={{ padding: 0 }} color={"volcano"}>
                   <pre style={{ margin: "5px" }}>{result}</pre>
                 </Tag>
@@ -254,14 +227,14 @@ export const TransformationForm = withStyles(styles)(
   )
 );
 
-
-type CustomEditorProps = {
+export const CustomEditor = ({
+  value,
+  onChange
+}: {
+  value?: string;
   onChange?: (value: string | undefined) => void;
-}
-
-export const CustomEditor: React.FC<CustomEditorProps> = ({ 
-  onChange 
 }) => {
+
   const options = {
     autoIndent: "full",
     contextmenu: true,
@@ -283,17 +256,18 @@ export const CustomEditor: React.FC<CustomEditorProps> = ({
     automaticLayout: true,
   };
 
-
   return (
+    <div style={{ border: "1px solid #ccc" }}>
     <Editor
       height="25vh"
       defaultLanguage="python"
       onChange={onChange}
       options={options}
+      value={value}
     />
+    </div>
   );
 }
-
 function table2row(tbl: TransformationTable) {
   return {
     key: tbl.path,
