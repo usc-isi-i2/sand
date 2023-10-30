@@ -220,12 +220,12 @@ export const TransformationForm = withStyles(styles)(
                 <Table
                   style={{ border: "1px solid #ccc" }}
                   columns={columns}
-                  dataSource={result.map(transformationResult2row)}
+                  dataSource={result.map(transformationResult2Row)}
                   pagination={{ pageSize: 4 }}
                 />
               ) : result != undefined ? (
                 <Tag style={{ padding: 0 }} color={"volcano"}>
-                  <pre style={{ margin: "5px" }}>{result}</pre>
+                  <pre style={{ margin: 5 }}>{result}</pre>
                 </Tag>
               ) : (
                 <></>
@@ -279,7 +279,7 @@ export const CustomEditor = ({
   );
 };
 
-function transformationResult2row(tbl: TransformationResult) {
+function transformationResult2Row(tbl: TransformationResult) {
   return {
     key: tbl.path,
     row_id: tbl.path + 1,

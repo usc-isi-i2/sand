@@ -75,7 +75,6 @@ export const MenuBar = observer(
     }
 
     const sm = semanticmodel.sms[semanticmodel.index];
-    const tableId = routes.table.useURLParams()!.tableId;
     const funcs = {
       saveModel: () => {
         if (SemanticModel.isDraft(sm)) {
