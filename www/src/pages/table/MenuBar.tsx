@@ -121,7 +121,7 @@ export const MenuBar = observer(
       },
       openAddEdgeForm: () => openForm({ type: "edge", sm }),
       openTransformationFrom: () =>
-        openForm({ type: "transformation", tableId: tableId }),
+        openForm({ type: "transformation", table: table }),
       predict: () => {
         assistantService.predict(table).then(() => {
           tableRef.current?.reload();

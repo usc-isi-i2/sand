@@ -20,20 +20,20 @@ import {
   TransformationResult,
   useStores,
   Transformation,
+  Table as TableModel,
 } from "../../../models";
-
 const styles = {};
 
 export interface TransformationFormProps {
   type: string;
-  tableId: number;
+  table: TableModel;
 }
 
 export const TransformationForm = withStyles(styles)(
   observer(
     ({
       classes,
-      tableId,
+      table,
     }: TransformationFormProps & WithStyles<typeof styles>) => {
       const onDone = () => Modal.destroyAll();
       const actionRef = useRef<ActionType>();
@@ -56,7 +56,6 @@ export const TransformationForm = withStyles(styles)(
             ) {
               return (
                 <>
-                  {" "}
                   {
                     <Tag color={"volcano"}>
                       <pre>{transformed_value}</pre>
@@ -74,7 +73,7 @@ export const TransformationForm = withStyles(styles)(
       const onExecute = async () => {
         const transformationPayload: Transformation = {
           id: -1,
-          tableId: tableId,
+          tableId: table.id,
           type: form.getFieldValue("type"),
           code: form.getFieldValue("code"),
           mode: "restrictedpython",
@@ -115,7 +114,11 @@ export const TransformationForm = withStyles(styles)(
                   style={{
                     width: "100%",
                   }}
-                  placeholder="Please select"
+                  placeholder="Please select columns"
+                  options={table.columns.map((column) => ({
+                    label: column,
+                    value: column,
+                  }))}
                 />
               </Form.Item>
             </Col>
@@ -132,7 +135,11 @@ export const TransformationForm = withStyles(styles)(
                   style={{
                     width: "100%",
                   }}
-                  placeholder="Please select"
+                  options={table.columns.map((column) => ({
+                    label: column,
+                    value: column,
+                  }))}
+                  placeholder="Please select columns"
                 />
               </Form.Item>
             </Col>
@@ -157,24 +164,21 @@ export const TransformationForm = withStyles(styles)(
                   type="primary"
                   onClick={onExecute}
                 >
-                  {" "}
-                  Execute{" "}
+                  Execute
                 </Button>
               </Form.Item>
             </Col>
             <Col span={2} flex="auto">
               <Form.Item>
                 <Button style={{ width: "100%" }} type="primary">
-                  {" "}
-                  Save{" "}
+                  Save
                 </Button>
               </Form.Item>
             </Col>
             <Col span={2} flex="auto">
               <Form.Item>
                 <Button style={{ width: "100%" }} type="primary">
-                  {" "}
-                  Reset{" "}
+                  Reset
                 </Button>
               </Form.Item>
             </Col>

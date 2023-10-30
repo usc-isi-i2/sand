@@ -5,6 +5,7 @@ import {
   TransformationForm,
   TransformationFormProps,
 } from "./TransformationForm";
+import { Table } from "../../../models";
 
 interface TypedEdgeFormProps extends EdgeFormProps {
   type: "edge";
@@ -16,8 +17,8 @@ interface TypedNodeFormProps extends NodeFormProps {
 
 interface TypedTransformationFormProps extends TransformationFormProps {
   type: "transformation";
-  transformationId?: number;
-  tableId: number;
+  id?: number;
+  table: Table;
 }
 
 export function openForm(
@@ -38,9 +39,7 @@ export function openForm(
     case "transformation":
       content = <TransformationForm {...args} />;
       title =
-        args.transformationId === undefined
-          ? "Add Transformation"
-          : "Update Transformation";
+        args.id === undefined ? "Add Transformation" : "Update Transformation";
       break;
   }
 
