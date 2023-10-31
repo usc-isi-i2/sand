@@ -23,7 +23,7 @@ import {
 } from "../../../models";
 
 export interface TransformationFormProps {
-  type: string;
+  type: "transformation";
   table: TableModel;
 }
 
@@ -235,7 +235,7 @@ export const TransformationForm = observer(
                 dataSource={result.map(transformationResult2Row)}
                 pagination={{ pageSize: 4 }}
               />
-            ) : result != undefined ? (
+            ) : result !== undefined ? (
               <Tag style={{ padding: 0 }} color={"volcano"}>
                 <pre style={{ margin: 5 }}>{result}</pre>
               </Tag>
@@ -274,6 +274,6 @@ function transformationResult2Row(tbl: TransformationResult) {
     key: tbl.path,
     row_id: tbl.path + 1,
     previous_value: tbl.value,
-    result: tbl.ok !== undefined ? tbl.ok.toString() : tbl.error.trim(),
+    result: tbl.ok !== undefined ? tbl.ok : tbl.error.trim(),
   };
 }

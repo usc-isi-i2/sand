@@ -1,6 +1,6 @@
 export interface TransformationResult {
   path: number;
   value: string;
-  ok: string;
+  ok: string | boolean;
   error: string;
 }

@@ -16,7 +16,6 @@ interface TypedNodeFormProps extends NodeFormProps {
 }
 
 interface TypedTransformationFormProps extends TransformationFormProps {
-  type: "transformation";
   id?: number;
   table: Table;
 }
