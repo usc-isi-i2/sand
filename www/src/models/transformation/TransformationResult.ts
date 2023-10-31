@@ -1,6 +1,4 @@
-import { Record } from "gena-app";
-
-export interface TransformationResult extends Record<number> {
+export interface TransformationResult {
   path: number;
   value: string;
   ok: string;
