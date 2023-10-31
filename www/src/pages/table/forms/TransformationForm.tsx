@@ -23,7 +23,6 @@ import {
 } from "../../../models";
 
 export interface TransformationFormProps {
-  type: "transformation";
   table: TableModel;
 }
 
