@@ -1,4 +1,3 @@
-import { WithStyles } from "@material-ui/styles";
 import {
   Button,
   Radio,
@@ -22,7 +21,6 @@ import {
   Transformation,
   Table as TableModel,
 } from "../../../models";
-const styles = {};
 
 export interface TransformationFormProps {
   type: string;
