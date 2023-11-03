@@ -75,7 +75,6 @@ export const MenuBar = observer(
     }
 
     const sm = semanticmodel.sms[semanticmodel.index];
-
     const funcs = {
       saveModel: () => {
         if (SemanticModel.isDraft(sm)) {
@@ -120,6 +119,8 @@ export const MenuBar = observer(
         openForm({ type: "node", sm });
       },
       openAddEdgeForm: () => openForm({ type: "edge", sm }),
+      openTransformationFrom: () =>
+        openForm({ type: "transformation", table: table }),
       predict: () => {
         assistantService.predict(table).then(() => {
           tableRef.current?.reload();
@@ -260,6 +261,9 @@ export const MenuBar = observer(
         <Space key="space-2">
           <Button size="small" onClick={graphRef.current?.recenter}>
             Center graph (C)
+          </Button>
+          <Button size="small" onClick={funcs.openTransformationFrom}>
+            Add Transformation
           </Button>
           <Button size="small" onClick={funcs.openAddNodeForm}>
             Add node

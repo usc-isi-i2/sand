@@ -6,6 +6,8 @@ import { Entity, EntityStore } from "./entity";
 import { ClassStore } from "./ontology/ClassStore";
 import { PropertyStore } from "./ontology/PropertyStore";
 import { Project, ProjectStore } from "./project";
+import { TransformationStore } from "./transformation";
+
 import {
   DraftSemanticModel,
   SemanticModel,
@@ -23,6 +25,7 @@ const tableRowStore = new TableRowStore();
 const classStore = new ClassStore();
 const propertyStore = new PropertyStore();
 const entityStore = new EntityStore();
+const transformationStore = new TransformationStore();
 
 export const stores = {
   projectStore: new ProjectStore(),
@@ -32,6 +35,7 @@ export const stores = {
   entityStore,
   propertyStore,
   classStore,
+  transformationStore,
   assistantService: new AssistantService(
     tableStore,
     tableRowStore,
@@ -61,10 +65,10 @@ export const StoreContext = createContext<IStore>(stores);
 export function useStores(): IStore {
   return React.useContext(StoreContext);
 }
-
 export type { Property, DataType } from "./ontology/Property";
 export type { SMEdge, SMNode } from "./sm/SMGraph";
 export type { Table, TableRow } from "./table";
+export type { TransformationResult, Transformation } from "./transformation";
 export {
   ProjectStore,
   TableStore,
@@ -75,6 +79,7 @@ export {
   PropertyStore,
   ClassStore,
   EntityStore,
+  TransformationStore,
   SemanticModel,
   SMGraph,
   URICount,
