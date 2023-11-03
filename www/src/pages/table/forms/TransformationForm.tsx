@@ -273,6 +273,6 @@ function transformationResult2Row(tbl: TransformationResult) {
     key: tbl.path,
     row_id: tbl.path + 1,
     previous_value: tbl.value,
-    result: tbl.ok !== undefined ? tbl.ok : tbl.error.trim(),
+    result: tbl.ok !== undefined ? tbl.ok : tbl.error!.trim(),
   };
 }
