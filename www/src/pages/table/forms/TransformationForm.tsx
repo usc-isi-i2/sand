@@ -208,7 +208,6 @@ export const TransformationForm = observer(
               </Radio.Group>
             </Form.Item>
           </Col>
-          <Space></Space>
           <Col span={4}>
             <Form.Item
               name="tolerance"
