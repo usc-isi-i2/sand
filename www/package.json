@@ -55,6 +55,7 @@
     "start": "BROWSER=none react-scripts start",
     "start_nonroot": "PORT=5527 CHOKIDAR_USEPOLLING=true BROWSER=none DANGEROUSLY_DISABLE_HOST_CHECK=true react-scripts start",
     "build": "python ./scripts/build.py ../sand/www",
+    "build:macos": "NODE_OPTIONS=--openssl-legacy-provider python ./scripts/build.py ../sand/www",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "build:lib": "yarn compile && yarn compile:post",

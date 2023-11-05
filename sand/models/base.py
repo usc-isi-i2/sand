@@ -1,11 +1,9 @@
 import functools
 from pathlib import Path
-from typing import Mapping, TypeVar, Callable, Any, Union
+from typing import Any, Callable, Mapping, TypeVar, Union
 
-from peewee import SqliteDatabase, Model, Field
-
+from peewee import Field, Model, SqliteDatabase
 from sand.config import CACHE_SIZE
-
 
 # TODO: consider moving to APSWDatabase
 db = SqliteDatabase(None)
@@ -44,7 +42,7 @@ K = TypeVar("K")
 V = TypeVar("V")
 
 
-class StoreWrapper:
+class StoreWrapper(Mapping[K, V]):
     def __init__(
         self,
         store: Mapping[K, V],
@@ -55,12 +53,16 @@ class StoreWrapper:
         self.key_deser = key_deser
         self.val_deser = val_deser
 
-    @functools.lru_cache(maxsize=CACHE_SIZE)
+    # @functools.lru_cache(maxsize=CACHE_SIZE)
     def __contains__(self, key):
+        # print(key)
+        # print(self.key_deser(key))
         return self.key_deser(key) in self.store
 
-    @functools.lru_cache(maxsize=CACHE_SIZE)
+    # @functools.lru_cache(maxsize=CACHE_SIZE)
     def __getitem__(self, key):
+        # print(key)
+        # print(self.key_deser(key))
         val = self.store[self.key_deser(key)]
         return self.val_deser(val)
 
@@ -78,6 +80,14 @@ class StoreWrapper:
         raise NotImplementedError(
             f"{self.__class__.__name__} does not support __len__ function"
         )
+
+    def __iter__(self):
+        raise NotImplementedError(
+            f"{self.__class__.__name__} does not support __iter__ function"
+        )
+
+    def values(self):
+        return (self.val_deser(v) for v in self.store.values())
 
     def get(self, key, default=None):
         if not self.__contains__(key):

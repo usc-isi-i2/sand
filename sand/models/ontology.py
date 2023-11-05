@@ -2,10 +2,9 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Literal, Mapping, Set
 
 from hugedict.chained_mapping import ChainedMapping
-from rdflib import RDFS
-from sm.misc.funcs import import_attr, import_func
-
+from rdflib import RDF, RDFS
 from sand.config import SETTINGS
+from sm.misc.funcs import import_attr, import_func
 
 
 @dataclass
@@ -16,7 +15,7 @@ class OntClass:
     aliases: List[str]
     description: str
     parents: List[str]
-    ancestors: Set[str] = field(default_factory=set)
+    ancestors: Dict[str, int] = field(default_factory=dict)
 
     @property
     def readable_label(self):
@@ -58,7 +57,7 @@ class OntProperty:
     aliases: List[str]
     description: str
     parents: List[str]
-    ancestors: Set[str] = field(default_factory=set)
+    ancestors: Dict[str, int] = field(default_factory=dict)
 
     @property
     def readable_label(self):
@@ -91,7 +90,16 @@ DEFAULT_ONT_PROPS = {
         datatype="string",
         description="Provides a human-readable version of a resource's name.",
         parents=[],
-    )
+    ),
+    "rdf:type": OntProperty(
+        id="rdf:type",
+        uri=str(RDF.type),
+        label="rdf:type",
+        aliases=[],
+        datatype="entity",
+        description="Is used to state that a resource is an instance of a class",
+        parents=[],
+    ),
 }
 DEFAULT_ONT_CLASSES = {}
 

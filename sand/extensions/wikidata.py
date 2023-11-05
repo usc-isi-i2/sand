@@ -5,8 +5,6 @@ from typing import Mapping
 from hugedict.misc import identity
 from kgdata.wikidata import db
 from kgdata.wikidata.models import WDClass, WDEntity, WDProperty, WDValue
-from sm.namespaces.wikidata import WikidataNamespace
-
 from sand.models.base import StoreWrapper
 from sand.models.entity import DEFAULT_ENTITY, Entity, Statement, Value
 from sand.models.ontology import (
@@ -16,13 +14,14 @@ from sand.models.ontology import (
     OntProperty,
     OntPropertyDataType,
 )
+from sm.namespaces.wikidata import WikidataNamespace
 
 wdns = WikidataNamespace.create()
 WD_ONT_CLASSES = {
-    wdns.get_rel_uri(wdns.STATEMENT_URI): OntClass(
-        id=wdns.get_rel_uri(wdns.STATEMENT_URI),
-        uri=wdns.STATEMENT_URI,
-        label=wdns.get_rel_uri(wdns.STATEMENT_URI),
+    wdns.get_rel_uri(wdns.statement_uri): OntClass(
+        id=wdns.get_rel_uri(wdns.statement_uri),
+        uri=wdns.statement_uri,
+        label=wdns.get_rel_uri(wdns.statement_uri),
         aliases=[],
         description="Describes the claim of a statement and list references for this claim",
         parents=[],
@@ -91,7 +90,7 @@ def get_entity_db(dbfile: str, proxy: bool):
 
 def get_ontclass_db(dbfile: str, proxy: bool):
     return StoreWrapper(
-        db.get_wdclass_db(dbfile, proxy=proxy, read_only=not proxy),
+        db.get_class_db(dbfile, proxy=proxy, read_only=not proxy),
         key_deser=get_wdclass_id,
         val_deser=ont_class_deser,
     )
@@ -99,7 +98,7 @@ def get_ontclass_db(dbfile: str, proxy: bool):
 
 def get_ontprop_db(dbfile: str, proxy: bool):
     return StoreWrapper(
-        db.get_wdprop_db(dbfile, proxy=proxy, read_only=not proxy),
+        db.get_prop_db(dbfile, proxy=proxy, read_only=not proxy),
         key_deser=get_wdprop_id,
         val_deser=ont_prop_deser,
     )
@@ -123,7 +122,7 @@ def qnode_deser(qnode: WDEntity):
 
     return WrapperWDEntity(
         id=qnode.id,
-        uri=wdns.get_entity_abs_uri(qnode.id),
+        uri=wdns.id_to_uri(qnode.id),
         label=qnode.label,
         aliases=qnode.aliases,
         description=qnode.description,
@@ -134,7 +133,7 @@ def qnode_deser(qnode: WDEntity):
 def ont_class_deser(item: WDClass):
     return WrapperWDClass(
         id=item.id,
-        uri=WikidataNamespace.get_entity_abs_uri(item.id),
+        uri=WikidataNamespace.id_to_uri(item.id),
         aliases=item.aliases,
         label=item.label,
         description=item.description,
@@ -147,7 +146,7 @@ def ont_prop_deser(item: WDProperty):
     global WD_DATATYPE_MAPPING
     return WrapperWDProperty(
         id=item.id,
-        uri=WikidataNamespace.get_prop_abs_uri(item.id),
+        uri=WikidataNamespace.id_to_uri(item.id),
         aliases=item.aliases,
         label=item.label,
         description=item.description,
@@ -182,9 +181,9 @@ def get_wdclass_id(uri_or_id: str):
 
 def uri2id(uri: str):
     if uri.startswith("http://www.wikidata.org/prop/"):
-        return WikidataNamespace.get_prop_id(uri)
+        return WikidataNamespace.uri_to_id(uri)
     if uri.startswith("http://www.wikidata.org/entity/"):
-        return WikidataNamespace.get_entity_id(uri)
+        return wdns.uri_to_id(uri)
     if uri in INVERSE_DEFAULT_URI2ID:
         return INVERSE_DEFAULT_URI2ID[uri]
     return uri
@@ -194,9 +193,9 @@ def id2uri(id: str):
     if id in DEFAULT_ID2URI:
         return DEFAULT_ID2URI[id]
     if id.startswith("P"):
-        return wdns.get_prop_abs_uri(id)
+        return wdns.id_to_uri(id)
     if id.startswith("Q"):
-        return wdns.get_entity_abs_uri(id)
+        return wdns.id_to_uri(id)
     raise ValueError(f"Cannot convert unknown id to uri: {id}")
 
 

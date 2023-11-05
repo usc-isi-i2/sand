@@ -4,19 +4,15 @@ from dataclasses import dataclass
 from typing import Literal, Mapping, Optional, Union
 
 from hugedict.chained_mapping import ChainedMapping
-from kgdata.wikidata.models.multilingual import (
-    MultiLingualString,
-    MultiLingualStringList,
-)
+from kgdata.models.multilingual import MultiLingualString, MultiLingualStringList
 from kgdata.wikidata.models.wdvalue import (
     ValueGlobeCoordinate,
     ValueMonolingualText,
     ValueQuantity,
     ValueTime,
 )
-from sm.misc.funcs import import_attr, import_func
-
 from sand.config import SETTINGS
+from sm.misc.funcs import import_attr, import_func
 
 # represent that there is no entity
 NIL_ENTITY_ID = SETTINGS["entity"]["nil"]["id"]

@@ -7,12 +7,11 @@ import drepr.models.sm as drepr_sm
 import orjson
 import sm.misc as M
 import sm.outputs.semantic_model as O
-from sm.namespaces.wikidata import WikidataNamespace
-
 from sand.config import SETTINGS
 from sand.models.entity import NIL_ENTITY_ID, Entity
 from sand.models.ontology import OntProperty, OntPropertyAR, OntPropertyDataType
 from sand.models.table import Table, TableRow
+from sm.namespaces.wikidata import WikidataNamespace
 
 prefixes = WikidataNamespace.create().prefix2ns.copy()
 prefixes.update(drepr_sm.SemanticModel.get_default_prefixes())
@@ -93,6 +92,8 @@ def get_drepr_sm(
             target_id=str(edge.target),
             label=edge.rel_uri,
         )
+
+    print(edges)
 
     # add drepr:uri relationship
     for node in get_entity_data_nodes(sm):
