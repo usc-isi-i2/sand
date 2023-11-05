@@ -1,15 +1,15 @@
 import copy
-from rdflib import RDFS
 import subprocess
 from pathlib import Path
 from typing import Dict, List, Tuple
+
 import serde.prelude as serde
-from sm.namespaces.wikidata import WikidataNamespace
 import sm.outputs.semantic_model as O
+from rdflib import RDFS
 from sand.controllers.assistant import IAssistant
 from sand.models.base import init_db
-
 from sand.models.table import CandidateEntity, Link, Table, TableRow
+from sm.namespaces.wikidata import WikidataNamespace
 
 
 class MTabAssistant(IAssistant):
@@ -142,15 +142,15 @@ class MTabAssistant(IAssistant):
             # somehow, they may end-up predict multiple classes, we need to select one
             if qnode_id.find(" ") != -1:
                 qnode_id = qnode_id.split(" ")[0]
-            curl = self.wdns.get_entity_abs_uri(qnode_id)
+            curl = self.wdns.id_to_uri(qnode_id)
 
             try:
                 cnode_label = f"{self.id2label[qnode_id]} ({qnode_id})"
             except KeyError:
-                cnode_label = self.wdns.get_entity_rel_uri(qnode_id)
+                cnode_label = self.wdns.get_rel_uri(self.wdns.id_to_uri(qnode_id))
             cnode = O.ClassNode(
                 abs_uri=curl,
-                rel_uri=self.wdns.get_entity_rel_uri(qnode_id),
+                rel_uri=self.wdns.get_rel_uri(self.wdns.id_to_uri(qnode_id)),
                 readable_label=cnode_label,
             )
             sm.add_node(dnode)
@@ -196,8 +196,8 @@ class MTabAssistant(IAssistant):
                 O.Edge(
                     source=source.id,
                     target=target.id,
-                    abs_uri=self.wdns.get_prop_abs_uri(prop),
-                    rel_uri=self.wdns.get_prop_rel_uri(prop),
+                    abs_uri=(tmp_abs_uri := self.wdns.id_to_uri(prop)),
+                    rel_uri=self.wdns.get_rel_uri(tmp_abs_uri),
                     readable_label=f"{self.id2label[prop]} ({prop})",
                 )
             )

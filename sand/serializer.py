@@ -4,7 +4,6 @@ from typing import Callable, Dict, List, Mapping, Optional
 
 import sm.outputs.semantic_model as O
 from playhouse.shortcuts import model_to_dict
-
 from sand.models import SemanticModel, Table
 from sand.models.entity import Entity, EntityAR
 from sand.models.ontology import OntClass, OntClassAR, OntProperty, OntPropertyAR
@@ -20,7 +19,7 @@ def serialize_property(prop: OntProperty):
         "description": prop.description,
         "datatype": prop.datatype,
         "parents": prop.parents,
-        "ancestors": list(prop.ancestors),
+        "ancestors": list(prop.ancestors.keys()),
     }
 
 
@@ -33,7 +32,7 @@ def serialize_class(cls: OntClass):
         "aliases": cls.aliases,
         "description": cls.description,
         "parents": cls.parents,
-        "ancestors": list(cls.ancestors),
+        "ancestors": list(cls.ancestors.keys()),
     }
 
 
@@ -130,6 +129,7 @@ def batch_serialize_sms(sms: List[SemanticModel]):
 
     ontprops = OntPropertyAR()
     ontclasses = OntClassAR()
+    # TODO: id != uri fix me
     uri2lbl = partial(get_label, ontprops=ontprops, ontclasses=ontclasses)
 
     output = []
@@ -143,12 +143,20 @@ def batch_serialize_sms(sms: List[SemanticModel]):
     return output
 
 
+from minmod.sand import kgns
+
+
 def get_label(
-    id: str,
+    uri_or_id: str,
     is_class: bool,
     ontprops: Mapping[str, OntProperty],
     ontclasses: Mapping[str, OntClass],
 ) -> Optional[str]:
+    if uri_or_id.startswith("http"):
+        id = kgns.get_rel_uri(uri_or_id)
+    else:
+        id = uri_or_id
+
     if is_class:
         if id in ontclasses:
             return ontclasses[id].readable_label
