@@ -17,7 +17,7 @@ from drepr.models import (
     Resource,
     ResourceType,
 )
-from sand.config import APP_CONFIG
+from sand.app import App
 from sand.extension_interface.export import IExport
 from sand.extensions.export.drepr.resources import (
     get_entity_resource,
@@ -34,18 +34,19 @@ from sand.extensions.export.drepr.transformation import (
 from sand.models.ontology import OntPropertyAR, OntPropertyDataType
 from sand.models.table import Table, TableRow
 from slugify import slugify
+from sm.misc.funcs import assert_not_null
 
 
 class DreprExport(IExport):
-    def __init__(self):
-        self.kgns = APP_CONFIG.get_kgns()
+    def __init__(self, app: App):
+        self.app = app
 
     def export_data_model(self, table: Table, sm: O.SemanticModel) -> DRepr:
         """Create a D-REPR model of the dataset."""
         columns = [slugify(c).replace("-", "_") for c in table.columns]
         get_attr_id = lambda ci: f"{ci}__{columns[ci]}"
         get_ent_attr_id = lambda ci: f"{ci}__ent__{columns[ci]}"
-        ent_dnodes = get_entity_data_nodes(sm)
+        ent_dnodes = get_entity_data_nodes(self.app.cfg, sm)
 
         attrs = [
             Attr(
@@ -76,8 +77,7 @@ class DreprExport(IExport):
             for node in ent_dnodes
         ]
 
-        id2props = OntPropertyAR()
-        dsm = get_drepr_sm(sm, id2props, get_attr_id, get_ent_attr_id)
+        dsm = get_drepr_sm(sm, self.app.ontprop_ar, get_attr_id, get_ent_attr_id)
 
         datatype_transformations = []
         for node in sm.nodes():
@@ -85,7 +85,7 @@ class DreprExport(IExport):
                 continue
 
             datatypes: Set[OntPropertyDataType] = {
-                id2props[self.kgns.uri_to_id(inedge.abs_uri)].datatype
+                assert_not_null(self.app.ontprop_ar.get_by_uri(inedge.abs_uri)).datatype
                 for inedge in sm.in_edges(node.id)
             }
             datatype = list(datatypes)[0] if len(datatypes) == 1 else None
@@ -146,10 +146,12 @@ class DreprExport(IExport):
             # no column, no data
             return ""
 
-        ent_columns = {node.col_index for node in get_entity_data_nodes(sm)}
+        ent_columns = {
+            node.col_index for node in get_entity_data_nodes(self.app.cfg, sm)
+        }
         resources = {
             "table": get_table_resource(table, rows),
-            "entity": get_entity_resource(table, rows, ent_columns),
+            "entity": get_entity_resource(self.app.cfg, table, rows, ent_columns),
         }
 
         content = execute(
