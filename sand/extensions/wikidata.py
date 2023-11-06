@@ -16,12 +16,12 @@ from sand.models.ontology import (
 )
 from sm.namespaces.wikidata import WikidataNamespace
 
-wdns = WikidataNamespace.create()
+kgns = WikidataNamespace.create()
 WD_ONT_CLASSES = {
-    wdns.get_rel_uri(wdns.statement_uri): OntClass(
-        id=wdns.get_rel_uri(wdns.statement_uri),
-        uri=wdns.statement_uri,
-        label=wdns.get_rel_uri(wdns.statement_uri),
+    kgns.get_rel_uri(kgns.statement_uri): OntClass(
+        id=kgns.get_rel_uri(kgns.statement_uri),
+        uri=kgns.statement_uri,
+        label=kgns.get_rel_uri(kgns.statement_uri),
         aliases=[],
         description="Describes the claim of a statement and list references for this claim",
         parents=[],
@@ -122,7 +122,7 @@ def qnode_deser(qnode: WDEntity):
 
     return WrapperWDEntity(
         id=qnode.id,
-        uri=wdns.id_to_uri(qnode.id),
+        uri=kgns.id_to_uri(qnode.id),
         label=qnode.label,
         aliases=qnode.aliases,
         description=qnode.description,
@@ -133,7 +133,7 @@ def qnode_deser(qnode: WDEntity):
 def ont_class_deser(item: WDClass):
     return WrapperWDClass(
         id=item.id,
-        uri=WikidataNamespace.id_to_uri(item.id),
+        uri=kgns.id_to_uri(item.id),
         aliases=item.aliases,
         label=item.label,
         description=item.description,
@@ -146,7 +146,7 @@ def ont_prop_deser(item: WDProperty):
     global WD_DATATYPE_MAPPING
     return WrapperWDProperty(
         id=item.id,
-        uri=WikidataNamespace.id_to_uri(item.id),
+        uri=kgns.id_to_uri(item.id),
         aliases=item.aliases,
         label=item.label,
         description=item.description,
@@ -181,9 +181,9 @@ def get_wdclass_id(uri_or_id: str):
 
 def uri2id(uri: str):
     if uri.startswith("http://www.wikidata.org/prop/"):
-        return WikidataNamespace.uri_to_id(uri)
+        return kgns.uri_to_id(uri)
     if uri.startswith("http://www.wikidata.org/entity/"):
-        return wdns.uri_to_id(uri)
+        return kgns.uri_to_id(uri)
     if uri in INVERSE_DEFAULT_URI2ID:
         return INVERSE_DEFAULT_URI2ID[uri]
     return uri
@@ -193,11 +193,11 @@ def id2uri(id: str):
     if id in DEFAULT_ID2URI:
         return DEFAULT_ID2URI[id]
     if id.startswith("P"):
-        return wdns.id_to_uri(id)
+        return kgns.id_to_uri(id)
     if id.startswith("Q"):
-        return wdns.id_to_uri(id)
+        return kgns.id_to_uri(id)
     raise ValueError(f"Cannot convert unknown id to uri: {id}")
 
 
 def get_rel_uri(uri: str):
-    return wdns.get_rel_uri(uri)
+    return kgns.get_rel_uri(uri)

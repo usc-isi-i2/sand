@@ -1,74 +1,142 @@
-import os
-from pathlib import Path
+from __future__ import annotations
 
-from minmod.db import MNDR_NS, MNDRNamespace
-from rdflib import RDF
+import os
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Literal
+
+import serde.yaml
+from sm.misc.funcs import import_attr
+from sm.namespaces.namespace import KnowledgeGraphNamespace
 
 _ROOT_DIR = Path(os.path.abspath(__file__)).parent.parent
 PACKAGE_DIR = str(Path(os.path.abspath(__file__)).parent)
 FROM_SITEPACKAGES = _ROOT_DIR.name == "site-packages"
 
 CACHE_SIZE = 10240
+# indicate that this string is a relative path.
+RELPATH_CONST = "::RELPATH::"
 
-SETTINGS = {
-    "entity": {
-        "constructor": "minmod.sand.get_entity_db",
-        "uri2id": "minmod.sand.WrappedEntity.uri2id",
-        "id2uri": "minmod.sand.WrappedEntity.id2uri",
-        "args": {
-            "dbfile": "/Volumes/research/gramsplus/libraries/minmod/data/databases/entities.db",
-        },
-        # extra entities
-        "default": "sand.models.entity.DEFAULT_ENTITY",
-        # mapping from entity's namespace to the property id that will be used to indicate `instance_of` relationship
-        "instanceof": {MNDR_NS: MNDRNamespace.create().get_rel_uri(str(RDF.type))},
-        # id of an nil entity
-        "nil": {"id": "drepr:nil", "uri": "https://purl.org/drepr/ontology/1.0/nil"},
-        # template for new entity uri
-        "new_entity_template": "http://www.wikidata.org/entity/{id}",
-    },
-    "ont_classes": {
-        "constructor": "minmod.sand.get_ontclass_db",
-        "uri2id": "minmod.sand.WrappedOntClass.uri2id",
-        "id2uri": "minmod.sand.WrappedOntClass.id2uri",
-        "args": {
-            "dbfile": "/Volumes/research/gramsplus/libraries/minmod/data/databases/classes.db",
-        },
-        # extra classes
-        "default": "sand.models.ontology.DEFAULT_ONT_CLASSES",
-    },
-    "ont_props": {
-        "constructor": "minmod.sand.get_ontprop_db",
-        "uri2id": "minmod.sand.WrappedOntClass.uri2id",
-        "id2uri": "minmod.sand.WrappedOntClass.id2uri",
-        "args": {
-            "dbfile": "/Volumes/research/gramsplus/libraries/minmod/data/databases/props.db",
-        },
-        # extra props
-        "default": "sand.models.ontology.DEFAULT_ONT_PROPS",
-    },
-    "semantic_model": {
-        # list of properties' uris that when a column is tagged with one of them, the column is an entity column
-        "identifiers": [
-            "http://www.w3.org/2000/01/rdf-schema#label",
-        ],
-        # list of uri of classes that are used as intermediate nodes to represent n-ary relationships, e.g., wikidata's statement
-        "statements": ["http://wikiba.se/ontology#Statement"],
-    },
-    "assistants": {
-        # list of assistants' names and their models
-        # "grams": "sand.extensions.grams.GRAMSAssistant",
-        # "mtab": "sand.extensions.assistants.mtab.MTabAssistant",
-        "mtab": "minmod.sand.GramsMinModAssistant",
-        # "default": "mtab",
-    },
-    "search": {
-        "entities": "minmod.sand.mndr_search",
-        "classes": "minmod.sand.mndr_search",
-        "props": "minmod.sand.mndr_search",
-    },
-    "exports": {
-        "drepr": "sand.extensions.export.drepr.main.DreprExport",
-        "default": "sand.extensions.export.drepr.main.DreprExport",
-    },
-}
+
+@dataclass
+class AppConfig:
+    kgns: str
+    entity: EntityConfig
+    clazz: OntResourceConfig
+    property: OntResourceConfig
+    semantic_model: SemanticModelConfig
+    assistant: FnConfig
+    search: SearchConfig
+    export: FnConfig
+
+    def get_kgns(self) -> KnowledgeGraphNamespace:
+        if "_kgns" not in self.__dict__:
+            self.__dict__["_kgns"] = import_attr(self.kgns)
+        return self.__dict__["_kgns"]
+
+    @staticmethod
+    def from_yaml(infile: Path | str) -> AppConfig:
+        cwd = Path(infile).parent
+        obj = serde.yaml.deser(infile)
+
+        return AppConfig(
+            kgns=obj["kgns"],
+            entity=EntityConfig(
+                constructor=obj["entity"]["constructor"],
+                args=AppConfig._parse_args(obj["entity"]["args"], cwd),
+                default=obj["entity"]["default"],
+                instanceof=obj["entity"]["instanceof"],
+                nil=IdAndUri(obj["entity"]["nil"]["id"], obj["entity"]["nil"]["uri"]),
+                new_entity_template=obj["entity"]["new_entity_template"],
+            ),
+            clazz=OntResourceConfig(
+                constructor=obj["class"]["constructor"],
+                args=AppConfig._parse_args(obj["class"]["args"], cwd),
+                default=obj["class"]["default"],
+            ),
+            property=OntResourceConfig(
+                constructor=obj["property"]["constructor"],
+                args=AppConfig._parse_args(obj["property"]["args"], cwd),
+                default=obj["property"]["default"],
+            ),
+            semantic_model=SemanticModelConfig(
+                identifiers=obj["semantic_model"]["identifiers"],
+                statements=obj["semantic_model"]["statements"],
+            ),
+            search=SearchConfig(
+                entity=obj["search"]["entity"],
+                clazz=obj["search"]["class"],
+                property=obj["search"]["property"],
+            ),
+            assistant=FnConfig(
+                default=obj["assistant"].pop("default"),
+                funcs=obj["assistant"],
+            ),
+            export=FnConfig(default=obj["export"].pop("default"), funcs=obj["export"]),
+        )
+
+    def update(self, obj: AppConfig):
+        for k, v in obj.__dict__.items():
+            if k.startswith("_"):
+                continue
+            self.__dict__[k] = v
+
+    @staticmethod
+    def _parse_args(obj: dict, cwd: Path):
+        out = {}
+        for k, v in obj.items():
+            if isinstance(v, str) and v.startswith(RELPATH_CONST):
+                out[k] = str(cwd / v[len(RELPATH_CONST) :])
+            else:
+                out[k] = v
+        return out
+
+
+@dataclass
+class SearchConfig:
+    entity: str
+    clazz: str
+    property: str
+
+
+@dataclass
+class FnConfig:
+    default: str
+    funcs: dict[str, str]
+
+    def get_func(self, name: Literal["default"] | str) -> str:
+        if name == "default":
+            return self.funcs[self.default]
+        return self.funcs[name]
+
+
+@dataclass
+class EntityConfig:
+    constructor: str
+    args: dict
+    default: str
+    instanceof: dict[str, str]
+    nil: IdAndUri
+    new_entity_template: str
+
+
+@dataclass
+class IdAndUri:
+    id: str
+    uri: str
+
+
+@dataclass
+class OntResourceConfig:
+    constructor: str
+    args: dict
+    default: str
+
+
+@dataclass
+class SemanticModelConfig:
+    identifiers: list[str]
+    statements: list[str]
+
+
+APP_CONFIG = AppConfig.from_yaml(os.path.join(PACKAGE_DIR, "config.default.yml"))

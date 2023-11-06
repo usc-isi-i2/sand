@@ -1,22 +1,20 @@
 import threading
 from dataclasses import dataclass
-from functools import partial
 from typing import Dict, List, Optional
 
 from flask import jsonify, request
 from flask.blueprints import Blueprint
 from gena.deserializer import get_dataclass_deserializer
 from peewee import DoesNotExist
-from sm.misc.funcs import import_func
-from werkzeug.exceptions import BadRequest, NotFound
-
-from sand.config import SETTINGS
+from sand.config import APP_CONFIG
 from sand.extension_interface.assistant import IAssistant
 from sand.helpers.tree_utils import TreeStruct
-from sand.models.entity import NIL_ENTITY_ID, Entity, EntityAR
-from sand.models.ontology import OntClass, OntClassAR, OntPropertyAR
+from sand.models.entity import Entity, EntityAR
+from sand.models.ontology import OntClass, OntClassAR
 from sand.models.table import Link, Table, TableRow
-from sand.serializer import get_label, serialize_graph
+from sand.serializer import serialize_graph
+from sm.misc.funcs import import_func
+from werkzeug.exceptions import BadRequest, NotFound
 
 assistant_bp = Blueprint("assistant", "assistant")
 
@@ -30,7 +28,7 @@ def get_assistants() -> Dict[str, IAssistant]:
 
     if not hasattr(GetAssistantCache, "assistants"):
         GetAssistantCache.assistants = {}
-        for name, constructor in SETTINGS["assistants"].items():
+        for name, constructor in APP_CONFIG.assistant.funcs.items():
             GetAssistantCache.assistants[name] = import_func(constructor)()
 
     return GetAssistantCache.assistants
@@ -52,15 +50,11 @@ def predict_semantic_desc(table_id: int):
     if len(selected_assistants) == 0:
         selected_assistants = assistants
 
-    ontprops = OntPropertyAR()
-    ontclasses = OntClassAR()
-    uri2lbl = partial(get_label, ontprops=ontprops, ontclasses=ontclasses)
-
     outputs = {}
     for name, assistant in selected_assistants.items():
         sm, outputrows = assistant.predict(table, rows)
         if sm is not None:
-            sm = serialize_graph(sm, uri2lbl, columns=None)
+            sm = serialize_graph(sm, columns=None)
         if outputrows is not None:
             # preserved the manual entity linking from the users
             for outputrow, row in zip(outputrows, rows):
@@ -120,7 +114,7 @@ def gather_column_types():
         for link in row.links.get(column, []):
             if (
                 link.entity_id is not None
-                and link.entity_id != NIL_ENTITY_ID
+                and link.entity_id != APP_CONFIG.entity.nil.id
                 and link.entity_id not in ents
             ):
                 ents[link.entity_id] = entities.get(link.entity_id, None)

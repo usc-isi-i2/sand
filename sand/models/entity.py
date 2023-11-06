@@ -11,12 +11,8 @@ from kgdata.wikidata.models.wdvalue import (
     ValueQuantity,
     ValueTime,
 )
-from sand.config import SETTINGS
+from sand.config import APP_CONFIG
 from sm.misc.funcs import import_attr, import_func
-
-# represent that there is no entity
-NIL_ENTITY_ID = SETTINGS["entity"]["nil"]["id"]
-NIL_ENTITY_URI = SETTINGS["entity"]["nil"]["uri"]
 
 
 @dataclass
@@ -36,20 +32,6 @@ class Entity:
     def instanceof(self):
         """Get the property representing the instanceof relation."""
         raise NotImplementedError()
-
-    @staticmethod
-    def uri2id(uri: str) -> str:
-        """Convert entity URI to entity ID."""
-        raise NotImplementedError(
-            "The method is set when its store is initialized. Check the call order to ensure `EntityAR` is called first"
-        )
-
-    @staticmethod
-    def id2uri(id: str) -> str:
-        """Convert entity ID to entity URI."""
-        raise NotImplementedError(
-            "The method is set when its store is initialized. Check the call order to ensure `EntityAR` is called first"
-        )
 
 
 @dataclass
@@ -81,9 +63,9 @@ class Value:
 
 ENTITY_AR: Optional[Mapping[str, Entity]] = None
 DEFAULT_ENTITY = {
-    NIL_ENTITY_ID: Entity(
-        id=NIL_ENTITY_ID,
-        uri=NIL_ENTITY_URI,
+    APP_CONFIG.entity.nil.id: Entity(
+        id=APP_CONFIG.entity.nil.id,
+        uri=APP_CONFIG.entity.nil.uri,
         label=MultiLingualString.en("NIL"),
         aliases=MultiLingualStringList(lang2values={"en": []}, lang="en"),
         description=MultiLingualString.en("the correct entity is absent in KG"),
@@ -96,10 +78,8 @@ def EntityAR() -> Mapping[str, Entity]:
     global ENTITY_AR
 
     if ENTITY_AR is None:
-        cfg = SETTINGS["entity"]
-        func = import_func(cfg["constructor"])
-        ENTITY_AR = ChainedMapping(func(**cfg["args"]), import_attr(cfg["default"]))
-        Entity.uri2id = import_func(cfg["uri2id"])
-        Entity.id2uri = import_func(cfg["id2uri"])
+        cfg = APP_CONFIG.entity
+        func = import_func(cfg.constructor)
+        ENTITY_AR = ChainedMapping(func(**cfg.args), import_attr(cfg.default))
 
     return ENTITY_AR

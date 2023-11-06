@@ -1,0 +1,37 @@
+kgns: sand.extensions.wikidata.kgns
+entity:
+  constructor: tests.conftest.get_entity_db
+  args:
+    dbfile: ::RELPATH::data/kgdb/entities.jsonl
+  default: sand.models.entity.DEFAULT_ENTITY
+  instanceof:
+    "http://www.wikidata.org": P31
+  nil:
+    id: drepr:nil
+    uri: https://purl.org/drepr/ontology/1.0/nil
+  new_entity_template: http://www.wikidata.org/entity/{id}
+class:
+  constructor: tests.conftest.get_ontclass_db
+  args:
+    dbfile: ::RELPATH::data/kgdb/classes.jsonl
+  default: sand.extensions.wikidata.WD_ONT_CLASSES
+property:
+  constructor: tests.conftest.get_ontprops_db
+  args:
+    dbfile: ::RELPATH::data/kgdb/props.jsonl
+  default: sand.models.ontology.DEFAULT_ONT_PROPS
+semantic_model:
+  identifiers:
+    - http://www.w3.org/2000/01/rdf-schema#label
+  statements:
+    - http://wikiba.se/ontology#Statement
+search:
+  entity: sand.extensions.search.wikidata_search.extended_wikidata_search
+  class: sand.extensions.search.wikidata_search.extended_wikidata_search
+  property: sand.extensions.search.wikidata_search.extended_wikidata_search
+export:
+  default: drepr
+  drepr: sand.extensions.export.drepr.main.DreprExport
+assistant:
+  default: mtab
+  mtab: sand.extensions.assistants.mtab.MTabAssistant

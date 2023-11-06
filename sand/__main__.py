@@ -1,23 +1,16 @@
-import os
-from pathlib import Path
+from typing import Optional
 
 import click
 from loguru import logger
 from peewee import fn
+from sand.commands.load import load_dataset
+from sand.config import APP_CONFIG, AppConfig
+from sand.models import Project, SemanticModel, Table, TableRow
+from sand.models import db as dbconn
+from sand.models import init_db
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.wsgi import WSGIContainer
-
-from sand.config import SETTINGS
-from sand.models import (
-    Project,
-    SemanticModel,
-    Table,
-    TableRow,
-    db as dbconn,
-    init_db,
-)
-from sand.commands.load import load_dataset
 
 
 @click.command()
@@ -33,14 +26,9 @@ def init(db):
 @click.command()
 @click.option("-d", "--db", required=True, help="sand database file")
 @click.option(
-    "--externaldb",
-    default="",
-    help="Folder contains external databases containing entities & ontologies",
-)
-@click.option(
-    "--externaldb-proxy",
-    is_flag=True,
-    help="Enable proxy on the externaldb",
+    "-c",
+    "--config",
+    help="Path to the configuration file",
 )
 @click.option("--wsgi", is_flag=True, help="Whether to use wsgi server")
 @click.option("-p", "--port", default=5524, help="Listening port")
@@ -50,8 +38,7 @@ def init(db):
 @click.option("--keyfile", default=None, help="Path to the key file")
 def start(
     db: str,
-    externaldb: str,
-    externaldb_proxy: bool,
+    config: Optional[str],
     wsgi: bool,
     port: int,
     certfile: str,
@@ -59,12 +46,8 @@ def start(
 ):
     init_db(db)
 
-    if externaldb.strip() != "":
-        for cfg in [SETTINGS[k] for k in ["entity", "ont_classes", "ont_props"]]:
-            cfg["args"]["dbfile"] = os.path.join(
-                externaldb, Path(cfg["args"]["dbfile"]).name
-            )
-            cfg["args"]["proxy"] = externaldb_proxy
+    if config is not None:
+        APP_CONFIG.update(AppConfig.from_yaml(config))
 
     if certfile is None or keyfile is None:
         ssl_options = None

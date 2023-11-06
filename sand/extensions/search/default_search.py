@@ -1,20 +1,20 @@
-from typing import List
 import re
+from typing import List
+
+from sand.config import APP_CONFIG
 from sand.extension_interface.search import IEntitySearch, IOntologySearch, SearchResult
 from sm.misc.funcs import import_attr
-from sand.config import SETTINGS
 
 
 class DefaultSearch(IEntitySearch, IOntologySearch):
-
     def __init__(self):
-        self.default_classes = import_attr(SETTINGS['ont_classes']['default'])
-        self.default_entities = import_attr(SETTINGS['entity']['default'])
-        self.default_properties = import_attr(SETTINGS['ont_props']['default'])
+        self.default_classes = import_attr(APP_CONFIG.clazz.default)
+        self.default_entities = import_attr(APP_CONFIG.entity.default)
+        self.default_properties = import_attr(APP_CONFIG.property.default)
 
     def local_search(self, default_entities: dict, search_text: str) -> List:
-        """ performs local partial text search across default entities"""
-        query_tokens = re.findall(r'[a-z]+|\d+', search_text.lower())
+        """performs local partial text search across default entities"""
+        query_tokens = re.findall(r"[a-z]+|\d+", search_text.lower())
         search_results = []
 
         if not query_tokens:
@@ -36,7 +36,7 @@ class DefaultSearch(IEntitySearch, IOntologySearch):
                 label=entity.label,
                 id=entity.id,
                 description=entity.description,
-                uri=entity.uri
+                uri=entity.uri,
             )
             payload_results.append(item)
 
@@ -52,7 +52,7 @@ class DefaultSearch(IEntitySearch, IOntologySearch):
                 label=entity.label,
                 id=entity.id,
                 description=entity.description,
-                uri=entity.uri
+                uri=entity.uri,
             )
             payload_results.append(item)
 
@@ -68,7 +68,7 @@ class DefaultSearch(IEntitySearch, IOntologySearch):
                 label=entity.label,
                 id=entity.id,
                 description=entity.description,
-                uri=entity.uri
+                uri=entity.uri,
             )
             payload_results.append(item)
 

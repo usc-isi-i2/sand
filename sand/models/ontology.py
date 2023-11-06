@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Literal, Mapping, Set
+from itertools import chain
+from typing import Dict, Iterator, List, Literal, Mapping, TypeVar
 
-from hugedict.chained_mapping import ChainedMapping
 from rdflib import RDF, RDFS
-from sand.config import SETTINGS
+from sand.config import APP_CONFIG
 from sm.misc.funcs import import_attr, import_func
 
 
@@ -20,20 +20,6 @@ class OntClass:
     @property
     def readable_label(self):
         return self.label
-
-    @staticmethod
-    def uri2id(uri: str) -> str:
-        """Convert class URI to entity ID."""
-        raise NotImplementedError(
-            "The method is set when its store is initialized. Check the call order to ensure `OntClassAR` is called first"
-        )
-
-    @staticmethod
-    def id2uri(id: str) -> str:
-        """Convert class ID to class URI."""
-        raise NotImplementedError(
-            "The method is set when its store is initialized. Check the call order to ensure `OntClassAR` is called first"
-        )
 
 
 OntPropertyDataType = Literal[
@@ -63,20 +49,6 @@ class OntProperty:
     def readable_label(self):
         return self.label
 
-    @staticmethod
-    def uri2id(uri: str) -> str:
-        """Convert property URI to entity ID."""
-        raise NotImplementedError(
-            "The method is set when its store is initialized. Check the call order to ensure `OntPropertyAR` is called first"
-        )
-
-    @staticmethod
-    def id2uri(id: str) -> str:
-        """Convert property ID to property URI."""
-        raise NotImplementedError(
-            "The method is set when its store is initialized. Check the call order to ensure `OntPropertyAR` is called first"
-        )
-
 
 PROP_AR = None
 CLASS_AR = None
@@ -104,28 +76,57 @@ DEFAULT_ONT_PROPS = {
 DEFAULT_ONT_CLASSES = {}
 
 
-def OntPropertyAR() -> Mapping[str, OntProperty]:
+V = TypeVar("V")
+kgns = APP_CONFIG.get_kgns()
+
+
+class OntMapping(Mapping[str, V]):
+    def __init__(self, main: Mapping[str, V], default: Mapping[str, V]):
+        self.main = main
+        self.default = default
+
+    def __getitem__(self, key: str):
+        if key in self.main:
+            return self.main[key]
+        return self.default[key]
+
+    def __iter__(self) -> Iterator[str]:
+        return chain(iter(self.main), iter(self.default))
+
+    def __len__(self) -> int:
+        return len(self.main) + len(self.default)
+
+    def __contains__(self, key: str) -> bool:
+        return key in self.main or key in self.default
+
+    def get(self, key: str, default=None):
+        if key in self.main:
+            return self.main[key]
+        return self.default.get(key, default)
+
+    def get_by_uri(self, uri: str, default=None):
+        return self.get(kgns.uri_to_id(uri), default)
+
+
+def OntPropertyAR() -> OntMapping[OntProperty]:
     """Get a mapping from id (not url) to the ontology property"""
     global PROP_AR
 
     if PROP_AR is None:
-        cfg = SETTINGS["ont_props"]
-        func = import_func(cfg["constructor"])
-        PROP_AR = ChainedMapping(func(**cfg["args"]), import_attr(cfg["default"]))
-        OntProperty.uri2id = import_func(cfg["uri2id"])
-        OntProperty.id2uri = import_func(cfg["id2uri"])
+        cfg = APP_CONFIG.property
+        func = import_func(cfg.constructor)
+        PROP_AR = OntMapping(func(*cfg.args), import_attr(cfg.default))
 
     return PROP_AR
 
 
-def OntClassAR() -> Mapping[str, OntClass]:
+def OntClassAR() -> OntMapping[OntClass]:
     """Get a mapping from id (not url) to the ontology class"""
     global CLASS_AR
 
     if CLASS_AR is None:
-        cfg = SETTINGS["ont_classes"]
-        func = import_func(cfg["constructor"])
-        CLASS_AR = ChainedMapping(func(**cfg["args"]), import_attr(cfg["default"]))
-        OntClass.uri2id = import_func(cfg["uri2id"])
-        OntClass.id2uri = import_func(cfg["id2uri"])
+        cfg = APP_CONFIG.clazz
+        func = import_func(cfg.constructor)
+        CLASS_AR = OntMapping(func(**cfg.args), import_attr(cfg.default))
+
     return CLASS_AR
