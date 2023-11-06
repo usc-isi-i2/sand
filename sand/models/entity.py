@@ -11,7 +11,7 @@ from kgdata.wikidata.models.wdvalue import (
     ValueQuantity,
     ValueTime,
 )
-from sand.config import APP_CONFIG
+from sand.config import AppConfig
 from sm.misc.funcs import import_attr, import_func
 
 
@@ -61,25 +61,29 @@ class Value:
         return self.type == "entityid"
 
 
+def get_default_entities(cfg: AppConfig):
+    return {
+        cfg.entity.nil.id: Entity(
+            id=cfg.entity.nil.id,
+            uri=cfg.entity.nil.uri,
+            label=MultiLingualString.en("NIL"),
+            aliases=MultiLingualStringList(lang2values={"en": []}, lang="en"),
+            description=MultiLingualString.en("the correct entity is absent in KG"),
+            properties={},
+        )
+    }
+
+
 ENTITY_AR: Optional[Mapping[str, Entity]] = None
-DEFAULT_ENTITY = {
-    APP_CONFIG.entity.nil.id: Entity(
-        id=APP_CONFIG.entity.nil.id,
-        uri=APP_CONFIG.entity.nil.uri,
-        label=MultiLingualString.en("NIL"),
-        aliases=MultiLingualStringList(lang2values={"en": []}, lang="en"),
-        description=MultiLingualString.en("the correct entity is absent in KG"),
-        properties={},
-    )
-}
 
 
-def EntityAR() -> Mapping[str, Entity]:
+def EntityAR(cfg: AppConfig) -> Mapping[str, Entity]:
     global ENTITY_AR
 
     if ENTITY_AR is None:
-        cfg = APP_CONFIG.entity
-        func = import_func(cfg.constructor)
-        ENTITY_AR = ChainedMapping(func(**cfg.args), import_attr(cfg.default))
+        func = import_func(cfg.entity.constructor)
+        ENTITY_AR = ChainedMapping(
+            func(**cfg.entity.args), import_func(cfg.entity.default)(cfg)
+        )
 
     return ENTITY_AR

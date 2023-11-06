@@ -65,8 +65,7 @@ class AppConfig:
             ),
             search=SearchConfig(
                 entity=obj["search"]["entity"],
-                clazz=obj["search"]["class"],
-                property=obj["search"]["property"],
+                ontology=obj["search"]["ontology"],
             ),
             assistant=FnConfig(
                 default=obj["assistant"].pop("default"),
@@ -74,6 +73,10 @@ class AppConfig:
             ),
             export=FnConfig(default=obj["export"].pop("default"), funcs=obj["export"]),
         )
+
+    @staticmethod
+    def default() -> AppConfig:
+        return AppConfig.from_yaml(os.path.join(PACKAGE_DIR, "config.default.yml"))
 
     def update(self, obj: AppConfig):
         for k, v in obj.__dict__.items():
@@ -95,8 +98,7 @@ class AppConfig:
 @dataclass
 class SearchConfig:
     entity: str
-    clazz: str
-    property: str
+    ontology: str
 
 
 @dataclass
@@ -137,6 +139,3 @@ class OntResourceConfig:
 class SemanticModelConfig:
     identifiers: list[str]
     statements: list[str]
-
-
-APP_CONFIG = AppConfig.from_yaml(os.path.join(PACKAGE_DIR, "config.default.yml"))
