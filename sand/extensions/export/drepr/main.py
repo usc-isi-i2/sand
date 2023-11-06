@@ -1,35 +1,45 @@
 from typing import List, Set
-from enum import Enum
-from sand.config import SETTINGS
-from sand.models.ontology import OntProperty, OntPropertyAR, OntPropertyDataType
-from sand.models.table import Table, TableRow
+
 import sm.outputs.semantic_model as O
-from sm.misc.funcs import import_attr
-from hugedict.chained_mapping import ChainedMapping
+from drepr.engine import MemoryOutput, OutputFormat, execute
 from drepr.models import (
-    DRepr,
-    Attr,
-    Resource,
-    ResourceType,
-    CSVProp,
-    Path,
-    IndexExpr,
-    RangeExpr,
-    RangeAlignment,
     AlignedStep,
+    Attr,
+    CSVProp,
+    DRepr,
+    IndexExpr,
+    Path,
+    PMap,
     Preprocessing,
     PreprocessingType,
-    PMap,
+    RangeAlignment,
+    RangeExpr,
+    Resource,
+    ResourceType,
 )
-from drepr.engine import execute, OutputFormat, MemoryOutput
-from slugify import slugify
+from sand.config import APP_CONFIG
 from sand.extension_interface.export import IExport
-from sand.extensions.export.drepr.resources import get_entity_resource, get_table_resource
-from sand.extensions.export.drepr.semanticmodel import get_drepr_sm, get_entity_data_nodes
-from sand.extensions.export.drepr.transformation import has_transformation, get_transformation
+from sand.extensions.export.drepr.resources import (
+    get_entity_resource,
+    get_table_resource,
+)
+from sand.extensions.export.drepr.semanticmodel import (
+    get_drepr_sm,
+    get_entity_data_nodes,
+)
+from sand.extensions.export.drepr.transformation import (
+    get_transformation,
+    has_transformation,
+)
+from sand.models.ontology import OntPropertyAR, OntPropertyDataType
+from sand.models.table import Table, TableRow
+from slugify import slugify
 
 
 class DreprExport(IExport):
+    def __init__(self):
+        self.kgns = APP_CONFIG.get_kgns()
+
     def export_data_model(self, table: Table, sm: O.SemanticModel) -> DRepr:
         """Create a D-REPR model of the dataset."""
         columns = [slugify(c).replace("-", "_") for c in table.columns]
@@ -66,10 +76,7 @@ class DreprExport(IExport):
             for node in ent_dnodes
         ]
 
-        id2props = ChainedMapping(
-            OntPropertyAR(),
-            import_attr(SETTINGS["ont_props"]["default"]),
-        )
+        id2props = OntPropertyAR()
         dsm = get_drepr_sm(sm, id2props, get_attr_id, get_ent_attr_id)
 
         datatype_transformations = []
@@ -78,7 +85,7 @@ class DreprExport(IExport):
                 continue
 
             datatypes: Set[OntPropertyDataType] = {
-                id2props[OntProperty.uri2id(inedge.abs_uri)].datatype
+                id2props[self.kgns.uri_to_id(inedge.abs_uri)].datatype
                 for inedge in sm.in_edges(node.id)
             }
             datatype = list(datatypes)[0] if len(datatypes) == 1 else None
@@ -109,26 +116,31 @@ class DreprExport(IExport):
             preprocessing=datatype_transformations,
             attrs=attrs,
             aligns=[
-                       RangeAlignment(
-                           source=get_attr_id(0),
-                           target=get_attr_id(ci),
-                           aligned_steps=[AlignedStep(source_idx=0, target_idx=0)],
-                       )
-                       for ci in range(1, len(table.columns))
-                   ]
-                   + [
-                       RangeAlignment(
-                           source=get_attr_id(0),
-                           target=get_ent_attr_id(node.col_index),
-                           aligned_steps=[AlignedStep(source_idx=0, target_idx=0)],
-                       )
-                       for node in ent_dnodes
-                   ],
+                RangeAlignment(
+                    source=get_attr_id(0),
+                    target=get_attr_id(ci),
+                    aligned_steps=[AlignedStep(source_idx=0, target_idx=0)],
+                )
+                for ci in range(1, len(table.columns))
+            ]
+            + [
+                RangeAlignment(
+                    source=get_attr_id(0),
+                    target=get_ent_attr_id(node.col_index),
+                    aligned_steps=[AlignedStep(source_idx=0, target_idx=0)],
+                )
+                for node in ent_dnodes
+            ],
             sm=dsm,
         )
 
-    def export_data(self, table: Table, rows: List[TableRow], sm: O.SemanticModel,
-                    output_format: OutputFormat):
+    def export_data(
+        self,
+        table: Table,
+        rows: List[TableRow],
+        sm: O.SemanticModel,
+        output_format: OutputFormat,
+    ):
         """Convert a relational table into RDF format"""
         if len(table.columns) == 0:
             # no column, no data

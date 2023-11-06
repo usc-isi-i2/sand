@@ -1,6 +1,5 @@
 import threading
 from dataclasses import dataclass
-from functools import partial
 from typing import List, Optional
 
 import sm.outputs.semantic_model as O
@@ -13,16 +12,13 @@ from gena.deserializer import (
     get_deserializer_from_type,
 )
 from peewee import DoesNotExist, fn
-from sm.misc.funcs import import_func
-from werkzeug.exceptions import BadRequest, NotFound
-
-from sand.config import SETTINGS
+from sand.config import APP_CONFIG
 from sand.extension_interface.export import IExport
-from sand.extensions.export.drepr.main import DreprExport
 from sand.models import SemanticModel, Table, TableRow
 from sand.models.ontology import OntClassAR, OntPropertyAR
 from sand.models.table import ContentHierarchy, Link
-from sand.serializer import get_label
+from sm.misc.funcs import import_func
+from werkzeug.exceptions import BadRequest, NotFound
 
 
 def deser_context_tree(value) -> List[ContentHierarchy]:
@@ -41,6 +37,8 @@ table_bp = generate_api(
 table_row_bp = generate_api(TableRow)
 deser_list_links = get_deserializer_from_type(List[Link], {})
 assert deser_list_links is not None
+ontclass_ar = OntClassAR()
+ontprop_ar = OntPropertyAR()
 
 
 @dataclass
@@ -57,14 +55,14 @@ assert deser_update_column_links is not None
 GetExportCache = threading.local()
 
 
-def get_export(name) -> IExport:
+def get_export(name: str) -> IExport:
     global GetExportCache
 
     if not hasattr(GetExportCache, "export"):
         GetExportCache.export = {}
-        export_config = SETTINGS["exports"]
-        constructor = export_config[name]
-        GetExportCache.export[name] = import_func(constructor)()
+
+    if name not in GetExportCache.export:
+        GetExportCache.export[name] = import_func(APP_CONFIG.export.get_func(name))()
 
     return GetExportCache.export[name]
 
@@ -87,18 +85,22 @@ def export_sms(id: int):
     )
 
     sms: List[O.SemanticModel] = [r.data for r in query]
-    ontprops = OntPropertyAR()
-    ontclasses = OntClassAR()
-    uri2lbl = partial(get_label, ontprops=ontprops, ontclasses=ontclasses)
-
     for sm in sms:
         for n in sm.iter_nodes():
             if isinstance(n, O.ClassNode):
                 if n.readable_label is None:
-                    n.readable_label = uri2lbl(n.abs_uri, is_class=True) or n.rel_uri
+                    n.readable_label = (
+                        tmp.readable_label
+                        if (tmp := ontclass_ar.get_by_uri(n.abs_uri)) is not None
+                        else n.rel_uri
+                    )
         for e in sm.iter_edges():
             if e.readable_label is None:
-                e.readable_label = uri2lbl(e.abs_uri, is_class=False) or e.rel_uri
+                e.readable_label = (
+                    tmp.readable_label
+                    if (tmp := ontprop_ar.get_by_uri(e.abs_uri)) is not None
+                    else e.rel_uri
+                )
 
     resp = jsonify([sm.to_dict() for sm in sms])
     if request.args.get("attachment", "false") == "true":

@@ -1,12 +1,16 @@
 from dataclasses import asdict
-from functools import partial
-from typing import Callable, Dict, List, Mapping, Optional
+from typing import List, Optional
 
 import sm.outputs.semantic_model as O
 from playhouse.shortcuts import model_to_dict
-from sand.models import SemanticModel, Table
-from sand.models.entity import Entity, EntityAR
+from sand.config import APP_CONFIG
+from sand.models import SemanticModel
+from sand.models.entity import Entity
 from sand.models.ontology import OntClass, OntClassAR, OntProperty, OntPropertyAR
+
+ontclass_ar = OntClassAR()
+ontprop_ar = OntPropertyAR()
+kgns = APP_CONFIG.get_kgns()
 
 
 def serialize_property(prop: OntProperty):
@@ -63,7 +67,6 @@ def serialize_entity(ent: Entity):
 
 def serialize_graph(
     sm: O.SemanticModel,
-    uri2label: Callable[[str, bool], Optional[str]],
     columns: Optional[List[str]] = None,
 ):
     nodes = []
@@ -73,7 +76,9 @@ def serialize_graph(
                 {
                     "id": str(n.id),
                     "uri": n.abs_uri,
-                    "label": uri2label(n.abs_uri, True) or n.rel_uri,
+                    "label": tmp.readable_label
+                    if (tmp := ontclass_ar.get_by_uri(n.abs_uri)) is not None
+                    else n.rel_uri,
                     "approximation": n.approximation,
                     "type": "class_node",
                 }
@@ -90,7 +95,7 @@ def serialize_graph(
         else:
             if n.datatype == O.LiteralNodeDataType.Entity:
                 value = {
-                    "id": Entity.uri2id(n.value),
+                    "id": kgns.uri_to_id(n.value),
                     "uri": n.value,
                     "type": n.datatype.value,
                 }
@@ -111,7 +116,12 @@ def serialize_graph(
             "source": str(e.source),
             "target": str(e.target),
             "uri": e.abs_uri,
-            "label": e.readable_label or uri2label(e.abs_uri, False) or e.rel_uri,
+            "label": e.readable_label
+            or (
+                tmp.readable_label
+                if (tmp := ontprop_ar.get_by_uri(e.abs_uri)) is not None
+                else e.rel_uri
+            ),
             "approximation": e.approximation,
         }
         for e in sm.iter_edges()
@@ -121,50 +131,12 @@ def serialize_graph(
 
 
 def batch_serialize_sms(sms: List[SemanticModel]):
-    # tbls = {sm.table_id for sm in sms if sm.table_id is not None}  # type: ignore
-    # tbls = {
-    #     tbl.id: tbl
-    #     for tbl in Table.select(Table.id, Table.columns).where(Table.id.in_(tbls))  # type: ignore
-    # }
-
-    ontprops = OntPropertyAR()
-    ontclasses = OntClassAR()
-    # TODO: id != uri fix me
-    uri2lbl = partial(get_label, ontprops=ontprops, ontclasses=ontclasses)
-
     output = []
     for sm in sms:
         r = model_to_dict(sm, recurse=False)
         if r["data"] is not None:
             # columns = None if sm.table_id is None else tbls[sm.table_id].columns
             columns = None
-            r["data"] = serialize_graph(r["data"], uri2lbl, columns)  # type: ignore
+            r["data"] = serialize_graph(r["data"], columns)  # type: ignore
         output.append(r)
     return output
-
-
-from minmod.sand import kgns
-
-
-def get_label(
-    uri_or_id: str,
-    is_class: bool,
-    ontprops: Mapping[str, OntProperty],
-    ontclasses: Mapping[str, OntClass],
-) -> Optional[str]:
-    if uri_or_id.startswith("http"):
-        id = kgns.get_rel_uri(uri_or_id)
-    else:
-        id = uri_or_id
-
-    if is_class:
-        if id in ontclasses:
-            return ontclasses[id].readable_label
-        elif id in ontprops:
-            return ontprops[id].readable_label
-    else:
-        if id in ontprops:
-            return ontprops[id].readable_label
-        elif id in ontclasses:
-            return ontclasses[id].readable_label
-    return None

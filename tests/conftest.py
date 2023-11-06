@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 
 import pytest
-
 from sand.extensions.wikidata import (
     get_wdclass_id,
     get_wdprop_id,
@@ -14,21 +13,6 @@ from sand.extensions.wikidata import (
 )
 from sand.models import all_tables
 from sand.models.base import StoreWrapper, db, init_db
-
-TEST_CONFIG = {
-    "entity": {
-        "constructor": "tests.conftest.get_entity_db",
-        "dbfile": "entities.jsonl",
-    },
-    "ont_classes": {
-        "constructor": "tests.conftest.get_ontclass_db",
-        "dbfile": "classes.jsonl",
-    },
-    "ont_props": {
-        "constructor": "tests.conftest.get_ontprops_db",
-        "dbfile": "props.jsonl",
-    },
-}
 
 
 def get_entity_db(dbfile, proxy=False) -> StoreWrapper:
@@ -87,20 +71,14 @@ def client():
 
         import sys
 
-        from sand.config import _ROOT_DIR, SETTINGS
+        from sand.config import _ROOT_DIR, APP_CONFIG, AppConfig
 
         if _ROOT_DIR not in sys.path:
             sys.path.append(str(_ROOT_DIR))
 
-        externaldb = _ROOT_DIR / "tests/resources/data/kgdb"
-
-        for key, test_cfg in TEST_CONFIG.items():
-            cfg = SETTINGS[key]
-            cfg["constructor"] = test_cfg["constructor"]
-            cfg["args"]["dbfile"] = os.path.join(
-                externaldb, Path(test_cfg["dbfile"]).name
-            )
-            cfg["args"]["proxy"] = False
+        APP_CONFIG.update(
+            AppConfig.from_yaml(_ROOT_DIR / "tests/resources/config.test.yml")
+        )
 
         from sand.app import app
 

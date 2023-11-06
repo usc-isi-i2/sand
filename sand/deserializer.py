@@ -1,8 +1,5 @@
 import sm.outputs.semantic_model as O
-from gena.deserializer import get_dataclass_deserializer
-
-# from sand.extensions.wikidata import get_rel_uri
-from minmod.sand import get_rel_uri
+from sand.config import APP_CONFIG
 from sm.outputs.semantic_model import LiteralNodeDataType
 
 
@@ -19,6 +16,7 @@ def deserialize_graph(value) -> O.SemanticModel:
         raise ValueError(f"expect `edges` to be a list but get {type(value['edges'])}")
 
     sm = O.SemanticModel()
+    kgns = APP_CONFIG.get_kgns()
     idmap = {}
 
     for node in value["nodes"]:
@@ -57,7 +55,7 @@ def deserialize_graph(value) -> O.SemanticModel:
 
             n = O.ClassNode(
                 abs_uri=node["uri"],
-                rel_uri=get_rel_uri(node["uri"]),
+                rel_uri=kgns.get_rel_uri(node["uri"]),
                 approximation=node["approximation"],
                 readable_label=node["label"],
             )
@@ -180,7 +178,7 @@ def deserialize_graph(value) -> O.SemanticModel:
             source=idmap[edge["source"]],
             target=idmap[edge["target"]],
             abs_uri=edge["uri"],
-            rel_uri=get_rel_uri(edge["uri"]),
+            rel_uri=kgns.get_rel_uri(edge["uri"]),
             approximation=edge["approximation"],
             readable_label=edge["label"],
         )

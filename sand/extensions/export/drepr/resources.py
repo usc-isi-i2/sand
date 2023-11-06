@@ -1,15 +1,10 @@
 import csv
-from dataclasses import dataclass
 from io import StringIO
-from typing import Dict, List, Set, Tuple
+from typing import List, Set
 from uuid import uuid4
 
-import orjson
 from drepr.models import ResourceData, ResourceDataString
-
-from sand.config import SETTINGS
-from sand.models.entity import NIL_ENTITY_ID, Entity
-from sand.models.ontology import OntPropertyAR
+from sand.config import APP_CONFIG
 from sand.models.table import Table, TableRow
 
 
@@ -31,7 +26,8 @@ def get_entity_resource(
     table: Table, rows: List[TableRow], ent_columns: Set[int]
 ) -> ResourceData:
     """Return a CSV resource of matrix mapping each position in a table to a corresponding entity uri."""
-    new_entity_template: str = SETTINGS["entity"]["new_entity_template"]
+    kgns = APP_CONFIG.get_kgns()
+    new_entity_template: str = APP_CONFIG.entity.new_entity_template
     ent_rows: List[List[str]] = []
 
     for ri, row in enumerate(rows):
@@ -46,8 +42,11 @@ def get_entity_resource(
             # for now, just return the first entity
             ent = None
             for link in links:
-                if link.entity_id is not None and link.entity_id != NIL_ENTITY_ID:
-                    ent = Entity.id2uri(link.entity_id)
+                if (
+                    link.entity_id is not None
+                    and link.entity_id != APP_CONFIG.entity.nil.id
+                ):
+                    ent = kgns.id_to_uri(link.entity_id)
                     break
             else:
                 # generate new entity

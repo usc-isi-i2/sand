@@ -1,16 +1,9 @@
-import csv
-from dataclasses import dataclass
-from io import StringIO
-from typing import Callable, Dict, List, Mapping, Set, Tuple
+from typing import Callable, List, Mapping, Set
 
 import drepr.models.sm as drepr_sm
-import orjson
-import sm.misc as M
 import sm.outputs.semantic_model as O
-from sand.config import SETTINGS
-from sand.models.entity import NIL_ENTITY_ID, Entity
-from sand.models.ontology import OntProperty, OntPropertyAR, OntPropertyDataType
-from sand.models.table import Table, TableRow
+from sand.config import APP_CONFIG
+from sand.models.ontology import OntProperty, OntPropertyDataType
 from sm.namespaces.wikidata import WikidataNamespace
 
 prefixes = WikidataNamespace.create().prefix2ns.copy()
@@ -44,6 +37,7 @@ def get_drepr_sm(
     """
     nodes = {}
     edges = {}
+    kgns = APP_CONFIG.get_kgns()
 
     for node in sm.nodes():
         if isinstance(node, O.ClassNode):
@@ -56,7 +50,7 @@ def get_drepr_sm(
             # usually, that will be displayed from the UI so users know that
 
             datatypes: Set[OntPropertyDataType] = {
-                id2props[OntProperty.uri2id(inedge.abs_uri)].datatype
+                id2props[kgns.uri_to_id(inedge.abs_uri)].datatype
                 for inedge in sm.in_edges(node.id)
             }
             datatype = (
@@ -106,7 +100,7 @@ def get_drepr_sm(
         inedges = [
             inedge
             for inedge in sm.in_edges(node.id)
-            if inedge.abs_uri in SETTINGS["semantic_model"]["identifiers"]
+            if inedge.abs_uri in APP_CONFIG.semantic_model.identifiers
         ]
         assert len(inedges) == 1
         inedge = inedges[0]
@@ -126,7 +120,7 @@ def get_drepr_sm(
 
 
 def get_entity_data_nodes(sm: O.SemanticModel) -> List[O.DataNode]:
-    ident_props = SETTINGS["semantic_model"]["identifiers"]
+    ident_props = APP_CONFIG.semantic_model.identifiers
     ent_dnodes = []
     for node in sm.iter_nodes():
         if not isinstance(node, O.DataNode):

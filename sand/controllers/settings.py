@@ -1,6 +1,8 @@
+from dataclasses import asdict
+
 from flask import Blueprint
 from flask.json import jsonify
-from sand.config import SETTINGS
+from sand.config import APP_CONFIG
 
 setting_bp = Blueprint("settings", "settings")
 
@@ -10,12 +12,12 @@ def get_settings():
     return jsonify(
         {
             "entity": {
-                "nil": SETTINGS["entity"]["nil"],
-                "instanceof": SETTINGS["entity"]["instanceof"],
+                "nil": asdict(APP_CONFIG.entity.nil),
+                "instanceof": APP_CONFIG.entity.instanceof,
             },
             "semantic_model": {
-                "identifiers": SETTINGS["semantic_model"]["identifiers"],
-                "statements": SETTINGS["semantic_model"]["statements"],
+                "identifiers": APP_CONFIG.semantic_model.identifiers,
+                "statements": APP_CONFIG.semantic_model.statements,
             },
         }
     )

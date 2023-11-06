@@ -1,13 +1,13 @@
-import requests
-from typing import Dict, List, Union, Any
+from typing import Any, Dict, List, Union
+
 import nh3
-import json
+import requests
+from sand.config import APP_CONFIG
 from sand.extension_interface.search import IEntitySearch, IOntologySearch, SearchResult
-from sand.models.entity import Entity
-from sand.models.ontology import OntClass, OntProperty, OntClassAR
-from sand.extensions.search.default_search import DefaultSearch
 from sand.extensions.search.aggregated_search import AggregatedSearch
-from werkzeug.exceptions import HTTPException, BadRequest, ServiceUnavailable
+from sand.extensions.search.default_search import DefaultSearch
+from sand.models.ontology import OntClass, OntClassAR
+from werkzeug.exceptions import ServiceUnavailable
 
 
 def extended_wikidata_search() -> Union[IEntitySearch, IOntologySearch]:
@@ -19,7 +19,6 @@ def extended_wikidata_search() -> Union[IEntitySearch, IOntologySearch]:
 
 
 class WikidataSearch(IEntitySearch, IOntologySearch):
-
     def __init__(self):
         self.wikidata_url = "https://www.wikidata.org/w/api.php"
         self.PARAMS = {
@@ -30,15 +29,16 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
             "utf8": "",
             "srnamespace": 0,
             "srlimit": 10,
-            "srprop": "snippet|titlesnippet"
+            "srprop": "snippet|titlesnippet",
         }
         self.ont_class_ar = None
+        self.kgns = APP_CONFIG.get_kgns()
 
     def get_class_search_params(self, search_text: str) -> Dict:
         """Updates class search parameters for wikidata API"""
         class_params = self.PARAMS.copy()
         class_params["srnamespace"] = 0
-        class_params['srsearch'] = f"haswbstatement:P279 inlabel:{search_text}"
+        class_params["srsearch"] = f"haswbstatement:P279 inlabel:{search_text}"
         return class_params
 
     def get_local_class_properties(self, id: str) -> OntClass:
@@ -51,14 +51,14 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         """Updates entity search parameters for wikidata API"""
         entity_params = self.PARAMS.copy()
         entity_params["srnamespace"] = 0
-        entity_params['srsearch'] = search_text
+        entity_params["srsearch"] = search_text
         return entity_params
 
     def get_props_search_params(self, search_text: str) -> Dict:
         """Updates property search parameters for wikidata API"""
         props_params = self.PARAMS.copy()
         props_params["srnamespace"] = 120
-        props_params['srsearch'] = search_text
+        props_params["srsearch"] = search_text
         return props_params
 
     def find_class_by_name(self, search_text: str) -> List[SearchResult]:
@@ -73,17 +73,17 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         api_data_json = api_data.json()
 
         if "error" not in api_data.json():
-            search_results = api_data.json()['query']['search']
+            search_results = api_data.json()["query"]["search"]
         else:
-            raise ServiceUnavailable(description=api_data_json['error']['info'])
+            raise ServiceUnavailable(description=api_data_json["error"]["info"])
 
         for search_result in search_results:
-            local_class_props = self.get_local_class_properties(search_result['title'])
+            local_class_props = self.get_local_class_properties(search_result["title"])
             item = SearchResult(
                 label=local_class_props.label,
-                id=search_result['title'],
+                id=search_result["title"],
                 description=local_class_props.description,
-                uri=OntClass.id2uri(search_result['title'])
+                uri=self.kgns.id_to_uri(search_result["title"]),
             )
             payload_results.append(item)
         return payload_results
@@ -100,16 +100,16 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         api_data_json = api_data.json()
 
         if "error" not in api_data_json:
-            search_results = api_data_json['query']['search']
+            search_results = api_data_json["query"]["search"]
         else:
-            raise ServiceUnavailable(description=api_data_json['error']['info'])
+            raise ServiceUnavailable(description=api_data_json["error"]["info"])
 
         for search_result in search_results:
             item = SearchResult(
-                label=nh3.clean(search_result['titlesnippet'], tags=set()),
-                id=search_result['title'],
-                description=nh3.clean(search_result['snippet'], tags=set()),
-                uri=Entity.id2uri(search_result['title'])
+                label=nh3.clean(search_result["titlesnippet"], tags=set()),
+                id=search_result["title"],
+                description=nh3.clean(search_result["snippet"], tags=set()),
+                uri=self.kgns.id_to_uri(search_result["title"]),
             )
             payload_results.append(item)
         return payload_results
@@ -126,16 +126,16 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         api_data_json = api_data.json()
 
         if "error" not in api_data.json():
-            search_results = api_data.json()['query']['search']
+            search_results = api_data.json()["query"]["search"]
         else:
-            raise ServiceUnavailable(description=api_data_json['error']['info'])
+            raise ServiceUnavailable(description=api_data_json["error"]["info"])
 
         for search_result in search_results:
             item = SearchResult(
-                label=nh3.clean(search_result['titlesnippet'], tags=set()),
-                id=search_result['title'].split(":")[1],
-                description=nh3.clean(search_result['snippet'], tags=set()),
-                uri=OntProperty.id2uri(search_result['title'].split(":")[1])
+                label=nh3.clean(search_result["titlesnippet"], tags=set()),
+                id=search_result["title"].split(":")[1],
+                description=nh3.clean(search_result["snippet"], tags=set()),
+                uri=self.kgns.id_to_uri(search_result["title"].split(":")[1]),
             )
             payload_results.append(item)
         return payload_results
