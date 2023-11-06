@@ -1,12 +1,14 @@
 import threading
+from functools import lru_cache
 from typing import Literal, Union
 
 from flask import jsonify, request
 from flask.blueprints import Blueprint
 from gena.serializer import get_dataclass_serializer
-from sand.config import APP_CONFIG
+from sand.controllers.base import BaseController
 from sand.extension_interface.search import IEntitySearch, IOntologySearch, SearchResult
 from sm.misc.funcs import import_func
+from werkzeug.exceptions import BadRequest
 
 search_bp = Blueprint("search", "search")
 
@@ -14,54 +16,57 @@ GetSearchCache = threading.local()
 serializer = get_dataclass_serializer(SearchResult)
 
 
-def get_search(
-    name: Literal["classes", "entities", "props"]
-) -> Union[IEntitySearch, IOntologySearch]:
-    """
-    Returns an implementation of an ISearch Interface from the
-    configuration file.
-    """
-    global GetSearchCache
+class SearchController(BaseController):
+    def get_blueprint(self) -> Blueprint:
+        bp = Blueprint("search", "search")
+        bp.add_url_rule(
+            f"/{bp.name}/classes", methods=["GET"], view_func=self.search_classes
+        )
+        bp.add_url_rule(
+            f"/{bp.name}/entities", methods=["GET"], view_func=self.search_entities
+        )
+        bp.add_url_rule(
+            f"/{bp.name}/props", methods=["GET"], view_func=self.search_props
+        )
+        return bp
 
-    if not hasattr(GetSearchCache, "search"):
-        GetSearchCache.search = {}
-    if name == "classes":
-        constructor = APP_CONFIG.search.clazz
-    elif name == "entities":
-        constructor = APP_CONFIG.search.entity
-    else:
-        assert name == "props"
-        constructor = APP_CONFIG.search.property
-    GetSearchCache.search[name] = import_func(constructor)()
+    def search_classes(self):
+        """API Route to search for classes with their names"""
+        if "q" not in request.args:
+            raise BadRequest("Missing search text")
+        query = request.args["q"]
 
-    return GetSearchCache.search[name]
+        wikidata_search = self.get_ont_search()
+        search_results = wikidata_search.find_class_by_name(query)
+        serialized_payload = [serializer(item) for item in search_results]
+        return jsonify({"items": serialized_payload})
 
+    def search_entities(self):
+        """API Route to search for entities with their names"""
+        if "q" not in request.args:
+            raise BadRequest("Missing search text")
+        query = request.args["q"]
 
-@search_bp.route(f"/{search_bp.name}/classes", methods=["GET"])
-def search_classes():
-    """API Route to search for classes with their names"""
-    search_text = request.args.get("q")
-    wikidata_search = get_search("classes")
-    search_results = wikidata_search.find_class_by_name(search_text)
-    serialized_payload = [serializer(item) for item in search_results]
-    return jsonify({"items": serialized_payload})
+        wikidata_search = self.get_entity_search()
+        search_results = wikidata_search.find_entity_by_name(query)
+        serialized_payload = [serializer(item) for item in search_results]
+        return jsonify({"items": serialized_payload})
 
+    def search_props(self):
+        """API Route to search for properties with their names"""
+        if "q" not in request.args:
+            raise BadRequest("Missing search text")
+        query = request.args["q"]
 
-@search_bp.route(f"/{search_bp.name}/entities", methods=["GET"])
-def search_entities():
-    """API Route to search for entities with their names"""
-    search_text = request.args.get("q")
-    wikidata_search = get_search("entities")
-    search_results = wikidata_search.find_entity_by_name(search_text)
-    serialized_payload = [serializer(item) for item in search_results]
-    return jsonify({"items": serialized_payload})
+        wikidata_search = self.get_ont_search()
+        search_results = wikidata_search.find_props_by_name(query)
+        serialized_payload = [serializer(item) for item in search_results]
+        return jsonify({"items": serialized_payload})
 
+    @lru_cache()
+    def get_entity_search(self) -> IEntitySearch:
+        return import_func(self.app_cfg.search.entity)(self.app)
 
-@search_bp.route(f"/{search_bp.name}/props", methods=["GET"])
-def search_props():
-    """API Route to search for properties with their names"""
-    search_text = request.args.get("q")
-    wikidata_search = get_search("props")
-    search_results = wikidata_search.find_props_by_name(search_text)
-    serialized_payload = [serializer(item) for item in search_results]
-    return jsonify({"items": serialized_payload})
+    @lru_cache()
+    def get_ont_search(self) -> IOntologySearch:
+        return import_func(self.app_cfg.search.ontology)(self.app)

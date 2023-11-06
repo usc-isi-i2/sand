@@ -71,16 +71,15 @@ def client():
 
         import sys
 
-        from sand.config import _ROOT_DIR, APP_CONFIG, AppConfig
+        from sand.config import _ROOT_DIR, AppConfig
 
         if _ROOT_DIR not in sys.path:
             sys.path.append(str(_ROOT_DIR))
 
-        APP_CONFIG.update(
-            AppConfig.from_yaml(_ROOT_DIR / "tests/resources/config.test.yml")
-        )
+        cfg = AppConfig.from_yaml(_ROOT_DIR / "tests/resources/config.test.yml")
+        from sand.app import App
 
-        from sand.app import app
+        app = App(cfg).get_flask_app()
 
         app.config["TESTING"] = True
         with app.test_client() as client:

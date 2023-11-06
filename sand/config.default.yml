@@ -4,7 +4,7 @@ entity:
   args:
     dbfile: /tmp/entities.db
     proxy: true
-  default: sand.models.entity.DEFAULT_ENTITY
+  default: sand.models.entity.get_default_entities
   instanceof:
     "http://www.wikidata.org": P31
   nil:
@@ -16,13 +16,13 @@ class:
   args:
     dbfile: /tmp/classes.db
     proxy: true
-  default: sand.extensions.wikidata.WD_ONT_CLASSES
+  default: sand.extensions.wikidata.get_default_classes
 property:
   constructor: sand.extensions.wikidata.get_ontprop_db
   args:
     dbfile: /tmp/properties.db
     proxy: true
-  default: sand.models.ontology.DEFAULT_ONT_PROPS
+  default: sand.models.ontology.get_default_properties
 semantic_model:
   identifiers:
     - http://www.w3.org/2000/01/rdf-schema#label
@@ -30,8 +30,7 @@ semantic_model:
     - http://wikiba.se/ontology#Statement
 search:
   entity: sand.extensions.search.wikidata_search.extended_wikidata_search
-  class: sand.extensions.search.wikidata_search.extended_wikidata_search
-  property: sand.extensions.search.wikidata_search.extended_wikidata_search
+  ontology: sand.extensions.search.wikidata_search.extended_wikidata_search
 export:
   default: drepr
   drepr: sand.extensions.export.drepr.main.DreprExport

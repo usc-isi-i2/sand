@@ -1,10 +1,10 @@
-import threading
 from dataclasses import dataclass
-from typing import List, Optional
+from functools import lru_cache
+from typing import List, Literal, Optional
 
 import sm.outputs.semantic_model as O
 from drepr.engine import OutputFormat
-from flask import jsonify, make_response, request
+from flask import Blueprint, jsonify, make_response, request
 from gena import generate_api
 from gena.deserializer import (
     generate_deserializer,
@@ -12,13 +12,123 @@ from gena.deserializer import (
     get_deserializer_from_type,
 )
 from peewee import DoesNotExist, fn
-from sand.config import APP_CONFIG
+from sand.controllers.base import BaseController
 from sand.extension_interface.export import IExport
 from sand.models import SemanticModel, Table, TableRow
-from sand.models.ontology import OntClassAR, OntPropertyAR
 from sand.models.table import ContentHierarchy, Link
 from sm.misc.funcs import import_func
 from werkzeug.exceptions import BadRequest, NotFound
+
+
+class TableController(BaseController):
+    def get_blueprint(self) -> Blueprint:
+        bp = generate_api(
+            Table,
+            deserializers=dict(
+                context_tree=deser_context_tree,
+                **generate_deserializer(
+                    Table, known_field_deserializers={"context_tree"}
+                ),
+            ),
+        )
+        bp.add_url_rule(
+            f"/{bp.name}/<id>/export-models",
+            methods=["GET"],
+            view_func=self.export_sms,
+        )
+        bp.add_url_rule(
+            f"/{bp.name}/<id>/export",
+            methods=["GET"],
+            view_func=self.export_table_data,
+        )
+        return bp
+
+    def export_sms(self, id: int):
+        subquery = (
+            SemanticModel.select(
+                SemanticModel.id, fn.MAX(SemanticModel.version).alias("version")
+            )
+            .where(SemanticModel.table == id)
+            .group_by(SemanticModel.table, SemanticModel.name)
+            .alias("q1")
+        )
+
+        query = (
+            SemanticModel.select()
+            .where(SemanticModel.table == id)
+            .join(subquery, on=(SemanticModel.id == subquery.c.id))
+        )
+
+        sms: List[O.SemanticModel] = [r.data for r in query]
+        for sm in sms:
+            for n in sm.iter_nodes():
+                if isinstance(n, O.ClassNode):
+                    assert n.readable_label is not None
+                    # if n.readable_label is None:
+                    #     n.readable_label = (
+                    #         tmp.readable_label
+                    #         if (tmp := ontclass_ar.get_by_uri(n.abs_uri)) is not None
+                    #         else n.rel_uri
+                    #     )
+            for e in sm.iter_edges():
+                if e.readable_label is None:
+                    assert e.readable_label is not None
+                    # e.readable_label = (
+                    #     tmp.readable_label
+                    #     if (tmp := ontprop_ar.get_by_uri(e.abs_uri)) is not None
+                    #     else e.rel_uri
+                    # )
+
+        resp = jsonify([sm.to_dict() for sm in sms])
+        if request.args.get("attachment", "false") == "true":
+            resp.headers["Content-Disposition"] = "attachment; filename=export.json"
+        return resp
+
+    def export_table_data(self, id: int):
+        # load table
+        table: Table = Table.get_by_id(id)
+
+        # load models
+        subquery = (
+            SemanticModel.select(
+                SemanticModel.id, fn.MAX(SemanticModel.version).alias("version")
+            )
+            .where(SemanticModel.table == table)
+            .group_by(SemanticModel.table, SemanticModel.name)
+            .alias("q1")
+        )
+        query = (
+            SemanticModel.select()
+            .where(SemanticModel.table == table)
+            .join(subquery, on=(SemanticModel.id == subquery.c.id))
+        )
+        sms: List[SemanticModel] = list(query)
+
+        if len(sms) == 0:
+            raise BadRequest("Exporting data requires the table to be modeled")
+
+        sm_name = request.args["sm"] if "sm" in request.args else sms[0].name
+        sms = [sm for sm in sms if sm.name == sm_name]
+        if len(sms) == 0:
+            raise BadRequest(f"The semantic model with name {sm_name} is not found")
+        sm = sms[0]
+
+        # load rows
+        rows: List[TableRow] = list(TableRow.select().where(TableRow.table == table))
+
+        # export the data using drepr library
+        content = self.get_export("default").export_data(
+            table, rows, sm.data, OutputFormat.TTL
+        )
+        resp = make_response(content)
+        resp.headers["Content-Type"] = "text/ttl; charset=utf-8"
+        if request.args.get("attachment", "false") == "true":
+            resp.headers["Content-Disposition"] = "attachment; filename=export.ttl"
+        return resp
+
+    @lru_cache
+    def get_export(self, name: Literal["default"] | str) -> IExport:
+        return import_func(self.app_cfg.export.get_func(name))()
 
 
 def deser_context_tree(value) -> List[ContentHierarchy]:
@@ -27,18 +137,9 @@ def deser_context_tree(value) -> List[ContentHierarchy]:
     raise NotImplementedError()
 
 
-table_bp = generate_api(
-    Table,
-    deserializers=dict(
-        context_tree=deser_context_tree,
-        **generate_deserializer(Table, known_field_deserializers={"context_tree"}),
-    ),
-)
 table_row_bp = generate_api(TableRow)
 deser_list_links = get_deserializer_from_type(List[Link], {})
 assert deser_list_links is not None
-ontclass_ar = OntClassAR()
-ontprop_ar = OntPropertyAR()
 
 
 @dataclass
@@ -51,103 +152,6 @@ class UpdateColumnLinksInput:
 
 deser_update_column_links = get_dataclass_deserializer(UpdateColumnLinksInput, {})
 assert deser_update_column_links is not None
-
-GetExportCache = threading.local()
-
-
-def get_export(name: str) -> IExport:
-    global GetExportCache
-
-    if not hasattr(GetExportCache, "export"):
-        GetExportCache.export = {}
-
-    if name not in GetExportCache.export:
-        GetExportCache.export[name] = import_func(APP_CONFIG.export.get_func(name))()
-
-    return GetExportCache.export[name]
-
-
-@table_bp.route(f"/{table_bp.name}/<id>/export-models", methods=["GET"])
-def export_sms(id: int):
-    subquery = (
-        SemanticModel.select(
-            SemanticModel.id, fn.MAX(SemanticModel.version).alias("version")
-        )
-        .where(SemanticModel.table == id)
-        .group_by(SemanticModel.table, SemanticModel.name)
-        .alias("q1")
-    )
-
-    query = (
-        SemanticModel.select()
-        .where(SemanticModel.table == id)
-        .join(subquery, on=(SemanticModel.id == subquery.c.id))
-    )
-
-    sms: List[O.SemanticModel] = [r.data for r in query]
-    for sm in sms:
-        for n in sm.iter_nodes():
-            if isinstance(n, O.ClassNode):
-                if n.readable_label is None:
-                    n.readable_label = (
-                        tmp.readable_label
-                        if (tmp := ontclass_ar.get_by_uri(n.abs_uri)) is not None
-                        else n.rel_uri
-                    )
-        for e in sm.iter_edges():
-            if e.readable_label is None:
-                e.readable_label = (
-                    tmp.readable_label
-                    if (tmp := ontprop_ar.get_by_uri(e.abs_uri)) is not None
-                    else e.rel_uri
-                )
-
-    resp = jsonify([sm.to_dict() for sm in sms])
-    if request.args.get("attachment", "false") == "true":
-        resp.headers["Content-Disposition"] = "attachment; filename=export.json"
-    return resp
-
-
-@table_bp.route(f"/{table_bp.name}/<id>/export", methods=["GET"])
-def export_table_data(id: int):
-    # load table
-    table: Table = Table.get_by_id(id)
-
-    # load models
-    subquery = (
-        SemanticModel.select(
-            SemanticModel.id, fn.MAX(SemanticModel.version).alias("version")
-        )
-        .where(SemanticModel.table == table)
-        .group_by(SemanticModel.table, SemanticModel.name)
-        .alias("q1")
-    )
-    query = (
-        SemanticModel.select()
-        .where(SemanticModel.table == table)
-        .join(subquery, on=(SemanticModel.id == subquery.c.id))
-    )
-    sms: List[SemanticModel] = list(query)
-
-    if len(sms) == 0:
-        raise BadRequest("Exporting data requires the table to be modeled")
-
-    sm_name = request.args["sm"] if "sm" in request.args else sms[0].name
-    sms = [sm for sm in sms if sm.name == sm_name]
-    if len(sms) == 0:
-        raise BadRequest(f"The semantic model with name {sm_name} is not found")
-    sm = sms[0]
-
-    # load rows
-    rows: List[TableRow] = list(TableRow.select().where(TableRow.table == table))
-
-    # export the data using drepr library
-    content = get_export("default").export_data(table, rows, sm.data, OutputFormat.TTL)
-    resp = make_response(content)
-    resp.headers["Content-Type"] = "text/ttl; charset=utf-8"
-    if request.args.get("attachment", "false") == "true":
-        resp.headers["Content-Disposition"] = "attachment; filename=export.ttl"
-    return resp
 
 
 @table_row_bp.route(f"/{table_row_bp.name}/<id>/cells/<column>", methods=["PUT"])

@@ -1,16 +1,20 @@
-import re
-from typing import List
+from __future__ import annotations
 
-from sand.config import APP_CONFIG
+import re
+from typing import TYPE_CHECKING, List
+
 from sand.extension_interface.search import IEntitySearch, IOntologySearch, SearchResult
-from sm.misc.funcs import import_attr
+from sm.misc.funcs import import_func
+
+if TYPE_CHECKING:
+    from sand.app import App
 
 
 class DefaultSearch(IEntitySearch, IOntologySearch):
-    def __init__(self):
-        self.default_classes = import_attr(APP_CONFIG.clazz.default)
-        self.default_entities = import_attr(APP_CONFIG.entity.default)
-        self.default_properties = import_attr(APP_CONFIG.property.default)
+    def __init__(self, app: App):
+        self.default_classes = import_func(app.cfg.clazz.default)(app.cfg)
+        self.default_entities = import_func(app.cfg.entity.default)(app.cfg)
+        self.default_properties = import_func(app.cfg.property.default)(app.cfg)
 
     def local_search(self, default_entities: dict, search_text: str) -> List:
         """performs local partial text search across default entities"""

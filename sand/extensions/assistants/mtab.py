@@ -13,7 +13,8 @@ from sm.namespaces.wikidata import WikidataNamespace
 
 
 class MTabAssistant(IAssistant):
-    def __init__(self):
+    def __init__(self, app):
+        super().__init__(app)
         self.cache_dir = Path(f"/tmp/mtab")
         self.cache_dir.mkdir(exist_ok=True)
         self.wdns = WikidataNamespace.create()

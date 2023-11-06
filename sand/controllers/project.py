@@ -2,24 +2,20 @@ from dataclasses import asdict
 from typing import List
 
 import orjson
-from flask import json, jsonify, request
+from flask import jsonify, request
 from gena import generate_api
-from gena.deserializer import (
-    get_dataclass_deserializer,
-)
+from gena.deserializer import get_dataclass_deserializer
 from sand.controllers.helpers.upload import (
     ALLOWED_EXTENSIONS,
     CSVParserOpts,
+    JSONParserOpts,
     UploadingTable,
     get_extension,
     parse_upload,
     save_upload,
 )
-from sand.models import (
-    Project,
-)
+from sand.models import Project
 from werkzeug.exceptions import BadRequest
-from sand.controllers.helpers.upload import CSVParserOpts, JSONParserOpts
 
 project_bp = generate_api(Project)
 

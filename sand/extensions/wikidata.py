@@ -5,41 +5,30 @@ from typing import Mapping
 from hugedict.misc import identity
 from kgdata.wikidata import db
 from kgdata.wikidata.models import WDClass, WDEntity, WDProperty, WDValue
+from sand.config import AppConfig
 from sand.models.base import StoreWrapper
-from sand.models.entity import DEFAULT_ENTITY, Entity, Statement, Value
-from sand.models.ontology import (
-    DEFAULT_ONT_CLASSES,
-    DEFAULT_ONT_PROPS,
-    OntClass,
-    OntProperty,
-    OntPropertyDataType,
-)
+from sand.models.entity import Entity, Statement, Value
+from sand.models.ontology import OntClass, OntProperty, OntPropertyDataType
+from sand.models.ontology import get_default_classes as sand_get_default_classes
 from sm.namespaces.wikidata import WikidataNamespace
 
 kgns = WikidataNamespace.create()
-WD_ONT_CLASSES = {
-    kgns.get_rel_uri(kgns.statement_uri): OntClass(
-        id=kgns.get_rel_uri(kgns.statement_uri),
-        uri=kgns.statement_uri,
-        label=kgns.get_rel_uri(kgns.statement_uri),
-        aliases=[],
-        description="Describes the claim of a statement and list references for this claim",
-        parents=[],
-    )
-}
-WD_ONT_CLASSES.update(DEFAULT_ONT_CLASSES)
-INVERSE_DEFAULT_URI2ID = {
-    v.uri: k
-    for k, v in chain(
-        DEFAULT_ONT_PROPS.items(), WD_ONT_CLASSES.items(), DEFAULT_ENTITY.items()
-    )
-}
-DEFAULT_ID2URI = {
-    k: v.uri
-    for k, v in chain(
-        DEFAULT_ONT_PROPS.items(), WD_ONT_CLASSES.items(), DEFAULT_ENTITY.items()
-    )
-}
+
+
+def get_default_classes(cfg: AppConfig):
+    map = {
+        kgns.get_rel_uri(kgns.statement_uri): OntClass(
+            id=kgns.get_rel_uri(kgns.statement_uri),
+            uri=kgns.statement_uri,
+            label=kgns.get_rel_uri(kgns.statement_uri),
+            aliases=[],
+            description="Describes the claim of a statement and list references for this claim",
+            parents=[],
+        )
+    }
+    map.update(sand_get_default_classes(cfg))
+    return map
+
 
 WD_DATATYPE_MAPPING: Mapping[str, OntPropertyDataType] = {
     "monolingualtext": "monolingualtext",
@@ -177,27 +166,3 @@ def get_wdclass_id(uri_or_id: str):
     if uri_or_id.startswith("http"):
         return uri_or_id.replace(f"http://www.wikidata.org/entity/", "")
     return uri_or_id
-
-
-def uri2id(uri: str):
-    if uri.startswith("http://www.wikidata.org/prop/"):
-        return kgns.uri_to_id(uri)
-    if uri.startswith("http://www.wikidata.org/entity/"):
-        return kgns.uri_to_id(uri)
-    if uri in INVERSE_DEFAULT_URI2ID:
-        return INVERSE_DEFAULT_URI2ID[uri]
-    return uri
-
-
-def id2uri(id: str):
-    if id in DEFAULT_ID2URI:
-        return DEFAULT_ID2URI[id]
-    if id.startswith("P"):
-        return kgns.id_to_uri(id)
-    if id.startswith("Q"):
-        return kgns.id_to_uri(id)
-    raise ValueError(f"Cannot convert unknown id to uri: {id}")
-
-
-def get_rel_uri(uri: str):
-    return kgns.get_rel_uri(uri)

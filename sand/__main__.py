@@ -4,7 +4,7 @@ import click
 from loguru import logger
 from peewee import fn
 from sand.commands.load import load_dataset
-from sand.config import APP_CONFIG, AppConfig
+from sand.config import AppConfig
 from sand.models import Project, SemanticModel, Table, TableRow
 from sand.models import db as dbconn
 from sand.models import init_db
@@ -47,7 +47,9 @@ def start(
     init_db(db)
 
     if config is not None:
-        APP_CONFIG.update(AppConfig.from_yaml(config))
+        cfg = AppConfig.from_yaml(config)
+    else:
+        cfg = AppConfig.default()
 
     if certfile is None or keyfile is None:
         ssl_options = None
@@ -55,7 +57,9 @@ def start(
         ssl_options = {"certfile": certfile, "keyfile": keyfile}
         assert not wsgi
 
-    from sand.app import app
+    from sand.app import App
+
+    app = App(cfg).get_flask_app()
 
     if wsgi:
         app.run(host="0.0.0.0", port=port)
