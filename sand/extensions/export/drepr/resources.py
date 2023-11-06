@@ -4,7 +4,7 @@ from typing import List, Set
 from uuid import uuid4
 
 from drepr.models import ResourceData, ResourceDataString
-from sand.config import APP_CONFIG
+from sand.config import AppConfig
 from sand.models.table import Table, TableRow
 
 
@@ -23,12 +23,12 @@ def get_table_resource(table: Table, rows: List[TableRow]) -> ResourceData:
 
 
 def get_entity_resource(
-    table: Table, rows: List[TableRow], ent_columns: Set[int]
+    appcfg: AppConfig, table: Table, rows: List[TableRow], ent_columns: Set[int]
 ) -> ResourceData:
     """Return a CSV resource of matrix mapping each position in a table to a corresponding entity uri."""
-    kgns = APP_CONFIG.get_kgns()
-    new_entity_template: str = APP_CONFIG.entity.new_entity_template
+    new_entity_template: str = appcfg.entity.new_entity_template
     ent_rows: List[List[str]] = []
+    kgns = appcfg.get_kgns()
 
     for ri, row in enumerate(rows):
         ent_rows.append([])
@@ -44,7 +44,7 @@ def get_entity_resource(
             for link in links:
                 if (
                     link.entity_id is not None
-                    and link.entity_id != APP_CONFIG.entity.nil.id
+                    and link.entity_id != appcfg.entity.nil.id
                 ):
                     ent = kgns.id_to_uri(link.entity_id)
                     break

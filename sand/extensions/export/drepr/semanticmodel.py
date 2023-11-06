@@ -2,7 +2,7 @@ from typing import Callable, List, Mapping, Set
 
 import drepr.models.sm as drepr_sm
 import sm.outputs.semantic_model as O
-from sand.config import APP_CONFIG
+from sand.config import AppConfig
 from sand.models.ontology import OntProperty, OntPropertyDataType
 from sm.namespaces.wikidata import WikidataNamespace
 
@@ -22,6 +22,7 @@ datatype_mapping: Mapping[OntPropertyDataType, drepr_sm.DataType] = {
 
 
 def get_drepr_sm(
+    appcfg: AppConfig,
     sm: O.SemanticModel,
     id2props: Mapping[str, OntProperty],
     get_attr_id: Callable[[int], str],
@@ -37,7 +38,7 @@ def get_drepr_sm(
     """
     nodes = {}
     edges = {}
-    kgns = APP_CONFIG.get_kgns()
+    kgns = appcfg.get_kgns()
 
     for node in sm.nodes():
         if isinstance(node, O.ClassNode):
@@ -90,7 +91,7 @@ def get_drepr_sm(
     print(edges)
 
     # add drepr:uri relationship
-    for node in get_entity_data_nodes(sm):
+    for node in get_entity_data_nodes(appcfg, sm):
         new_node_id = str(node.id) + ":ents"
         nodes[new_node_id] = drepr_sm.DataNode(
             node_id=new_node_id,
@@ -100,7 +101,7 @@ def get_drepr_sm(
         inedges = [
             inedge
             for inedge in sm.in_edges(node.id)
-            if inedge.abs_uri in APP_CONFIG.semantic_model.identifiers
+            if inedge.abs_uri in appcfg.semantic_model.identifiers
         ]
         assert len(inedges) == 1
         inedge = inedges[0]
@@ -119,8 +120,8 @@ def get_drepr_sm(
     )
 
 
-def get_entity_data_nodes(sm: O.SemanticModel) -> List[O.DataNode]:
-    ident_props = APP_CONFIG.semantic_model.identifiers
+def get_entity_data_nodes(appcfg: AppConfig, sm: O.SemanticModel) -> List[O.DataNode]:
+    ident_props = appcfg.semantic_model.identifiers
     ent_dnodes = []
     for node in sm.iter_nodes():
         if not isinstance(node, O.DataNode):
