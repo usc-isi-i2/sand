@@ -1,5 +1,6 @@
 from typing import List, Set
 
+import orjson
 import sm.outputs.semantic_model as O
 from dependency_injector.wiring import Provide, inject
 from drepr.engine import MemoryOutput, OutputFormat, ResourceDataString, execute
@@ -52,8 +53,14 @@ class DreprExport(IExport):
         self.namespace = namespace
         self.ontprop_ar = ontprop_ar
 
-    def export_data_model(self, table: Table, sm: O.SemanticModel) -> dict:
-        return self.export_drepr_model(table, sm).serialize()
+    def export_data_model(self, table: Table, sm: O.SemanticModel) -> dict[str, str]:
+        model = self.export_drepr_model(table, sm)
+        return {
+            "model.json": orjson.dumps(
+                model.serialize(), option=orjson.OPT_INDENT_2 | orjson.OPT_NON_STR_KEYS
+            ).decode(),
+            "model.yml": model.to_lang_yml(),
+        }
 
     def export_extra_resources(
         self, table: Table, rows: list[TableRow], sm: O.SemanticModel

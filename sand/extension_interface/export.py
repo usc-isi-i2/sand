@@ -14,8 +14,8 @@ class IExport(ABC):
     """
 
     @abstractmethod
-    def export_data_model(self, table: Table, sm: O.SemanticModel) -> dict:
-        """Export data model"""
+    def export_data_model(self, table: Table, sm: O.SemanticModel) -> dict[str, str]:
+        """Export data model in multiple formats"""
         pass
 
     @abstractmethod

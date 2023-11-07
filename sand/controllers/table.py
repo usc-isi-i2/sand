@@ -1,10 +1,11 @@
+from __future__ import annotations
+
 import zipfile
 from dataclasses import dataclass
 from functools import lru_cache
-from io import BytesIO, StringIO
+from io import BytesIO
 from typing import List, Literal, Optional
 
-import orjson
 import sm.outputs.semantic_model as O
 from dependency_injector.wiring import Provide, inject
 from drepr.engine import OutputFormat
@@ -135,15 +136,11 @@ def export_full_model(
     # output = StringIO()
     output = BytesIO()
     with zipfile.ZipFile(output, "w") as zip_file:
-        with zip_file.open("model.json", "w") as f:
-            # print(orjson.dumps(datamodel).decode())
-            # f.write(orjson.dumps(datamodel).decode())
-            f.write(
-                orjson.dumps(
-                    datamodel, option=orjson.OPT_INDENT_2 | orjson.OPT_NON_STR_KEYS
-                )
-            )
+        for name, content in datamodel.items():
+            with zip_file.open(name, "w") as f:
+                f.write(content.encode())
         for res_name, res_content in resources.items():
+            assert f"{res_name}.txt" not in datamodel
             with zip_file.open(f"{res_name}.txt", "w") as f:
                 f.write(res_content.encode())
     resp = make_response(output.getvalue())
