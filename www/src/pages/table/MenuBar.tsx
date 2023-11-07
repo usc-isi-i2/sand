@@ -105,14 +105,19 @@ export const MenuBar = observer(
         semanticmodel.setIndex(0);
         setMenuVisible(false);
       },
-      exportModel: () => {
-        routes.tableExportModel
+      exportSemanticModel: () => {
+        routes.tableExportSemanticModel
           .path({ tableId: table.id }, { attachment: false })
+          .mouseClickNavigationHandler(undefined, true);
+      },
+      exportFullModel: () => {
+        routes.tableExportFullModel
+          .path({ tableId: table.id }, { sm: sm.name })
           .mouseClickNavigationHandler(undefined, true);
       },
       exportData: () => {
         routes.tableExportData
-          .path({ tableId: table.id }, { attachment: false })
+          .path({ tableId: table.id }, { attachment: false, sm: sm.name })
           .mouseClickNavigationHandler(undefined, true);
       },
       openAddNodeForm: () => {
@@ -204,27 +209,39 @@ export const MenuBar = observer(
           </Menu.Item>
           <Menu.Item
             key="export-model"
-            onClick={funcs.exportModel}
+            onClick={funcs.exportSemanticModel}
             icon={<ExportOutlined />}
           >
             Export models
           </Menu.Item>
         </Menu.ItemGroup>
         <Menu.Divider />
-        <Menu.Item
-          key="enable-el-editor"
-          icon={<FontAwesomeIcon icon={faRectangleList} />}
-          onClick={uiSettings.table.toggleEntityLinkingEditor}
-        >
-          Toggle Entity Linking Editor
-        </Menu.Item>
-        <Menu.Item
-          key="export-data"
-          icon={<FontAwesomeIcon icon={faDownload} />}
-          onClick={funcs.exportData}
-        >
-          Export data
-        </Menu.Item>
+        <Menu.ItemGroup key="group-el" title="Entity Linking">
+          <Menu.Item
+            key="enable-el-editor"
+            icon={<FontAwesomeIcon icon={faRectangleList} />}
+            onClick={uiSettings.table.toggleEntityLinkingEditor}
+          >
+            Toggle Entity Linking Editor
+          </Menu.Item>
+        </Menu.ItemGroup>
+        <Menu.Divider />
+        <Menu.ItemGroup key="group-data" title="Data">
+          <Menu.Item
+            key="export-full-model"
+            icon={<ExportOutlined />}
+            onClick={funcs.exportFullModel}
+          >
+            Export data model
+          </Menu.Item>
+          <Menu.Item
+            key="export-data"
+            icon={<FontAwesomeIcon icon={faDownload} />}
+            onClick={funcs.exportData}
+          >
+            Export data
+          </Menu.Item>
+        </Menu.ItemGroup>
       </Menu>
     );
 

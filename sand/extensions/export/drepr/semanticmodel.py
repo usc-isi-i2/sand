@@ -86,7 +86,7 @@ def get_drepr_sm(
             label=edge.rel_uri,
         )
 
-    print(edges)
+    # print(edges)
 
     # add drepr:uri relationship
     for node in get_entity_data_nodes(appcfg, sm):

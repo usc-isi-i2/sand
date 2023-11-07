@@ -1,7 +1,10 @@
+import zipfile
 from dataclasses import dataclass
 from functools import lru_cache
+from io import BytesIO, StringIO
 from typing import List, Literal, Optional
 
+import orjson
 import sm.outputs.semantic_model as O
 from dependency_injector.wiring import Provide, inject
 from drepr.engine import OutputFormat
@@ -33,7 +36,7 @@ table_bp = generate_api(
 
 
 @table_bp.route(
-    f"/{table_bp.name}/<id>/export-models",
+    f"/{table_bp.name}/<id>/export-semantic-models",
     methods=["GET"],
 )
 def export_sms(id: int):
@@ -74,7 +77,78 @@ def export_sms(id: int):
 
     resp = jsonify([sm.to_dict() for sm in sms])
     if request.args.get("attachment", "false") == "true":
-        resp.headers["Content-Disposition"] = "attachment; filename=export.json"
+        resp.headers[
+            "Content-Disposition"
+        ] = f"attachment; filename=semantic-models.json"
+    return resp
+
+
+@table_bp.route(
+    f"/{table_bp.name}/<id>/export-full-model",
+    methods=["GET"],
+)
+@inject
+def export_full_model(
+    id: int, export: MultiServiceProvider[IExport] = Provide["export"]
+):
+    # load table
+    table: Table = Table.get_by_id(id)
+
+    # load models
+    subquery = (
+        SemanticModel.select(
+            SemanticModel.id, fn.MAX(SemanticModel.version).alias("version")
+        )
+        .where(SemanticModel.table == table)
+        .group_by(SemanticModel.table, SemanticModel.name)
+        .alias("q1")
+    )
+    query = (
+        SemanticModel.select()
+        .where(SemanticModel.table == table)
+        .join(subquery, on=(SemanticModel.id == subquery.c.id))
+    )
+    sms: List[SemanticModel] = list(query)
+
+    if len(sms) == 0:
+        raise BadRequest("Exporting data requires the table to be modeled")
+
+    if "sm" in request.args:
+        sms = [sm for sm in sms if sm.name == request.args["sm"]]
+        if len(sms) == 0:
+            raise BadRequest(
+                f"The semantic model with name {request.args['sm']} is not found"
+            )
+    else:
+        if len(sms) != 1:
+            raise BadRequest(
+                "There are more than one semantic model for this table. Please specify the semantic model you want to export via the 'sm' query parameter"
+            )
+    sm = sms[0]
+    rows: List[TableRow] = list(TableRow.select().where(TableRow.table == table))
+    # export the data using drepr library
+    export_obj = export.get_default()
+    datamodel = export_obj.export_data_model(table, sm.data)
+    resources = export_obj.export_extra_resources(table, rows, sm.data)
+
+    # make a zip file and return it
+    # output = StringIO()
+    output = BytesIO()
+    with zipfile.ZipFile(output, "w") as zip_file:
+        with zip_file.open("model.json", "w") as f:
+            # print(orjson.dumps(datamodel).decode())
+            # f.write(orjson.dumps(datamodel).decode())
+            f.write(
+                orjson.dumps(
+                    datamodel, option=orjson.OPT_INDENT_2 | orjson.OPT_NON_STR_KEYS
+                )
+            )
+        for res_name, res_content in resources.items():
+            with zip_file.open(f"{res_name}.txt", "w") as f:
+                f.write(res_content.encode())
+    resp = make_response(output.getvalue())
+    resp.headers["Content-Type"] = "application/zip; charset=utf-8"
+    resp.headers["Content-Disposition"] = f"attachment; filename={table.name}.zip"
     return resp
 
 
@@ -108,21 +182,28 @@ def export_table_data(
     if len(sms) == 0:
         raise BadRequest("Exporting data requires the table to be modeled")
 
-    sm_name = request.args["sm"] if "sm" in request.args else sms[0].name
-    sms = [sm for sm in sms if sm.name == sm_name]
-    if len(sms) == 0:
-        raise BadRequest(f"The semantic model with name {sm_name} is not found")
+    if "sm" in request.args:
+        sms = [sm for sm in sms if sm.name == request.args["sm"]]
+        if len(sms) == 0:
+            raise BadRequest(
+                f"The semantic model with name {request.args['sm']} is not found"
+            )
+    else:
+        if len(sms) != 1:
+            raise BadRequest(
+                "There are more than one semantic model for this table. Please specify the semantic model you want to export via the 'sm' query parameter"
+            )
     sm = sms[0]
 
     # load rows
     rows: List[TableRow] = list(TableRow.select().where(TableRow.table == table))
 
     # export the data using drepr library
-    content = export.get("default").export_data(table, rows, sm.data, OutputFormat.TTL)
+    content = export.get_default().export_data(table, rows, sm.data, OutputFormat.TTL)
     resp = make_response(content)
     resp.headers["Content-Type"] = "text/ttl; charset=utf-8"
     if request.args.get("attachment", "false") == "true":
-        resp.headers["Content-Disposition"] = "attachment; filename=export.ttl"
+        resp.headers["Content-Disposition"] = f"attachment; filename={table.name}.ttl"
     return resp
 
 

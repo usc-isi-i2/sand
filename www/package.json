@@ -1,6 +1,6 @@
 {
   "name": "sand",
-  "version": "2.1.4",
+  "version": "2.2.0",
   "private": true,
   "dependencies": {
     "@ant-design/colors": "^6.0.0",
@@ -53,6 +53,7 @@
   },
   "scripts": {
     "start": "BROWSER=none react-scripts start",
+    "start:macos": "BROWSER=none NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
     "start_nonroot": "PORT=5527 CHOKIDAR_USEPOLLING=true BROWSER=none DANGEROUSLY_DISABLE_HOST_CHECK=true react-scripts start",
     "build": "python ./scripts/build.py ../sand/www",
     "build:macos": "NODE_OPTIONS=--openssl-legacy-provider python ./scripts/build.py ../sand/www",
