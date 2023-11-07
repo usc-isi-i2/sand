@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
+import sm.outputs.semantic_model as O
 from dependency_injector.wiring import Provide, inject
 from flask import jsonify, request
 from flask.blueprints import Blueprint
@@ -40,6 +41,9 @@ assistant_bp = Blueprint("assistant", "assistant")
 def predict_semantic_desc(
     table_id: int,
     assistant_service: MultiServiceProvider[IAssistant] = Provide["assistant"],
+    entity_ar: EntityAR = Provide["entities"],
+    ontclass_ar: OntClassAR = Provide["classes"],
+    ontprop_ar: OntClassAR = Provide["properties"],
 ):
     table = Table.get_by_id(table_id)
     rows: List[TableRow] = list(
@@ -58,6 +62,32 @@ def predict_semantic_desc(
     for name, assistant in selected_assistants.items():
         sm, outputrows = assistant.predict(table, rows)
         if sm is not None:
+            for node in sm.iter_nodes():
+                if isinstance(node, O.ClassNode):
+                    if node.readable_label is None:
+                        tmpcls = ontclass_ar.get_by_uri(node.abs_uri)
+                        if tmpcls is not None:
+                            node.readable_label = tmpcls.readable_label
+                        else:
+                            node.readable_label = node.rel_uri
+                elif isinstance(node, O.LiteralNode):
+                    if (
+                        node.readable_label is None
+                        and node.datatype == O.LiteralNodeDataType.Entity
+                    ):
+                        tmpent = entity_ar.get_by_uri(node.value)
+                        if tmpent is not None:
+                            node.readable_label = tmpent.readable_label
+                        else:
+                            node.readable_label = node.value
+            for edge in sm.iter_edges():
+                if edge.readable_label is None:
+                    tmpprop = ontprop_ar.get_by_uri(edge.abs_uri)
+                    if tmpprop is not None:
+                        edge.readable_label = tmpprop.readable_label
+                    else:
+                        edge.readable_label = edge.rel_uri
+
             sm = sand_ser.serialize_graph(sm, columns=None)
         if outputrows is not None:
             # preserved the manual entity linking from the users
