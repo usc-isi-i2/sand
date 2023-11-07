@@ -2,7 +2,7 @@ from typing import List, Set
 
 import sm.outputs.semantic_model as O
 from dependency_injector.wiring import Provide, inject
-from drepr.engine import MemoryOutput, OutputFormat, execute
+from drepr.engine import MemoryOutput, OutputFormat, ResourceDataString, execute
 from drepr.models import (
     AlignedStep,
     Attr,
@@ -52,7 +52,60 @@ class DreprExport(IExport):
         self.namespace = namespace
         self.ontprop_ar = ontprop_ar
 
-    def export_data_model(self, table: Table, sm: O.SemanticModel) -> DRepr:
+    def export_data_model(self, table: Table, sm: O.SemanticModel) -> dict:
+        return self.export_drepr_model(table, sm).serialize()
+
+    def export_extra_resources(
+        self, table: Table, rows: list[TableRow], sm: O.SemanticModel
+    ) -> dict[str, str]:
+        if len(table.columns) == 0:
+            # no column, no data
+            return {}
+
+        ent_columns = {
+            node.col_index for node in get_entity_data_nodes(self.appcfg, sm)
+        }
+        entresource = get_entity_resource(
+            self.appcfg, self.namespace, table, rows, ent_columns
+        )
+        assert isinstance(entresource, ResourceDataString)
+        return {
+            "entity": entresource.value.decode()
+            if isinstance(entresource.value, bytes)
+            else entresource.value
+        }
+
+    def export_data(
+        self,
+        table: Table,
+        rows: List[TableRow],
+        sm: O.SemanticModel,
+        output_format: OutputFormat,
+    ):
+        """Convert a relational table into RDF format"""
+        if len(table.columns) == 0:
+            # no column, no data
+            return ""
+
+        ent_columns = {
+            node.col_index for node in get_entity_data_nodes(self.appcfg, sm)
+        }
+        resources = {
+            "table": get_table_resource(table, rows),
+            "entity": get_entity_resource(
+                self.appcfg, self.namespace, table, rows, ent_columns
+            ),
+        }
+
+        content = execute(
+            ds_model=self.export_drepr_model(table, sm),
+            resources=resources,
+            output=MemoryOutput(output_format),
+            debug=False,
+        )
+        return content
+
+    def export_drepr_model(self, table: Table, sm: O.SemanticModel) -> DRepr:
         """Create a D-REPR model of the dataset."""
         columns = [slugify(c).replace("-", "_") for c in table.columns]
         get_attr_id = lambda ci: f"{ci}__{columns[ci]}"
@@ -151,33 +204,3 @@ class DreprExport(IExport):
             ],
             sm=dsm,
         )
-
-    def export_data(
-        self,
-        table: Table,
-        rows: List[TableRow],
-        sm: O.SemanticModel,
-        output_format: OutputFormat,
-    ):
-        """Convert a relational table into RDF format"""
-        if len(table.columns) == 0:
-            # no column, no data
-            return ""
-
-        ent_columns = {
-            node.col_index for node in get_entity_data_nodes(self.appcfg, sm)
-        }
-        resources = {
-            "table": get_table_resource(table, rows),
-            "entity": get_entity_resource(
-                self.appcfg, self.namespace, table, rows, ent_columns
-            ),
-        }
-
-        content = execute(
-            ds_model=self.export_data_model(table, sm),
-            resources=resources,
-            output=MemoryOutput(output_format),
-            debug=False,
-        )
-        return content

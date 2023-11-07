@@ -60,16 +60,22 @@ export const routes = {
     querySchema: { query: "string" },
     pathDef: "/tables/:tableId",
   }),
-  tableExportModel: new PathDef({
+  tableExportSemanticModel: new PathDef({
     component: None,
     urlSchema: { tableId: "number" },
     querySchema: { attachment: "optionalboolean" },
-    pathDef: "/api/table/:tableId/export-models",
+    pathDef: "/api/table/:tableId/export-semantic-models",
+  }),
+  tableExportFullModel: new PathDef({
+    component: None,
+    urlSchema: { tableId: "number" },
+    querySchema: { sm: "optionalstring" },
+    pathDef: "/api/table/:tableId/export-full-model",
   }),
   tableExportData: new PathDef({
     component: None,
     urlSchema: { tableId: "number" },
-    querySchema: { attachment: "optionalboolean" },
+    querySchema: { attachment: "optionalboolean", sm: "optionalstring" },
     pathDef: "/api/table/:tableId/export",
   }),
   settings: new NoArgsPathDef({

@@ -1,5 +1,4 @@
 import os
-from ast import main
 
 from dependency_injector.wiring import Provide, inject
 from flask import jsonify
@@ -8,7 +7,6 @@ from werkzeug.exceptions import HTTPException
 
 import sand.deserializer as sand_deser
 import sand.serializer as sand_ser
-from sand.config import AppConfig
 from sand.controllers.assistant import assistant_bp
 from sand.controllers.project import project_bp
 from sand.controllers.search import search_bp
