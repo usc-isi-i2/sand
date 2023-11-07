@@ -13,16 +13,24 @@ T = TypeVar("T", Entity, OntClass, OntProperty)
 
 
 class DefaultSearch(IEntitySearch, IOntologySearch):
-    @inject
     def __init__(
         self,
-        default_entities: Mapping[str, Entity] = Provide["default_entities"],
-        default_classes: Mapping[str, OntClass] = Provide["default_classes"],
-        default_properties: Mapping[str, OntProperty] = Provide["default_properties"],
+        default_entities: Mapping[str, Entity],
+        default_classes: Mapping[str, OntClass],
+        default_properties: Mapping[str, OntProperty],
     ):
         self.default_entities = default_entities
         self.default_classes = default_classes
         self.default_properties = default_properties
+
+    @staticmethod
+    @inject
+    def create(
+        default_entities: Mapping[str, Entity] = Provide["default_entities"],
+        default_classes: Mapping[str, OntClass] = Provide["default_classes"],
+        default_properties: Mapping[str, OntProperty] = Provide["default_properties"],
+    ):
+        return DefaultSearch(default_entities, default_classes, default_properties)
 
     def local_search(self, mapping: Mapping[str, T], search_text: str) -> list[T]:
         """performs local partial text search across default entities/classes/properties"""

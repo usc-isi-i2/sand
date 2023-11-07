@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Mapping, Union, cast
 
 from dependency_injector.wiring import Provide
+from drepr.models.sm import SemanticModel
 from sm.misc.funcs import import_func
 from sm.namespaces.namespace import KnowledgeGraphNamespace
 
@@ -23,6 +24,9 @@ class NamespaceService:
     ):
         self.appcfg = appcfg
         self.kgns: KnowledgeGraphNamespace = import_func(appcfg.kgns)()
+
+        self.kgns_prefixes = self.kgns.prefix2ns.copy()
+        self.kgns_prefixes.update(SemanticModel.get_default_prefixes())
 
         self.default_entities = default_entities
         self.default_classes = default_classes

@@ -82,6 +82,7 @@ def export_sms(id: int):
     f"/{table_bp.name}/<id>/export",
     methods=["GET"],
 )
+@inject
 def export_table_data(
     id: int, export: MultiServiceProvider[IExport] = Provide["export"]
 ):

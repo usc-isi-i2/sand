@@ -89,7 +89,12 @@ class DreprExport(IExport):
         ]
 
         dsm = get_drepr_sm(
-            self.appcfg, sm, self.ontprop_ar, get_attr_id, get_ent_attr_id
+            self.appcfg,
+            self.namespace,
+            sm,
+            self.ontprop_ar,
+            get_attr_id,
+            get_ent_attr_id,
         )
 
         datatype_transformations = []

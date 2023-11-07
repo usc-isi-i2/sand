@@ -17,7 +17,7 @@ from sand.models.ontology import OntClassAR
 def extended_wikidata_search() -> Union[IEntitySearch, IOntologySearch]:
     """extended version of wikidata search by aggregating default search"""
     search = AggregatedSearch()
-    search.add(DefaultSearch())
+    search.add(DefaultSearch.create())
     search.add(WikidataSearch())
     return search
 

@@ -96,7 +96,7 @@ class OntClassAR(KGMapping[OntClass]):
     ):
         cfg = appcfg.clazz
         func = import_func(cfg.constructor)
-        return OntClassAR(func(**cfg.args), default_classes, namespace.kgns)
+        return OntClassAR(func(**cfg.args), default_classes, namespace.uri_to_id)
 
 
 class OntPropertyAR(KGMapping[OntProperty]):
@@ -109,5 +109,5 @@ class OntPropertyAR(KGMapping[OntProperty]):
     ):
         func = import_func(appcfg.property.constructor)
         return OntPropertyAR(
-            func(**appcfg.property.args), default_properties, namespace.kgns
+            func(**appcfg.property.args), default_properties, namespace.uri_to_id
         )

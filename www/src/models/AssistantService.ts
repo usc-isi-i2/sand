@@ -64,13 +64,13 @@ export class AssistantService extends RStore<number, AssistantRecord> {
     const resp: AxiosResponse<Prediction> = yield axios.get(
       `${this.remoteURL}/predict/${table.id}`,
       {
-        params: { algorithm: "mtab" },
+        params: { algorithm: "default" },
       }
     );
 
     // deserialzie the results and put it back to the store
-    const rawsm = resp.data.mtab.sm;
-    const rawrows = resp.data.mtab.rows;
+    const rawsm = resp.data.default.sm;
+    const rawrows = resp.data.default.rows;
 
     const draftId = this.smStore.getNewCreateDraftId(table);
     const graph = this.smStore.deserialize({

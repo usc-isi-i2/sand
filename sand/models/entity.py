@@ -93,5 +93,5 @@ class EntityAR(KGMapping[Entity]):
         return EntityAR(
             import_func(appcfg.entity.constructor)(**appcfg.entity.args),
             default_entities,
-            namespace.kgns,
+            namespace.uri_to_id,
         )

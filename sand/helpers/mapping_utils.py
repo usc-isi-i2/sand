@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from itertools import chain
-from typing import Iterator, Mapping, TypeVar
+from typing import Callable, Iterator, Mapping, TypeVar
 
 from sm.namespaces.namespace import KnowledgeGraphNamespace
 
@@ -13,11 +13,11 @@ class KGMapping(Mapping[str, V]):
         self,
         main: Mapping[str, V],
         default: Mapping[str, V],
-        kgns: KnowledgeGraphNamespace,
+        uri_to_id: Callable[[str], str],
     ):
         self.main = main
         self.default = default
-        self.kgns = kgns
+        self.uri_to_id = uri_to_id
 
     def __getitem__(self, key: str):
         if key in self.main:
@@ -26,6 +26,9 @@ class KGMapping(Mapping[str, V]):
 
     def __iter__(self) -> Iterator[str]:
         return chain(iter(self.main), iter(self.default))
+
+    def values(self) -> Iterator[V]:
+        return chain(self.main.values(), self.default.values())
 
     def __len__(self) -> int:
         return len(self.main) + len(self.default)
@@ -39,4 +42,4 @@ class KGMapping(Mapping[str, V]):
         return self.default.get(key, default)
 
     def get_by_uri(self, uri: str, default=None):
-        return self.get(self.kgns.uri_to_id(uri), default)
+        return self.get(self.uri_to_id(uri), default)

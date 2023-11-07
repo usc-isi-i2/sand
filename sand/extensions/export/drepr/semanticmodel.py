@@ -2,15 +2,10 @@ from typing import Callable, List, Mapping, Set
 
 import drepr.models.sm as drepr_sm
 import sm.outputs.semantic_model as O
-from sm.namespaces.wikidata import WikidataNamespace
 
 from sand.config import AppConfig
 from sand.helpers.namespace import NamespaceService
-from sand.models.ontology import OntProperty, OntPropertyDataType
-
-prefixes = WikidataNamespace.create().prefix2ns.copy()
-prefixes.update(drepr_sm.SemanticModel.get_default_prefixes())
-
+from sand.models.ontology import OntPropertyAR, OntPropertyDataType
 
 # mapping from predefined datatypes to D-REPR datatype
 datatype_mapping: Mapping[OntPropertyDataType, drepr_sm.DataType] = {
@@ -27,7 +22,7 @@ def get_drepr_sm(
     appcfg: AppConfig,
     namespace: NamespaceService,
     sm: O.SemanticModel,
-    id2props: Mapping[str, OntProperty],
+    ontprop_ar: OntPropertyAR,
     get_attr_id: Callable[[int], str],
     get_ent_attr_id: Callable[[int], str],
 ) -> drepr_sm.SemanticModel:
@@ -35,7 +30,7 @@ def get_drepr_sm(
 
     Args:
         sm: the semantic model we want to convert
-        id2props: mapping from the id to ontology property
+        ontprop_ar: mapping from the id to ontology property
         get_attr_id: get attribute id from column index
         get_ent_attr_id: for each entity column, to generate url, we create an extra attribute containing the entity uri, this function get its id based on the column index
     """
@@ -54,7 +49,7 @@ def get_drepr_sm(
             # usually, that will be displayed from the UI so users know that
 
             datatypes: Set[OntPropertyDataType] = {
-                id2props[kgns.uri_to_id(inedge.abs_uri)].datatype
+                ontprop_ar.get_by_uri(inedge.abs_uri).datatype
                 for inedge in sm.in_edges(node.id)
             }
             datatype = (
@@ -119,7 +114,7 @@ def get_drepr_sm(
     return drepr_sm.SemanticModel(
         nodes=nodes,
         edges=edges,
-        prefixes=prefixes,
+        prefixes=namespace.kgns_prefixes,
     )
 
 
