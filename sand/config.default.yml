@@ -1,10 +1,10 @@
-kgns: sand.extensions.wikidata.kgns
+kgns: sm.namespaces.wikidata.WikidataNamespace.create
 entity:
   constructor: sand.extensions.wikidata.get_entity_db
   args:
     dbfile: /tmp/entities.db
     proxy: true
-  default: sand.models.entity.get_default_entities
+  default: builtins.dict
   instanceof:
     "http://www.wikidata.org": P31
   nil:
@@ -22,7 +22,7 @@ property:
   args:
     dbfile: /tmp/properties.db
     proxy: true
-  default: sand.models.ontology.get_default_properties
+  default: builtins.dict
 semantic_model:
   identifiers:
     - http://www.w3.org/2000/01/rdf-schema#label

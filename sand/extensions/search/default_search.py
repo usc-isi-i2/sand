@@ -1,33 +1,41 @@
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING, List
+from typing import List, Mapping, TypeVar
+
+from dependency_injector.wiring import Provide, inject
 
 from sand.extension_interface.search import IEntitySearch, IOntologySearch, SearchResult
-from sm.misc.funcs import import_func
+from sand.models.entity import Entity
+from sand.models.ontology import OntClass, OntProperty
 
-if TYPE_CHECKING:
-    from sand.app import App
+T = TypeVar("T", Entity, OntClass, OntProperty)
 
 
 class DefaultSearch(IEntitySearch, IOntologySearch):
-    def __init__(self, app: App):
-        self.default_classes = import_func(app.cfg.clazz.default)(app.cfg)
-        self.default_entities = import_func(app.cfg.entity.default)(app.cfg)
-        self.default_properties = import_func(app.cfg.property.default)(app.cfg)
+    @inject
+    def __init__(
+        self,
+        default_entities: Mapping[str, Entity] = Provide["default_entities"],
+        default_classes: Mapping[str, OntClass] = Provide["default_classes"],
+        default_properties: Mapping[str, OntProperty] = Provide["default_properties"],
+    ):
+        self.default_entities = default_entities
+        self.default_classes = default_classes
+        self.default_properties = default_properties
 
-    def local_search(self, default_entities: dict, search_text: str) -> List:
-        """performs local partial text search across default entities"""
+    def local_search(self, mapping: Mapping[str, T], search_text: str) -> list[T]:
+        """performs local partial text search across default entities/classes/properties"""
         query_tokens = re.findall(r"[a-z]+|\d+", search_text.lower())
         search_results = []
 
         if not query_tokens:
             return search_results
 
-        for entity in default_entities.values():
-            label = entity.label.lower()
+        for object in mapping.values():
+            label = object.label.lower()
             if all(token in label for token in query_tokens):
-                search_results.append(entity)
+                search_results.append(object)
         return search_results
 
     def find_class_by_name(self, search_text: str) -> List[SearchResult]:

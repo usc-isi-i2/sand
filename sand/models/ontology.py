@@ -1,11 +1,13 @@
 from dataclasses import dataclass, field
-from itertools import chain
-from typing import Dict, Iterator, List, Literal, Mapping, TypeVar
+from typing import Dict, List, Literal, Mapping
 
+from dependency_injector.wiring import Provide, inject
 from rdflib import RDF, RDFS
+from sm.misc.funcs import import_func
+
 from sand.config import AppConfig
-from sm.misc.funcs import import_attr, import_func
-from sm.namespaces.namespace import KnowledgeGraphNamespace
+from sand.helpers.mapping_utils import KGMapping
+from sand.helpers.namespace import NamespaceService
 
 
 @dataclass
@@ -51,12 +53,9 @@ class OntProperty:
         return self.label
 
 
-PROP_AR = None
-CLASS_AR = None
-
-
-def get_default_properties(cfg: AppConfig):
-    return {
+@inject
+def get_default_properties(cfg: AppConfig = Provide["appcfg"]):
+    mapping = {
         "rdfs:label": OntProperty(
             id="rdfs:label",
             uri=str(RDFS.label),
@@ -76,72 +75,39 @@ def get_default_properties(cfg: AppConfig):
             parents=[],
         ),
     }
+    mapping.update(import_func(cfg.property.default)())
+    return mapping
 
 
-def get_default_classes(cfg: AppConfig):
-    return {}
+@inject
+def get_default_classes(cfg: AppConfig = Provide["appcfg"]):
+    mapping = {}
+    mapping.update(import_func(cfg.clazz.default)())
+    return mapping
 
 
-V = TypeVar("V")
-
-
-class OntMapping(Mapping[str, V]):
-    def __init__(
-        self,
-        main: Mapping[str, V],
-        default: Mapping[str, V],
-        kgns: KnowledgeGraphNamespace,
+class OntClassAR(KGMapping[OntClass]):
+    @staticmethod
+    @inject
+    def init(
+        appcfg: AppConfig = Provide["appcfg"],
+        namespace: NamespaceService = Provide["namespace"],
+        default_classes: Mapping[str, OntClass] = Provide["default_classes"],
     ):
-        self.main = main
-        self.default = default
-        self.kgns = kgns
-
-    def __getitem__(self, key: str):
-        if key in self.main:
-            return self.main[key]
-        return self.default[key]
-
-    def __iter__(self) -> Iterator[str]:
-        return chain(iter(self.main), iter(self.default))
-
-    def __len__(self) -> int:
-        return len(self.main) + len(self.default)
-
-    def __contains__(self, key: str) -> bool:
-        return key in self.main or key in self.default
-
-    def get(self, key: str, default=None):
-        if key in self.main:
-            return self.main[key]
-        return self.default.get(key, default)
-
-    def get_by_uri(self, uri: str, default=None):
-        return self.get(self.kgns.uri_to_id(uri), default)
-
-
-def OntPropertyAR(appcfg: AppConfig) -> OntMapping[OntProperty]:
-    """Get a mapping from id (not url) to the ontology property"""
-    global PROP_AR
-
-    if PROP_AR is None:
-        cfg = appcfg.property
-        func = import_func(cfg.constructor)
-        PROP_AR = OntMapping(
-            func(**cfg.args), import_func(cfg.default)(cfg), appcfg.get_kgns()
-        )
-
-    return PROP_AR
-
-
-def OntClassAR(appcfg: AppConfig) -> OntMapping[OntClass]:
-    """Get a mapping from id (not url) to the ontology class"""
-    global CLASS_AR
-
-    if CLASS_AR is None:
         cfg = appcfg.clazz
         func = import_func(cfg.constructor)
-        CLASS_AR = OntMapping(
-            func(**cfg.args), import_func(cfg.default)(cfg), appcfg.get_kgns()
-        )
+        return OntClassAR(func(**cfg.args), default_classes, namespace.kgns)
 
-    return CLASS_AR
+
+class OntPropertyAR(KGMapping[OntProperty]):
+    @staticmethod
+    @inject
+    def init(
+        appcfg: AppConfig = Provide["appcfg"],
+        namespace: NamespaceService = Provide["namespace"],
+        default_properties: Mapping[str, OntProperty] = Provide["default_properties"],
+    ):
+        func = import_func(appcfg.property.constructor)
+        return OntPropertyAR(
+            func(**appcfg.property.args), default_properties, namespace.kgns
+        )

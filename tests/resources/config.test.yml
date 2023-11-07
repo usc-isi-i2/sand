@@ -1,9 +1,9 @@
-kgns: sand.extensions.wikidata.kgns
+kgns: sm.namespaces.wikidata.WikidataNamespace.create
 entity:
   constructor: tests.conftest.get_entity_db
   args:
     dbfile: ::RELPATH::data/kgdb/entities.jsonl
-  default: sand.models.entity.get_default_entities
+  default: builtins.dict
   instanceof:
     "http://www.wikidata.org": P31
   nil:
@@ -19,7 +19,7 @@ property:
   constructor: tests.conftest.get_ontprops_db
   args:
     dbfile: ::RELPATH::data/kgdb/props.jsonl
-  default: sand.models.ontology.get_default_properties
+  default: builtins.dict
 semantic_model:
   identifiers:
     - http://www.w3.org/2000/01/rdf-schema#label

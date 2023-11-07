@@ -1,8 +1,11 @@
 import json
-import os
-from pathlib import Path
+import sys
 
 import pytest
+
+from sand.app import get_flask_app
+from sand.config import _ROOT_DIR
+from sand.container import use_container
 from sand.extensions.wikidata import (
     get_wdclass_id,
     get_wdprop_id,
@@ -11,6 +14,7 @@ from sand.extensions.wikidata import (
     ont_prop_deser,
     qnode_deser,
 )
+from sand.helpers.dependency_injection import use_auto_inject
 from sand.models import all_tables
 from sand.models.base import StoreWrapper, db, init_db
 
@@ -69,26 +73,17 @@ def client():
         init_db(":memory:")
         db.create_tables(all_tables, safe=False)
 
-        import sys
-
-        from sand.config import _ROOT_DIR, AppConfig
-
         if _ROOT_DIR not in sys.path:
             sys.path.append(str(_ROOT_DIR))
 
-        cfg = AppConfig.from_yaml(_ROOT_DIR / "tests/resources/config.test.yml")
-        from sand.app import App
-
-        app = App(cfg).get_flask_app()
-
-        app.config["TESTING"] = True
-        with app.test_client() as client:
-            yield client
+        with use_container(_ROOT_DIR / "tests/resources/config.test.yml") as container:
+            container.check_dependencies()
+            with use_auto_inject(container):
+                app = get_flask_app()
+                app.config["TESTING"] = True
+                with app.test_client() as client:
+                    yield client
     finally:
-        import sys
-
-        from sand.config import _ROOT_DIR
-
         sys.path.remove(str(_ROOT_DIR))
         db.drop_tables(all_tables)
         db.close()

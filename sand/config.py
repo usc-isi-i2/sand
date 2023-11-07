@@ -29,11 +29,6 @@ class AppConfig:
     search: SearchConfig
     export: FnConfig
 
-    def get_kgns(self) -> KnowledgeGraphNamespace:
-        if "_kgns" not in self.__dict__:
-            self.__dict__["_kgns"] = import_attr(self.kgns)
-        return self.__dict__["_kgns"]
-
     @staticmethod
     def from_yaml(infile: Path | str) -> AppConfig:
         cwd = Path(infile).parent

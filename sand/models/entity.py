@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, Mapping, Optional, Union
+from typing import TYPE_CHECKING, Literal, Mapping, Union
 
-from hugedict.chained_mapping import ChainedMapping
+from dependency_injector.wiring import Provide, inject
 from kgdata.models.multilingual import MultiLingualString, MultiLingualStringList
 from kgdata.wikidata.models.wdvalue import (
     ValueGlobeCoordinate,
@@ -11,8 +11,13 @@ from kgdata.wikidata.models.wdvalue import (
     ValueQuantity,
     ValueTime,
 )
+from sm.misc.funcs import import_func
+
 from sand.config import AppConfig
-from sm.misc.funcs import import_attr, import_func
+from sand.helpers.mapping_utils import KGMapping
+
+if TYPE_CHECKING:
+    from sand.helpers.namespace import NamespaceService
 
 
 @dataclass
@@ -61,29 +66,32 @@ class Value:
         return self.type == "entityid"
 
 
-def get_default_entities(cfg: AppConfig):
-    return {
-        cfg.entity.nil.id: Entity(
-            id=cfg.entity.nil.id,
-            uri=cfg.entity.nil.uri,
+@inject
+def get_default_entities(appcfg: AppConfig = Provide["appcfg"]):
+    mapping = {
+        appcfg.entity.nil.id: Entity(
+            id=appcfg.entity.nil.id,
+            uri=appcfg.entity.nil.uri,
             label=MultiLingualString.en("NIL"),
             aliases=MultiLingualStringList(lang2values={"en": []}, lang="en"),
             description=MultiLingualString.en("the correct entity is absent in KG"),
             properties={},
         )
     }
+    mapping.update(import_func(appcfg.entity.default)())
+    return mapping
 
 
-ENTITY_AR: Optional[Mapping[str, Entity]] = None
-
-
-def EntityAR(cfg: AppConfig) -> Mapping[str, Entity]:
-    global ENTITY_AR
-
-    if ENTITY_AR is None:
-        func = import_func(cfg.entity.constructor)
-        ENTITY_AR = ChainedMapping(
-            func(**cfg.entity.args), import_func(cfg.entity.default)(cfg)
+class EntityAR(KGMapping[Entity]):
+    @staticmethod
+    @inject
+    def init(
+        appcfg: AppConfig = Provide["appcfg"],
+        namespace: NamespaceService = Provide["namespace"],
+        default_entities: Mapping[str, Entity] = Provide["default_entities"],
+    ):
+        return EntityAR(
+            import_func(appcfg.entity.constructor)(**appcfg.entity.args),
+            default_entities,
+            namespace.kgns,
         )
-
-    return ENTITY_AR

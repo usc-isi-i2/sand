@@ -2,9 +2,11 @@ from typing import Callable, List, Mapping, Set
 
 import drepr.models.sm as drepr_sm
 import sm.outputs.semantic_model as O
-from sand.config import AppConfig
-from sand.models.ontology import OntProperty, OntPropertyDataType
 from sm.namespaces.wikidata import WikidataNamespace
+
+from sand.config import AppConfig
+from sand.helpers.namespace import NamespaceService
+from sand.models.ontology import OntProperty, OntPropertyDataType
 
 prefixes = WikidataNamespace.create().prefix2ns.copy()
 prefixes.update(drepr_sm.SemanticModel.get_default_prefixes())
@@ -23,6 +25,7 @@ datatype_mapping: Mapping[OntPropertyDataType, drepr_sm.DataType] = {
 
 def get_drepr_sm(
     appcfg: AppConfig,
+    namespace: NamespaceService,
     sm: O.SemanticModel,
     id2props: Mapping[str, OntProperty],
     get_attr_id: Callable[[int], str],
@@ -38,7 +41,7 @@ def get_drepr_sm(
     """
     nodes = {}
     edges = {}
-    kgns = appcfg.get_kgns()
+    kgns = namespace.kgns
 
     for node in sm.nodes():
         if isinstance(node, O.ClassNode):

@@ -2,21 +2,23 @@ from dataclasses import dataclass
 from itertools import chain
 from typing import Mapping
 
+from dependency_injector.wiring import Provide, inject
 from hugedict.misc import identity
 from kgdata.wikidata import db
 from kgdata.wikidata.models import WDClass, WDEntity, WDProperty, WDValue
+from sm.namespaces.wikidata import WikidataNamespace
+
 from sand.config import AppConfig
+from sand.helpers.dependency_injection import autoinject
 from sand.models.base import StoreWrapper
 from sand.models.entity import Entity, Statement, Value
 from sand.models.ontology import OntClass, OntProperty, OntPropertyDataType
-from sand.models.ontology import get_default_classes as sand_get_default_classes
-from sm.namespaces.wikidata import WikidataNamespace
 
 kgns = WikidataNamespace.create()
 
 
-def get_default_classes(cfg: AppConfig):
-    map = {
+def get_default_classes():
+    return {
         kgns.get_rel_uri(kgns.statement_uri): OntClass(
             id=kgns.get_rel_uri(kgns.statement_uri),
             uri=kgns.statement_uri,
@@ -26,8 +28,6 @@ def get_default_classes(cfg: AppConfig):
             parents=[],
         )
     }
-    map.update(sand_get_default_classes(cfg))
-    return map
 
 
 WD_DATATYPE_MAPPING: Mapping[str, OntPropertyDataType] = {

@@ -4,7 +4,9 @@ from typing import List, Set
 from uuid import uuid4
 
 from drepr.models import ResourceData, ResourceDataString
+
 from sand.config import AppConfig
+from sand.helpers.namespace import NamespaceService
 from sand.models.table import Table, TableRow
 
 
@@ -23,12 +25,16 @@ def get_table_resource(table: Table, rows: List[TableRow]) -> ResourceData:
 
 
 def get_entity_resource(
-    appcfg: AppConfig, table: Table, rows: List[TableRow], ent_columns: Set[int]
+    appcfg: AppConfig,
+    ns: NamespaceService,
+    table: Table,
+    rows: List[TableRow],
+    ent_columns: Set[int],
 ) -> ResourceData:
     """Return a CSV resource of matrix mapping each position in a table to a corresponding entity uri."""
     new_entity_template: str = appcfg.entity.new_entity_template
     ent_rows: List[List[str]] = []
-    kgns = appcfg.get_kgns()
+    kgns = ns.kgns
 
     for ri, row in enumerate(rows):
         ent_rows.append([])

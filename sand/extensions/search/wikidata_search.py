@@ -4,25 +4,31 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 import nh3
 import requests
+from dependency_injector.wiring import Provide, inject
+from werkzeug.exceptions import ServiceUnavailable
+
 from sand.extension_interface.search import IEntitySearch, IOntologySearch, SearchResult
 from sand.extensions.search.aggregated_search import AggregatedSearch
 from sand.extensions.search.default_search import DefaultSearch
-from werkzeug.exceptions import ServiceUnavailable
-
-if TYPE_CHECKING:
-    from sand.app import App
+from sand.helpers.namespace import NamespaceService
+from sand.models.ontology import OntClassAR
 
 
-def extended_wikidata_search(app: App) -> Union[IEntitySearch, IOntologySearch]:
+def extended_wikidata_search() -> Union[IEntitySearch, IOntologySearch]:
     """extended version of wikidata search by aggregating default search"""
     search = AggregatedSearch()
-    search.add(DefaultSearch(app))
-    search.add(WikidataSearch(app))
+    search.add(DefaultSearch())
+    search.add(WikidataSearch())
     return search
 
 
 class WikidataSearch(IEntitySearch, IOntologySearch):
-    def __init__(self, app: App):
+    @inject
+    def __init__(
+        self,
+        namespace: NamespaceService = Provide["namespace"],
+        ontclass_ar: OntClassAR = Provide["classes"],
+    ):
         self.wikidata_url = "https://www.wikidata.org/w/api.php"
         self.PARAMS = {
             "action": "query",
@@ -34,8 +40,8 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
             "srlimit": 10,
             "srprop": "snippet|titlesnippet",
         }
-        self.ont_class_ar = app.ontclass_ar
-        self.app = app
+        self.namespace = namespace
+        self.ont_class_ar = ontclass_ar
 
     def get_class_search_params(self, search_text: str) -> Dict:
         """Updates class search parameters for wikidata API"""
@@ -80,7 +86,7 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
                 label=cls.label,
                 id=search_result["title"],
                 description=cls.description,
-                uri=self.app.id_to_uri(search_result["title"]),
+                uri=self.namespace.id_to_uri(search_result["title"]),
             )
             payload_results.append(item)
         return payload_results
@@ -106,7 +112,7 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
                 label=nh3.clean(search_result["titlesnippet"], tags=set()),
                 id=search_result["title"],
                 description=nh3.clean(search_result["snippet"], tags=set()),
-                uri=self.app.id_to_uri(search_result["title"]),
+                uri=self.namespace.id_to_uri(search_result["title"]),
             )
             payload_results.append(item)
         return payload_results
@@ -132,7 +138,7 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
                 label=nh3.clean(search_result["titlesnippet"], tags=set()),
                 id=search_result["title"].split(":")[1],
                 description=nh3.clean(search_result["snippet"], tags=set()),
-                uri=self.app.id_to_uri(search_result["title"].split(":")[1]),
+                uri=self.namespace.id_to_uri(search_result["title"].split(":")[1]),
             )
             payload_results.append(item)
         return payload_results

@@ -3,14 +3,17 @@ from typing import Optional
 import click
 from loguru import logger
 from peewee import fn
-from sand.commands.load import load_dataset
-from sand.config import AppConfig
-from sand.models import Project, SemanticModel, Table, TableRow
-from sand.models import db as dbconn
-from sand.models import init_db
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado.wsgi import WSGIContainer
+
+from sand.app import get_flask_app
+from sand.commands.load import load_dataset
+from sand.container import use_container
+from sand.helpers.dependency_injection import use_auto_inject
+from sand.models import Project, SemanticModel, Table, TableRow
+from sand.models import db as dbconn
+from sand.models import init_db
 
 
 @click.command()
@@ -46,28 +49,23 @@ def start(
 ):
     init_db(db)
 
-    if config is not None:
-        cfg = AppConfig.from_yaml(config)
-    else:
-        cfg = AppConfig.default()
-
     if certfile is None or keyfile is None:
         ssl_options = None
     else:
         ssl_options = {"certfile": certfile, "keyfile": keyfile}
         assert not wsgi
 
-    from sand.app import App
+    with use_container(config) as container:
+        with use_auto_inject(container):
+            app = get_flask_app()
 
-    app = App(cfg).get_flask_app()
-
-    if wsgi:
-        app.run(host="0.0.0.0", port=port)
-    else:
-        logger.info("Start server in non-wsgi mode")
-        http_server = HTTPServer(WSGIContainer(app), ssl_options=ssl_options)
-        http_server.listen(port)
-        IOLoop.instance().start()
+            if wsgi:
+                app.run(host="0.0.0.0", port=port)
+            else:
+                logger.info("Start server in non-wsgi mode")
+                http_server = HTTPServer(WSGIContainer(app), ssl_options=ssl_options)
+                http_server.listen(port)
+                IOLoop.instance().start()
 
 
 @click.command()
