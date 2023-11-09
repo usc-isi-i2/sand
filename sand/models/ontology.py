@@ -56,8 +56,8 @@ class OntProperty:
 @inject
 def get_default_properties(cfg: AppConfig = Provide["appcfg"]):
     mapping = {
-        "rdfs:label": OntProperty(
-            id="rdfs:label",
+        str(RDFS.label): OntProperty(
+            id=str(RDFS.label),
             uri=str(RDFS.label),
             label="rdfs:label",
             aliases=[],
@@ -65,8 +65,8 @@ def get_default_properties(cfg: AppConfig = Provide["appcfg"]):
             description="Provides a human-readable version of a resource's name.",
             parents=[],
         ),
-        "rdf:type": OntProperty(
-            id="rdf:type",
+        str(RDF.type): OntProperty(
+            id=str(RDF.type),
             uri=str(RDF.type),
             label="rdf:type",
             aliases=[],

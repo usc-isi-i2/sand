@@ -1,3 +1,5 @@
+from collections import defaultdict
+from io import BytesIO, StringIO
 from typing import List, Set
 
 import orjson
@@ -19,6 +21,8 @@ from drepr.models import (
     Resource,
     ResourceType,
 )
+from kgdata.dbpedia.datasets.ontology_dump import aggregated_triples
+from rdflib import RDF, Graph, URIRef
 from slugify import slugify
 from sm.misc.funcs import assert_not_null
 
@@ -110,7 +114,7 @@ class DreprExport(IExport):
             output=MemoryOutput(output_format),
             debug=False,
         )
-        return content
+        return self.post_processing(sm, content, output_format)
 
     def export_drepr_model(self, table: Table, sm: O.SemanticModel) -> DRepr:
         """Create a D-REPR model of the dataset."""
@@ -211,3 +215,49 @@ class DreprExport(IExport):
             ],
             sm=dsm,
         )
+
+    def post_processing(
+        self, sm: O.SemanticModel, ttldata: str, output_format: OutputFormat
+    ) -> str:
+        """Post-processing the TTL data to fix until D-REPR addresses
+        them.
+
+        1. D-REPR doesn't generate relationships for literals that have outgoing edges to class nodes
+        """
+        outliterals = []
+        for node in sm.iter_nodes():
+            if isinstance(node, O.LiteralNode):
+                if sm.out_degree(node.id) > 0:
+                    outliterals.append(node)
+
+        if len(outliterals) == 0:
+            return ttldata
+
+        assert output_format == OutputFormat.TTL, "Only support TTL output format"
+        g = Graph()
+        file = StringIO(ttldata)
+        g.parse(file)
+
+        source2triples = defaultdict(list)
+        for s, p, o in g:
+            source2triples[s].append((s, p, o))
+        resources = [aggregated_triples(x) for x in source2triples.items()]
+
+        new_triples = []
+        for node in outliterals:
+            node_value = URIRef(node.value)
+            for edge in sm.out_edges(node.id):
+                target_node = sm.get_node(edge.target)
+                assert isinstance(target_node, O.ClassNode)
+                for resource in resources:
+                    if str(resource.props[str(RDF.type)][0]) == target_node.abs_uri:
+                        new_triples.append(
+                            (node_value, URIRef(edge.abs_uri), URIRef(resource.id))
+                        )
+
+        for triple in new_triples:
+            g.add(triple)
+
+        file = BytesIO()
+        g.serialize(file, format="turtle")
+        return file.getvalue().decode()
