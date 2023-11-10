@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import defaultdict
 from io import BytesIO, StringIO
 from typing import List, Set
@@ -21,7 +23,7 @@ from drepr.models import (
     Resource,
     ResourceType,
 )
-from kgdata.dbpedia.datasets.ontology_dump import aggregated_triples
+from kgdata.misc.resource import RDFResource
 from rdflib import RDF, Graph, URIRef
 from slugify import slugify
 from sm.misc.funcs import assert_not_null
@@ -241,7 +243,9 @@ class DreprExport(IExport):
         source2triples = defaultdict(list)
         for s, p, o in g:
             source2triples[s].append((s, p, o))
-        resources = [aggregated_triples(x) for x in source2triples.items()]
+        resources = [
+            RDFResource.from_triples(k, ts) for k, ts in source2triples.items()
+        ]
 
         new_triples = []
         for node in outliterals:
