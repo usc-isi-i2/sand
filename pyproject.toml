@@ -15,7 +15,7 @@ sand = 'sand.__main__:cli'
 [tool.poetry.dependencies]
 # restricting the upper bound python version to 3.12, due to RestrictedPython dependency.
 python = ">=3.8,<3.12"
-kgdata = "^5.3.4"
+kgdata = "^5.3.5"
 sem-desc = "^5.1.0"
 peewee = "^3.15.2"
 Flask = "^2.2.2"
