@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections import defaultdict
 from io import BytesIO, StringIO
 from typing import List, Set
