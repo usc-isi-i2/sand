@@ -3,7 +3,7 @@ def test_api_transformation_map_single_line(client, example_db):
         "/api/transformation/test",
         json={
             "type": "map",
-            "tableId": 1,
+            "table_id": 1,
             "mode": "restrictedpython",
             "datapath": ["Tên"],
             "code": "return value.upper()",
@@ -50,7 +50,7 @@ def test_api_transformation_map_single_line_rows(client, example_db):
         "/api/transformation/test",
         json={
             "type": "map",
-            "tableId": 1,
+            "table_id": 1,
             "mode": "restrictedpython",
             "datapath": ["Tên"],
             "code": "return value.upper()",
@@ -81,7 +81,7 @@ def test_api_transformation_map_outputpath(client, example_db):
         "/api/transformation/test",
         json={
             "type": "map",
-            "tableId": 1,
+            "table_id": 1,
             "mode": "restrictedpython",
             "datapath": ["Tên"],
             "code": "return value.upper()",
@@ -106,7 +106,7 @@ def test_api_transformation_map_single_line_context(client, example_db):
         "/api/transformation/test",
         json={
             "type": "filter",
-            "tableId": 1,
+            "table_id": 1,
             "mode": "restrictedpython",
             "datapath": ["Tên"],
             "code": "return True if int(context.row[4]) > 800 else False",
@@ -157,7 +157,7 @@ def test_api_transformation_map_single_line_fail(client, example_db):
         "/api/transformation/test",
         json={
             "type": "map",
-            "tableId": 1,
+            "table_id": 1,
             "mode": "restrictedpython",
             "datapath": ["Tên"],
             "code": "return value+1",
@@ -199,7 +199,7 @@ def test_api_transformation_map_multiline_error(client, example_db):
         "/api/transformation/test",
         json={
             "type": "map",
-            "tableId": 1,
+            "table_id": 1,
             "mode": "restrictedpython",
             "datapath": ["Tên"],
             "code": """
@@ -251,7 +251,7 @@ def test_api_transformation_map_multiline_multi_error(client, example_db):
         "/api/transformation/test",
         json={
             "type": "map",
-            "tableId": 1,
+            "table_id": 1,
             "mode": "restrictedpython",
             "datapath": ["Tên"],
             "code": """
@@ -304,7 +304,7 @@ def test_api_transformation_map_multiline(client, example_db):
         "/api/transformation/test",
         json={
             "type": "map",
-            "tableId": 1,
+            "table_id": 1,
             "mode": "restrictedpython",
             "datapath": ["Tên"],
             "code": "if len(value)>10:\n\treturn value\nelse:\n\treturn 'false'",
@@ -351,7 +351,7 @@ def test_api_transformation_filter_multiline(client, example_db):
         "/api/transformation/test",
         json={
             "type": "filter",
-            "tableId": 1,
+            "table_id": 1,
             "mode": "restrictedpython",
             "datapath": ["Tên"],
             "code": "if len(value)>15:\n\treturn True\nelse:\n\treturn False",
@@ -398,7 +398,7 @@ def test_api_transformation_filter_single_line_fail(client, example_db):
             "type": "filter",
             "mode": "restrictedpython",
             "datapath": ["Tên"],
-            "tableId": 1,
+            "table_id": 1,
             "code": "return len(value)+str(5)",
             "tolerance": 3,
             "outputpath": ["new col data"],
@@ -439,7 +439,7 @@ def test_api_transformation_split_single_line(client, example_db):
         "/api/transformation/test",
         json={
             "type": "split",
-            "tableId": 1,
+            "table_id": 1,
             "mode": "restrictedpython",
             "datapath": ["Tên"],
             "code": "return value.split('(')",
@@ -495,7 +495,7 @@ def test_api_transformation_concatenate_single_line(client, example_db):
         "/api/transformation/test",
         json={
             "type": "concatenate",
-            "tableId": 1,
+            "table_id": 1,
             "mode": "restrictedpython",
             "datapath": ["Tên", "Tọa độ"],
             "code": "return value[0] + value[1]",
@@ -579,7 +579,7 @@ def test_api_transformation_compilation_error(client, example_db):
         json={
             "type": "concatenate",
             "mode": "restrictedpython",
-            "tableId": 1,
+            "table_id": 1,
             "datapath": ["Tên", "Tọa độ"],
             "code": """
 def error_func():
@@ -610,7 +610,7 @@ def test_api_transformation_map_single_line_str(client, example_db):
         "/api/transformation/test",
         json={
             "type": "map",
-            "tableId": 1,
+            "table_id": 1,
             "mode": "restrictedpython",
             "datapath": "Tên",
             "code": "return value.upper()",

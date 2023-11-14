@@ -30,7 +30,7 @@ class TransformRequestPayload:
     """Request Payload dataclass to validate the request obtained from the API call"""
 
     type: Literal["map", "filter", "split", "concatenate"]
-    tableId: int
+    table_id: int
     mode: str
     datapath: Union[str, List[str]]
     code: str
@@ -247,7 +247,7 @@ def transform():
         request.json["datapath"] = [request.json["datapath"]]
 
     request_data = transform_request_deserializer(request.json)
-    table = Table.get_by_id(request_data.tableId)
+    table = Table.get_by_id(request_data.table_id)
     table_rows: List[TableRow] = list(
         TableRow.select().where(TableRow.table == table).order_by(TableRow.index)
     )
