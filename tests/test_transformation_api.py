@@ -697,7 +697,7 @@ def test_api_transformation_create(client, example_db):
             "on_error": "abort",
             "is_draft": True,
             "order": 1,
-            "order_for": 1,
+            "insert_after": None,
         },
     )
     response_data = {

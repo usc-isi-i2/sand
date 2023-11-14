@@ -135,10 +135,9 @@ def example_db(client):
             "on_error": "abort",
             "is_draft": True,
             "order": 1,
-            "order_for": 1,
+            "insert_after": None,
         }
-        client.post("/api/transformation", json=transformation_data)
-
+        res = client.post("/api/transformation", json=transformation_data)
         yield None
     finally:
         for table in all_tables:
