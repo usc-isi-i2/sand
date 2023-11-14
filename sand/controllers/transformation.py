@@ -30,6 +30,7 @@ class TransformRequestPayload:
     """Request Payload dataclass to validate the request obtained from the API call"""
 
     type: Literal["map", "filter", "split", "concatenate"]
+    tableId: int
     mode: str
     datapath: Union[str, List[str]]
     code: str
@@ -240,17 +241,16 @@ def compile_function(code: str) -> Callable:
     return loc["<function>"]
 
 
-@transformation_bp.route(f"/{transformation_bp.name}/test/<table_id>", methods=["POST"])
-def transform(table_id: int):
-    table = Table.get_by_id(table_id)
-    table_rows: List[TableRow] = list(
-        TableRow.select().where(TableRow.table == table).order_by(TableRow.index)
-    )
-
+@transformation_bp.route(f"/{transformation_bp.name}/test", methods=["POST"])
+def transform():
     if isinstance(request.json["datapath"], str):
         request.json["datapath"] = [request.json["datapath"]]
 
     request_data = transform_request_deserializer(request.json)
+    table = Table.get_by_id(request_data.tableId)
+    table_rows: List[TableRow] = list(
+        TableRow.select().where(TableRow.table == table).order_by(TableRow.index)
+    )
     transform_func = compile_function(request_data.code)
     col_index_list = [table.columns.index(column) for column in request_data.datapath]
     data = (
