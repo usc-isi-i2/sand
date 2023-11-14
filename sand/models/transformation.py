@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List, Union, Literal
+from typing import Literal
 from peewee import (
     CharField,
     ForeignKeyField,
@@ -17,8 +17,8 @@ class Transformation(BaseModel):
     name = CharField()
     table = ForeignKeyField(Table, backref="transformations", on_delete="CASCADE")
     mode = CharField()
-    datapath: Union[List[str], str] = JSONField()  # type: ignore
-    outputpath: List[str] = JSONField()  # type: ignore
+    datapath: list[str] | str = JSONField()  # type: ignore
+    outputpath: list[str] = JSONField()  # type: ignore
     type = CharField()
     code = TextField()
     on_error: Literal[
