@@ -124,6 +124,21 @@ def example_db(client):
         semantic_model_data = json.load(open(semantic_file_path))
         client.post("/api/semanticmodel", json=semantic_model_data)
 
+        transformation_data = {
+            "name": "transformation 1",
+            "table": 1,
+            "type": "map",
+            "mode": "restrictedpython",
+            "datapath": "Name",
+            "outputpath": ["Random"],
+            "code": "return value",
+            "on_error": "abort",
+            "is_draft": True,
+            "order": 1,
+            "order_for": 1,
+        }
+        client.post("/api/transformation", json=transformation_data)
+
         yield None
     finally:
         for table in all_tables:

@@ -1,6 +1,6 @@
-def test_api_transform_map_single_line(client, example_db):
+def test_api_transformation_map_single_line(client, example_db):
     resp = client.post(
-        "/api/transform/1/transformations",
+        "/api/transformation/1/transformations",
         json={
             "type": "map",
             "mode": "restrictedpython",
@@ -44,9 +44,9 @@ def test_api_transform_map_single_line(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transform_map_single_line_rows(client, example_db):
+def test_api_transformation_map_single_line_rows(client, example_db):
     resp = client.post(
-        "/api/transform/1/transformations",
+        "/api/transformation/1/transformations",
         json={
             "type": "map",
             "mode": "restrictedpython",
@@ -74,9 +74,9 @@ def test_api_transform_map_single_line_rows(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transform_map_outputpath(client, example_db):
+def test_api_transformation_map_outputpath(client, example_db):
     resp = client.post(
-        "/api/transform/1/transformations",
+        "/api/transformation/1/transformations",
         json={
             "type": "map",
             "mode": "restrictedpython",
@@ -98,9 +98,9 @@ def test_api_transform_map_outputpath(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transform_map_single_line_context(client, example_db):
+def test_api_transformation_map_single_line_context(client, example_db):
     resp = client.post(
-        "/api/transform/1/transformations",
+        "/api/transformation/1/transformations",
         json={
             "type": "filter",
             "mode": "restrictedpython",
@@ -148,9 +148,9 @@ def test_api_transform_map_single_line_context(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transform_map_single_line_fail(client, example_db):
+def test_api_transformation_map_single_line_fail(client, example_db):
     resp = client.post(
-        "/api/transform/1/transformations",
+        "/api/transformation/1/transformations",
         json={
             "type": "map",
             "mode": "restrictedpython",
@@ -189,9 +189,9 @@ def test_api_transform_map_single_line_fail(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transform_map_multiline_error(client, example_db):
+def test_api_transformation_map_multiline_error(client, example_db):
     resp = client.post(
-        "/api/transform/1/transformations",
+        "/api/transformation/1/transformations",
         json={
             "type": "map",
             "mode": "restrictedpython",
@@ -240,9 +240,9 @@ return value+1
     assert response == transformed_data
 
 
-def test_api_transform_map_multiline_multi_error(client, example_db):
+def test_api_transformation_map_multiline_multi_error(client, example_db):
     resp = client.post(
-        "/api/transform/1/transformations",
+        "/api/transformation/1/transformations",
         json={
             "type": "map",
             "mode": "restrictedpython",
@@ -292,9 +292,9 @@ return value+1
     assert response == transformed_data
 
 
-def test_api_transform_map_multiline(client, example_db):
+def test_api_transformation_map_multiline(client, example_db):
     resp = client.post(
-        "/api/transform/1/transformations",
+        "/api/transformation/1/transformations",
         json={
             "type": "map",
             "mode": "restrictedpython",
@@ -338,9 +338,9 @@ def test_api_transform_map_multiline(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transform_filter_multiline(client, example_db):
+def test_api_transformation_filter_multiline(client, example_db):
     resp = client.post(
-        "/api/transform/1/transformations",
+        "/api/transformation/1/transformations",
         json={
             "type": "filter",
             "mode": "restrictedpython",
@@ -382,9 +382,9 @@ def test_api_transform_filter_multiline(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transform_filter_single_line_fail(client, example_db):
+def test_api_transformation_filter_single_line_fail(client, example_db):
     resp = client.post(
-        "/api/transform/1/transformations",
+        "/api/transformation/1/transformations",
         json={
             "type": "filter",
             "mode": "restrictedpython",
@@ -424,9 +424,9 @@ def test_api_transform_filter_single_line_fail(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transform_split_single_line(client, example_db):
+def test_api_transformation_split_single_line(client, example_db):
     resp = client.post(
-        "/api/transform/1/transformations",
+        "/api/transformation/1/transformations",
         json={
             "type": "split",
             "mode": "restrictedpython",
@@ -479,9 +479,9 @@ def test_api_transform_split_single_line(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transform_concatenate_single_line(client, example_db):
+def test_api_transformation_concatenate_single_line(client, example_db):
     resp = client.post(
-        "/api/transform/1/transformations",
+        "/api/transformation/1/transformations",
         json={
             "type": "concatenate",
             "mode": "restrictedpython",
@@ -561,9 +561,9 @@ def test_api_transform_concatenate_single_line(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transform_compilation_error(client, example_db):
+def test_api_transformation_compilation_error(client, example_db):
     resp = client.post(
-        "/api/transform/1/transformations",
+        "/api/transformation/1/transformations",
         json={
             "type": "concatenate",
             "mode": "restrictedpython",
@@ -592,9 +592,9 @@ return value+1
     }
 
 
-def test_api_transform_map_single_line_str(client, example_db):
+def test_api_transformation_map_single_line_str(client, example_db):
     resp = client.post(
-        "/api/transform/1/transformations",
+        "/api/transformation/1/transformations",
         json={
             "type": "map",
             "mode": "restrictedpython",
@@ -638,7 +638,7 @@ def test_api_transform_map_single_line_str(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transform_restrictedpython_compilation_error():
+def test_api_transformation_restrictedpython_compilation_error():
     code = """
 def error_func():
 result = 1/0
@@ -647,11 +647,11 @@ error_func()
 return value+1
     """.strip()
 
-    from sand.controllers.transform import compile_function
+    from sand.controllers.transformation import compile_function
 
     captured_error = None
     try:
-        transform_func = compile_function(code)
+        transformation_func = compile_function(code)
     except Exception as e:
         import sys
         import traceback
@@ -667,3 +667,102 @@ return value+1
         "block at statement: 'result = 1/0'\n",
         "werkzeug.exceptions.BadRequest: 400 Bad Request: Line 2: IndentationError: expected an indented block after function definition on line 1 at statement: 'result = 1/0'\n",
     ]
+
+
+def test_api_transformation_create(client, example_db):
+    resp = client.post(
+        "/api/transformation",
+        json={
+            "name": "transformation 1",
+            "table": 1,
+            "type": "map",
+            "mode": "restrictedpython",
+            "datapath": "Name",
+            "outputpath": ["Random"],
+            "code": "return value",
+            "on_error": "abort",
+            "is_draft": True,
+            "order": 1,
+            "order_for": 1,
+        },
+    )
+    response_data = {
+        "code": "abort",
+        "datapath": "Name",
+        "id": 2,
+        "insert_after": None,
+        "is_draft": True,
+        "mode": "restrictedpython",
+        "name": "transformation 1",
+        "on_error": "abort",
+        "order": 1,
+        "outputpath": ["Random"],
+        "table": 1,
+        "type": "map",
+    }
+
+    response = resp.json
+    assert resp.status_code == 200
+    assert len(response) == len(response_data)
+    assert response == response_data
+
+
+def test_api_transformation_get_one(client, example_db):
+    resp = client.get("/api/transformation/1")
+    response_data = {
+        "code": "abort",
+        "datapath": "Name",
+        "id": 1,
+        "insert_after": None,
+        "is_draft": True,
+        "mode": "restrictedpython",
+        "name": "transformation 1",
+        "on_error": "abort",
+        "order": 1,
+        "outputpath": ["Random"],
+        "table": 1,
+        "type": "map",
+    }
+
+    response = resp.json
+    assert resp.status_code == 200
+    assert len(response) == len(response_data)
+    assert response == response_data
+
+
+def test_api_transformation_get_all(client, example_db):
+    resp = client.get("/api/transformation")
+    response_data = {
+        "items": [
+            {
+                "code": "abort",
+                "datapath": "Name",
+                "id": 1,
+                "insert_after": None,
+                "is_draft": True,
+                "mode": "restrictedpython",
+                "name": "transformation 1",
+                "on_error": "abort",
+                "order": 1,
+                "outputpath": ["Random"],
+                "table": 1,
+                "type": "map",
+            }
+        ],
+        "total": 1,
+    }
+
+    response = resp.json
+    assert resp.status_code == 200
+    assert len(response) == len(response_data)
+    assert response == response_data
+
+
+def test_api_transformation_delete(client, example_db):
+    resp = client.delete("/api/transformation/1")
+    response_data = {"status": "success"}
+
+    response = resp.json
+    assert resp.status_code == 200
+    assert len(response) == len(response_data)
+    assert response == response_data

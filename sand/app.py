@@ -12,7 +12,7 @@ from sand.controllers.project import project_bp
 from sand.controllers.search import search_bp
 from sand.controllers.settings import setting_bp
 from sand.controllers.table import table_bp, table_row_bp
-from sand.controllers.transform import transform_bp
+from sand.controllers.transformation import transformation_bp
 from sand.helpers.namespace import NamespaceService
 from sand.models import EntityAR, SemanticModel
 from sand.models.ontology import OntClassAR, OntPropertyAR
@@ -33,7 +33,7 @@ def get_flask_app(
             table_row_bp,
             setting_bp,
             search_bp,
-            transform_bp,
+            transformation_bp,
             generate_api(
                 SemanticModel,
                 deserializers={"data": sand_deser.deserialize_graph},
