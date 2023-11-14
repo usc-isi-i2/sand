@@ -16,6 +16,7 @@ from sand.models import Transformation
 
 transformation_bp = generate_api(Transformation)
 
+
 @dataclass
 class Context:
     """Context dataclass to access the row of the cell that is being transformed."""
@@ -239,9 +240,7 @@ def compile_function(code: str) -> Callable:
     return loc["<function>"]
 
 
-@transformation_bp.route(
-    f"/{transformation_bp.name}/<table_id>/transformations", methods=["POST"]
-)
+@transformation_bp.route(f"/{transformation_bp.name}/test/<table_id>", methods=["POST"])
 def transform(table_id: int):
     table = Table.get_by_id(table_id)
     table_rows: List[TableRow] = list(

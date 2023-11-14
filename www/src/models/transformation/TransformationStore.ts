@@ -26,10 +26,7 @@ export class TransformationStore extends SimpleCRUDStore<
     payload: Transformation
   ): Promise<TransformationResult[] | undefined> {
     let resp: any = await axios
-      .post(
-        `${SERVER}/api/transform/${payload.tableId}/transformations`,
-        payload
-      )
+      .post(`${SERVER}/api/transformation/test/${payload.tableId}`, payload)
       .then((res) => res.data)
       .catch((error) => error.response.data.message);
     return resp;

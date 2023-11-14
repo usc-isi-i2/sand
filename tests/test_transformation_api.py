@@ -1,6 +1,6 @@
 def test_api_transformation_map_single_line(client, example_db):
     resp = client.post(
-        "/api/transformation/1/transformations",
+        "/api/transformation/test/1",
         json={
             "type": "map",
             "mode": "restrictedpython",
@@ -46,7 +46,7 @@ def test_api_transformation_map_single_line(client, example_db):
 
 def test_api_transformation_map_single_line_rows(client, example_db):
     resp = client.post(
-        "/api/transformation/1/transformations",
+        "/api/transformation/test/1",
         json={
             "type": "map",
             "mode": "restrictedpython",
@@ -76,7 +76,7 @@ def test_api_transformation_map_single_line_rows(client, example_db):
 
 def test_api_transformation_map_outputpath(client, example_db):
     resp = client.post(
-        "/api/transformation/1/transformations",
+        "/api/transformation/test/1",
         json={
             "type": "map",
             "mode": "restrictedpython",
@@ -100,7 +100,7 @@ def test_api_transformation_map_outputpath(client, example_db):
 
 def test_api_transformation_map_single_line_context(client, example_db):
     resp = client.post(
-        "/api/transformation/1/transformations",
+        "/api/transformation/test/1",
         json={
             "type": "filter",
             "mode": "restrictedpython",
@@ -150,7 +150,7 @@ def test_api_transformation_map_single_line_context(client, example_db):
 
 def test_api_transformation_map_single_line_fail(client, example_db):
     resp = client.post(
-        "/api/transformation/1/transformations",
+        "/api/transformation/test/1",
         json={
             "type": "map",
             "mode": "restrictedpython",
@@ -191,7 +191,7 @@ def test_api_transformation_map_single_line_fail(client, example_db):
 
 def test_api_transformation_map_multiline_error(client, example_db):
     resp = client.post(
-        "/api/transformation/1/transformations",
+        "/api/transformation/test/1",
         json={
             "type": "map",
             "mode": "restrictedpython",
@@ -242,7 +242,7 @@ return value+1
 
 def test_api_transformation_map_multiline_multi_error(client, example_db):
     resp = client.post(
-        "/api/transformation/1/transformations",
+        "/api/transformation/test/1",
         json={
             "type": "map",
             "mode": "restrictedpython",
@@ -294,7 +294,7 @@ return value+1
 
 def test_api_transformation_map_multiline(client, example_db):
     resp = client.post(
-        "/api/transformation/1/transformations",
+        "/api/transformation/test/1",
         json={
             "type": "map",
             "mode": "restrictedpython",
@@ -340,7 +340,7 @@ def test_api_transformation_map_multiline(client, example_db):
 
 def test_api_transformation_filter_multiline(client, example_db):
     resp = client.post(
-        "/api/transformation/1/transformations",
+        "/api/transformation/test/1",
         json={
             "type": "filter",
             "mode": "restrictedpython",
@@ -384,7 +384,7 @@ def test_api_transformation_filter_multiline(client, example_db):
 
 def test_api_transformation_filter_single_line_fail(client, example_db):
     resp = client.post(
-        "/api/transformation/1/transformations",
+        "/api/transformation/test/1",
         json={
             "type": "filter",
             "mode": "restrictedpython",
@@ -426,7 +426,7 @@ def test_api_transformation_filter_single_line_fail(client, example_db):
 
 def test_api_transformation_split_single_line(client, example_db):
     resp = client.post(
-        "/api/transformation/1/transformations",
+        "/api/transformation/test/1",
         json={
             "type": "split",
             "mode": "restrictedpython",
@@ -481,7 +481,7 @@ def test_api_transformation_split_single_line(client, example_db):
 
 def test_api_transformation_concatenate_single_line(client, example_db):
     resp = client.post(
-        "/api/transformation/1/transformations",
+        "/api/transformation/test/1",
         json={
             "type": "concatenate",
             "mode": "restrictedpython",
@@ -563,7 +563,7 @@ def test_api_transformation_concatenate_single_line(client, example_db):
 
 def test_api_transformation_compilation_error(client, example_db):
     resp = client.post(
-        "/api/transformation/1/transformations",
+        "/api/transformation/test/1",
         json={
             "type": "concatenate",
             "mode": "restrictedpython",
@@ -594,7 +594,7 @@ return value+1
 
 def test_api_transformation_map_single_line_str(client, example_db):
     resp = client.post(
-        "/api/transformation/1/transformations",
+        "/api/transformation/test/1",
         json={
             "type": "map",
             "mode": "restrictedpython",

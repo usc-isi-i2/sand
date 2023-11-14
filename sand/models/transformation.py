@@ -26,9 +26,7 @@ class Transformation(BaseModel):
     ] = CharField()
     is_draft = BooleanField()
     order = IntegerField()
-    insert_after = ForeignKeyField(
-        "self", null=True, backref="draft_ordered_transformations", on_delete="SET NULL"
-    )
+    insert_after = ForeignKeyField("self", null=True, on_delete="SET NULL")
 
     def to_dict(self):
         return {
