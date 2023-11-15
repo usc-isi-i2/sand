@@ -9,21 +9,30 @@ export interface Transformation extends Record<number> {
   tableId: number;
   datapath: string[];
   code: string | undefined;
+  onError: string;
   outputpath: string[] | undefined;
+}
+
+export interface DraftCreateTransformation extends Transformation {
   tolerance: number;
   rows: number;
 }
 
-export class TransformationStore extends SimpleCRUDStore<
+export class TransformationStore extends CRUDStore<
   number,
-  Transformation
+  Omit<DraftCreateTransformation, "id"> & { draftID: string },
+  DraftCreateTransformation & {
+    markSaved(): void;
+    toModel(): DraftCreateTransformation | undefined;
+  },
+  DraftCreateTransformation
 > {
   constructor() {
     super(`${SERVER}/api/transformation`, undefined, false);
   }
 
   async testTransformation(
-    payload: Transformation
+    payload: DraftCreateTransformation
   ): Promise<TransformationResult[] | undefined> {
     let resp: any = await axios
       .post(`${SERVER}/api/transformation/test`, {
