@@ -34,8 +34,6 @@ class TransformRequestPayload:
     mode: str
     datapath: Union[str, List[str]]
     code: str
-    tolerance: int
-    rows: Optional[int] = None
     outputpath: Optional[Union[str, List[str]]] = None
 
 
@@ -259,7 +257,11 @@ def transform():
             [table_row.row[col_index] for col_index in col_index_list],
             Context(index=table_row.index, row=table_row.row),
         )
-        for table_row in table_rows[: request_data.rows]
+        for table_row in table_rows[
+            : int(request.args["rows"])
+            if request.args["rows"] not in ["null", "undefined"]
+            else None
+        ]
     )
 
     transformed_data = None
@@ -269,7 +271,9 @@ def transform():
             raise BadRequest(
                 "For transform type map the outputpath should be a single column"
             )
-        transformed_data = transform_map(transform_func, data, request_data.tolerance)
+        transformed_data = transform_map(
+            transform_func, data, int(request.args["tolerance"])
+        )
 
     elif request_data.type == "filter":
         if request_data.outputpath and len(request_data.outputpath) != 1:
@@ -277,7 +281,7 @@ def transform():
                 "For transform type map the outputpath should be a single column"
             )
         transformed_data = transform_filter(
-            transform_func, data, request_data.tolerance
+            transform_func, data, int(request.args["tolerance"])
         )
 
     elif request_data.type == "split":
@@ -285,11 +289,13 @@ def transform():
             raise BadRequest(
                 "transform type split needs to have outputpath defined in the request body"
             )
-        transformed_data = transform_split(transform_func, data, request_data.tolerance)
+        transformed_data = transform_split(
+            transform_func, data, int(request.args["tolerance"])
+        )
 
     elif request_data.type == "concatenate":
         transformed_data = transform_concatenate(
-            transform_func, data, request_data.tolerance
+            transform_func, data, int(request.args["tolerance"])
         )
 
     return jsonify(transformed_data)

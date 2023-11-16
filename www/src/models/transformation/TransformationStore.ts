@@ -13,19 +13,22 @@ export interface Transformation extends Record<number> {
   outputpath: string[] | undefined;
 }
 
-export interface DraftCreateTransformation extends Transformation {
+export interface DraftCreateTransformation extends Omit<Transformation, "id"> {
+  draftID: string;
   tolerance: number;
   rows: number;
 }
 
+export interface DraftUpdateTransformation extends Transformation {
+  markSaved(): void;
+  toModel(): Transformation | undefined;
+}
+
 export class TransformationStore extends CRUDStore<
   number,
-  Omit<DraftCreateTransformation, "id"> & { draftID: string },
-  DraftCreateTransformation & {
-    markSaved(): void;
-    toModel(): DraftCreateTransformation | undefined;
-  },
-  DraftCreateTransformation
+  DraftCreateTransformation,
+  DraftUpdateTransformation,
+  Transformation
 > {
   constructor() {
     super(`${SERVER}/api/transformation`, undefined, false);
@@ -35,17 +38,19 @@ export class TransformationStore extends CRUDStore<
     payload: DraftCreateTransformation
   ): Promise<TransformationResult[] | undefined> {
     let resp: any = await axios
-      .post(`${SERVER}/api/transformation/test`, {
-        id: payload.id,
-        table_id: payload.tableId,
-        type: payload.type,
-        code: payload.code,
-        mode: payload.mode,
-        datapath: payload.datapath,
-        outputpath: payload.outputpath,
-        tolerance: payload.tolerance,
-        rows: payload.rows,
-      })
+      .post(
+        `${SERVER}/api/transformation/test?tolerance=${
+          payload.tolerance
+        }&rows=${payload!.rows}`,
+        {
+          table_id: payload.tableId,
+          type: payload.type,
+          code: payload.code,
+          mode: payload.mode,
+          datapath: payload.datapath,
+          outputpath: payload.outputpath,
+        }
+      )
       .then((res) => res.data)
       .catch((error) => error.response.data.message);
     return resp;

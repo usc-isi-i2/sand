@@ -84,7 +84,7 @@ export const TransformationForm = observer(
 
     const onExecute = async () => {
       const transformationPayload: DraftCreateTransformation = {
-        id: -1,
+        draftID: "-1",
         tableId: table.id,
         type: form.getFieldValue("type"),
         code: form.getFieldValue("code"),
