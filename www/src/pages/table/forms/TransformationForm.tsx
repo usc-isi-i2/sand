@@ -18,6 +18,7 @@ import Editor from "@monaco-editor/react";
 import {
   TransformationResult,
   useStores,
+  DraftCreateTransformation,
   Transformation,
   Table as TableModel,
 } from "../../../models";
@@ -83,20 +84,24 @@ export const TransformationForm = observer(
     ];
 
     const onExecute = async () => {
-      const transformationPayload: Transformation = {
+      const transformationPayload:
+        | DraftCreateTransformation
+        | Transformation = {
+        draftID: table.id.toString(),
         id: -1,
         tableId: table.id,
         type: form.getFieldValue("type"),
         code: form.getFieldValue("code"),
         mode: "restrictedpython",
+        onError: form.getFieldValue("onerror"),
         datapath: form.getFieldValue("datapath"),
         outputpath: form.getFieldValue("outputpath"),
-        tolerance: form.getFieldValue("tolerance"),
-        rows: form.getFieldValue("rows"),
       };
 
       let response = await transformationStore.testTransformation(
-        transformationPayload
+        transformationPayload,
+        form.getFieldValue("tolerance"),
+        form.getFieldValue("rows")
       );
       setResult(response);
     };

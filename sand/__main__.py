@@ -11,7 +11,7 @@ from sand.app import get_flask_app
 from sand.commands.load import load_dataset
 from sand.container import use_container
 from sand.helpers.dependency_injection import use_auto_inject
-from sand.models import Project, SemanticModel, Table, TableRow
+from sand.models import Project, SemanticModel, Table, TableRow, Transformation
 from sand.models import db as dbconn
 from sand.models import init_db
 
@@ -21,7 +21,9 @@ from sand.models import init_db
 def init(db):
     """Init database"""
     init_db(db)
-    dbconn.create_tables([Project, Table, TableRow, SemanticModel], safe=True)
+    dbconn.create_tables(
+        [Project, Table, TableRow, SemanticModel, Transformation], safe=True
+    )
     if Project.select().where(fn.Lower(Project.name) == "default").count() == 0:
         Project(name="Default", description="The default project").save()
 
