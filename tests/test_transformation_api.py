@@ -1,4 +1,5 @@
 from flask.testing import FlaskClient
+from sand.controllers.transformation import compile_function
 
 
 def test_api_transformation_map_single_line(client: FlaskClient, example_db):
@@ -663,8 +664,6 @@ result = 1/0
 error_func()
 return value+1
     """.strip()
-
-    from sand.controllers.transformation import compile_function
 
     captured_error = None
     try:
