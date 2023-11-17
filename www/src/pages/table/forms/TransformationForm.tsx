@@ -19,6 +19,7 @@ import {
   TransformationResult,
   useStores,
   DraftCreateTransformation,
+  Transformation,
   Table as TableModel,
 } from "../../../models";
 
@@ -83,8 +84,11 @@ export const TransformationForm = observer(
     ];
 
     const onExecute = async () => {
-      const transformationPayload: DraftCreateTransformation = {
-        draftID: "-1",
+      const transformationPayload:
+        | DraftCreateTransformation
+        | Transformation = {
+        draftID: table.id.toString(),
+        id: -1,
         tableId: table.id,
         type: form.getFieldValue("type"),
         code: form.getFieldValue("code"),
@@ -92,12 +96,12 @@ export const TransformationForm = observer(
         onError: form.getFieldValue("onerror"),
         datapath: form.getFieldValue("datapath"),
         outputpath: form.getFieldValue("outputpath"),
-        tolerance: form.getFieldValue("tolerance"),
-        rows: form.getFieldValue("rows"),
       };
 
       let response = await transformationStore.testTransformation(
-        transformationPayload
+        transformationPayload,
+        form.getFieldValue("tolerance"),
+        form.getFieldValue("rows")
       );
       setResult(response);
     };

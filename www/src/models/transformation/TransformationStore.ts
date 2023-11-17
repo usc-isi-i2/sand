@@ -15,8 +15,6 @@ export interface Transformation extends Record<number> {
 
 export interface DraftCreateTransformation extends Omit<Transformation, "id"> {
   draftID: string;
-  tolerance: number;
-  rows: number;
 }
 
 export interface DraftUpdateTransformation extends Transformation {
@@ -35,24 +33,33 @@ export class TransformationStore extends CRUDStore<
   }
 
   async testTransformation(
-    payload: DraftCreateTransformation
+    payload: DraftCreateTransformation | Transformation,
+    tolerance: number,
+    rows: number
   ): Promise<TransformationResult[] | undefined> {
     let resp: any = await axios
-      .post(
-        `${SERVER}/api/transformation/test?tolerance=${
-          payload.tolerance
-        }&rows=${payload!.rows}`,
-        {
-          table_id: payload.tableId,
-          type: payload.type,
-          code: payload.code,
-          mode: payload.mode,
-          datapath: payload.datapath,
-          outputpath: payload.outputpath,
-        }
-      )
+      .post(`${SERVER}/api/transformation/test`, {
+        table_id: payload.tableId,
+        type: payload.type,
+        code: payload.code,
+        mode: payload.mode,
+        datapath: payload.datapath,
+        outputpath: payload.outputpath,
+        tolerance: tolerance,
+        rows: rows,
+      })
       .then((res) => res.data)
-      .catch((error) => error.response.data.message);
+      .catch((error) => {
+        if (
+          axios.isAxiosError(error) &&
+          error.response &&
+          error.response.status === 400
+        ) {
+          return error.response.data.message;
+        } else {
+          return Promise.reject(error);
+        }
+      });
     return resp;
   }
 }

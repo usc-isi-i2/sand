@@ -1,4 +1,7 @@
-def test_api_transformation_map_single_line(client, example_db):
+from flask.testing import FlaskClient
+
+
+def test_api_transformation_map_single_line(client: FlaskClient, example_db):
     resp = client.post(
         "/api/transformation/test",
         json={
@@ -45,7 +48,7 @@ def test_api_transformation_map_single_line(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transformation_map_single_line_rows(client, example_db):
+def test_api_transformation_map_single_line_rows(client: FlaskClient, example_db):
     resp = client.post(
         "/api/transformation/test",
         json={
@@ -76,7 +79,7 @@ def test_api_transformation_map_single_line_rows(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transformation_map_outputpath(client, example_db):
+def test_api_transformation_map_outputpath(client: FlaskClient, example_db):
     resp = client.post(
         "/api/transformation/test",
         json={
@@ -101,7 +104,7 @@ def test_api_transformation_map_outputpath(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transformation_map_single_line_context(client, example_db):
+def test_api_transformation_map_single_line_context(client: FlaskClient, example_db):
     resp = client.post(
         "/api/transformation/test",
         json={
@@ -152,7 +155,7 @@ def test_api_transformation_map_single_line_context(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transformation_map_single_line_fail(client, example_db):
+def test_api_transformation_map_single_line_fail(client: FlaskClient, example_db):
     resp = client.post(
         "/api/transformation/test",
         json={
@@ -194,7 +197,7 @@ def test_api_transformation_map_single_line_fail(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transformation_map_multiline_error(client, example_db):
+def test_api_transformation_map_multiline_error(client: FlaskClient, example_db):
     resp = client.post(
         "/api/transformation/test",
         json={
@@ -246,7 +249,7 @@ return value+1
     assert response == transformed_data
 
 
-def test_api_transformation_map_multiline_multi_error(client, example_db):
+def test_api_transformation_map_multiline_multi_error(client: FlaskClient, example_db):
     resp = client.post(
         "/api/transformation/test",
         json={
@@ -299,7 +302,7 @@ return value+1
     assert response == transformed_data
 
 
-def test_api_transformation_map_multiline(client, example_db):
+def test_api_transformation_map_multiline(client: FlaskClient, example_db):
     resp = client.post(
         "/api/transformation/test",
         json={
@@ -346,7 +349,7 @@ def test_api_transformation_map_multiline(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transformation_filter_multiline(client, example_db):
+def test_api_transformation_filter_multiline(client: FlaskClient, example_db):
     resp = client.post(
         "/api/transformation/test",
         json={
@@ -391,7 +394,7 @@ def test_api_transformation_filter_multiline(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transformation_filter_single_line_fail(client, example_db):
+def test_api_transformation_filter_single_line_fail(client: FlaskClient, example_db):
     resp = client.post(
         "/api/transformation/test",
         json={
@@ -434,7 +437,7 @@ def test_api_transformation_filter_single_line_fail(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transformation_split_single_line(client, example_db):
+def test_api_transformation_split_single_line(client: FlaskClient, example_db):
     resp = client.post(
         "/api/transformation/test",
         json={
@@ -490,7 +493,7 @@ def test_api_transformation_split_single_line(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transformation_concatenate_single_line(client, example_db):
+def test_api_transformation_concatenate_single_line(client: FlaskClient, example_db):
     resp = client.post(
         "/api/transformation/test",
         json={
@@ -573,7 +576,7 @@ def test_api_transformation_concatenate_single_line(client, example_db):
     assert response == transformed_data
 
 
-def test_api_transformation_compilation_error(client, example_db):
+def test_api_transformation_compilation_error(client: FlaskClient, example_db):
     resp = client.post(
         "/api/transformation/test",
         json={
@@ -605,7 +608,7 @@ return value+1
     }
 
 
-def test_api_transformation_map_single_line_str(client, example_db):
+def test_api_transformation_map_single_line_str(client: FlaskClient, example_db):
     resp = client.post(
         "/api/transformation/test",
         json={
@@ -683,7 +686,7 @@ return value+1
     ]
 
 
-def test_api_transformation_create(client, example_db):
+def test_api_transformation_create(client: FlaskClient, example_db):
     resp = client.post(
         "/api/transformation",
         json={
@@ -721,7 +724,7 @@ def test_api_transformation_create(client, example_db):
     assert response == response_data
 
 
-def test_api_transformation_get_one(client, example_db):
+def test_api_transformation_get_one(client: FlaskClient, example_db):
     resp = client.get("/api/transformation/1")
     response_data = {
         "code": "abort",
@@ -744,7 +747,7 @@ def test_api_transformation_get_one(client, example_db):
     assert response == response_data
 
 
-def test_api_transformation_get_all(client, example_db):
+def test_api_transformation_get_all(client: FlaskClient, example_db):
     resp = client.get("/api/transformation")
     response_data = {
         "items": [
@@ -772,7 +775,7 @@ def test_api_transformation_get_all(client, example_db):
     assert response == response_data
 
 
-def test_api_transformation_delete(client, example_db):
+def test_api_transformation_delete(client: FlaskClient, example_db):
     resp = client.delete("/api/transformation/1")
     response_data = {"status": "success"}
 

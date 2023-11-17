@@ -19,6 +19,7 @@ from sand.extensions.wikidata import (
 from sand.helpers.dependency_injection import use_auto_inject
 from sand.models import all_tables
 from sand.models.base import StoreWrapper, db, init_db
+from flask.testing import FlaskClient
 
 
 def get_entity_db(dbfile, proxy=False) -> StoreWrapper:
@@ -92,7 +93,7 @@ def client():
 
 
 @pytest.fixture
-def example_db(client):
+def example_db(client: FlaskClient):
     try:
         from sand.config import _ROOT_DIR
 
@@ -137,7 +138,7 @@ def example_db(client):
             "order": 1,
             "insert_after": None,
         }
-        res = client.post("/api/transformation", json=transformation_data)
+        resp = client.post("/api/transformation", json=transformation_data)
         yield None
     finally:
         for table in all_tables:
