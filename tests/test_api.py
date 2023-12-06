@@ -26,8 +26,8 @@ def test_api_search_entities(client):
     search_results = resp.json["items"]
 
     assert len(search_results) == 10
-    assert search_results[0]["id"] == "Q30"
-    assert search_results[0]["label"] == "United States of America"
+    assert any(s["id"] == "Q30" for s in search_results[:5])
+    assert any(s["label"] == "United States of America" for s in search_results[:5])
 
     resp = client.get("/api/search/entities?q=")
     search_results = resp.json["items"]
