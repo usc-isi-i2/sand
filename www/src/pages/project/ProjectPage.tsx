@@ -6,7 +6,7 @@ import { InternalLink, LoadingComponent, NotFoundComponent } from "gena-app";
 import _ from "lodash";
 import { observer } from "mobx-react";
 import React, { useEffect, useRef } from "react";
-import { Table, useStores } from "../../models";
+import { Table, useStores } from "models";
 import { routes } from "../../routes";
 import { openUpdateProjectForm } from "./forms/UpdateProjectForm";
 import { openUploadTableForm } from "./forms/upload";
