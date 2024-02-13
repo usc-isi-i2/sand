@@ -1,4 +1,4 @@
-import { SimpleCRUDStore, CRUDStore, Record } from "gena-app";
+import { CRUDStore, Record } from "gena-app";
 import { SERVER } from "../../env";
 import { TransformationResult } from "./TransformationResult";
 import axios from "axios";

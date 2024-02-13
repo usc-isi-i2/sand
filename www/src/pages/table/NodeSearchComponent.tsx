@@ -73,7 +73,7 @@ export const NodeSearchComponent = withStyles(styles)(
         for (const u of sm.graph.nodes) {
           if (
             classAndLiteralSearchOnly &&
-            !(u.nodetype == "class_node" || u.nodetype == "literal_node")
+            !(u.nodetype === "class_node" || u.nodetype === "literal_node")
           )
             continue;
           options.push({
@@ -135,7 +135,7 @@ export const NodeSearchComponent = withStyles(styles)(
           className={classes.selection}
           showSearch={true}
           filterOption={(inputValue, option) => {
-            if (option!.type != "class") {
+            if (option!.type !== "class") {
               let label = option!.label!.toLowerCase();
               return inputValue
                 .toLowerCase()
@@ -148,7 +148,7 @@ export const NodeSearchComponent = withStyles(styles)(
           onSearch={debounce(onSearch, 300)}
           value={value === undefined ? undefined : `${value.type}:${value.id}`}
           onSelect={(value: any, option: SearchOptions) => {
-            if (option.type == "class") {
+            if (option.type === "class") {
               classStore.fetchById(option.id).then(() => {
                 onSelect({ type: option.type, id: option.id });
               });

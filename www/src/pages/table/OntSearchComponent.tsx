@@ -1,7 +1,7 @@
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { Select, Spin } from "antd";
 import { observer } from "mobx-react";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useStores } from "../../models";
 import SearchOptionsComponent from "./SearchOptionsComponent";
 import { debounce } from "lodash";

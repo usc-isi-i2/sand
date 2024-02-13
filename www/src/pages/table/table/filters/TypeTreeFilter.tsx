@@ -353,10 +353,6 @@ const flattenGraph = (types: { [id: string]: Class }, filter: ColumnFilter) => {
   const type2node: { [id: string]: number } = {};
   const type2descendants: Record<string, string[]> = {};
 
-  let type2parents: { [id: string]: Set<string> } = Object.fromEntries(
-    lstTypes.map((t) => [t.id, new Set(t.parents)])
-  );
-
   for (const type of lstTypes) {
     type2node[type.id] = graph.addNode(type);
   }

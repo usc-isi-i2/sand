@@ -1,7 +1,7 @@
 import { RStore } from "gena-app";
 import { SERVER } from "../../env";
 import { Entity } from "./Entity";
-import axios, { AxiosRequestConfig } from "axios";
+import axios from "axios";
 
 export interface EntityTextSearchResult {
   id: string;

@@ -5,7 +5,6 @@ import {
   TransformationForm,
   TransformationFormProps,
 } from "./TransformationForm";
-import { Table } from "../../../models";
 
 interface TypedEdgeFormProps extends EdgeFormProps {
   type: "edge";

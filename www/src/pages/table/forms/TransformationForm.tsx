@@ -2,9 +2,7 @@ import {
   Button,
   Radio,
   Tag,
-  Space,
   Table,
-  Modal,
   Form,
   Col,
   Row,
@@ -12,8 +10,7 @@ import {
   InputNumber,
 } from "antd";
 import { observer } from "mobx-react";
-import { ActionType } from "@ant-design/pro-table";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import Editor from "@monaco-editor/react";
 import {
   TransformationResult,
@@ -50,8 +47,8 @@ const editorOptions = {
 
 export const TransformationForm = observer(
   ({ table }: TransformationFormProps) => {
-    const onDone = () => Modal.destroyAll();
-    const actionRef = useRef<ActionType>();
+    // const onDone = () => Modal.destroyAll();
+    // const actionRef = useRef<ActionType>();
     const [form] = Form.useForm();
     const { transformationStore } = useStores();
     const [result, setResult] = useState<TransformationResult[] | undefined>();
@@ -84,19 +81,18 @@ export const TransformationForm = observer(
     ];
 
     const onExecute = async () => {
-      const transformationPayload:
-        | DraftCreateTransformation
-        | Transformation = {
-        draftID: table.id.toString(),
-        id: -1,
-        tableId: table.id,
-        type: form.getFieldValue("type"),
-        code: form.getFieldValue("code"),
-        mode: "restrictedpython",
-        onError: form.getFieldValue("onerror"),
-        datapath: form.getFieldValue("datapath"),
-        outputpath: form.getFieldValue("outputpath"),
-      };
+      const transformationPayload: DraftCreateTransformation | Transformation =
+        {
+          draftID: table.id.toString(),
+          id: -1,
+          tableId: table.id,
+          type: form.getFieldValue("type"),
+          code: form.getFieldValue("code"),
+          mode: "restrictedpython",
+          onError: form.getFieldValue("onerror"),
+          datapath: form.getFieldValue("datapath"),
+          outputpath: form.getFieldValue("outputpath"),
+        };
 
       let response = await transformationStore.testTransformation(
         transformationPayload,
