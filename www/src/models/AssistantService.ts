@@ -77,6 +77,37 @@ export class AssistantService extends RStore<number, AssistantRecord> {
       data: rawsm,
       id: "",
     }).graph;
+    // add back any data node that aren't in the graph
+    for (
+      let columnIndex = 0;
+      columnIndex < table.columns.length;
+      columnIndex++
+    ) {
+      if (graph.nodeByColumnIndex(columnIndex) === undefined) {
+        let prefix = "dnode";
+        if (graph.hasNode(`${prefix}:${columnIndex}`)) {
+          for (let counter = 0; counter < 1000; counter++) {
+            prefix = `dnode-p${counter}`;
+            if (!graph.hasNode(`${prefix}:${columnIndex}`)) {
+              break;
+            }
+          }
+        }
+
+        if (graph.hasNode(`${prefix}:${columnIndex}`)) {
+          throw new Error(
+            `Cannot generate a unique id to create a node for column ${columnIndex} in the graph`
+          );
+        }
+
+        graph.addDataNode({
+          id: `${prefix}:${columnIndex}`,
+          label: table.columns[columnIndex],
+          columnIndex: columnIndex,
+          nodetype: "data_node",
+        });
+      }
+    }
 
     // before set a new draft, check if an empty draft is there (as default) and remove it
     const prevDrafts = this.smStore.getCreateDraftsByTable(table);

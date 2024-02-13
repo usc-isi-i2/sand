@@ -455,6 +455,7 @@ export class SMGraph {
       throw new Error("Duplicated id");
     }
     this.nodeId2Index[node.id] = this.nodes.length;
+    this.column2nodeIndex[node.columnIndex] = this.nodes.length;
     this.nodes.push(node);
     this.version += 1;
     this.stale = true;
