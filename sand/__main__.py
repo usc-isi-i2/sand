@@ -80,6 +80,15 @@ def create(db, description: str, name: str):
     Project(name=name, description=description).save()
 
 
+@click.command(help="Remove a project")
+@click.option("-d", "--db", required=True, help="sand database file")
+@click.argument("name")
+def remove(db, name: str):
+    """Create project if not exist"""
+    init_db(db)
+    Project.get(name=name).delete_instance()
+
+
 @click.group()
 def cli():
     pass
@@ -88,6 +97,7 @@ def cli():
 cli.add_command(init)
 cli.add_command(start)
 cli.add_command(create)
+cli.add_command(remove)
 cli.add_command(load_dataset)
 
 

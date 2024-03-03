@@ -76,7 +76,8 @@ export const TablePage = withStyles(styles)(
       }
 
       return table.columns.map((col, columnIndex) => {
-        if (sm === undefined) return undefined;
+        if (sm === undefined || !sm.graph.hasColumnIndex(columnIndex))
+          return undefined;
 
         const node = sm.graph.nodeByColumnIndex(columnIndex);
         const datatypes: Set<DataType> = new Set(

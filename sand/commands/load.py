@@ -3,6 +3,7 @@ from typing import List, Tuple
 
 import click
 from sm.dataset import Dataset, Example, FullTable
+from sm.outputs.semantic_model import DataNode
 from tqdm.auto import tqdm
 
 from sand.models import (
@@ -53,12 +54,20 @@ def save_example(project: Project, example: Example[FullTable]):
         row.save()
 
     for i, sm in enumerate(example.sms):
+        # make sure that the semantic model has all columns in the table
+        newsm = sm.deep_copy()
+        for col in example.table.table.columns:
+            if not newsm.has_data_node(col.index):
+                newsm.add_node(
+                    DataNode(col_index=col.index, label=col.clean_multiline_name or "")
+                )
+
         SemanticModel(
             table=mtbl,
             name=f"sm-{i}",
             description="",
             version=1,
-            data=sm,
+            data=newsm,
         ).save()
 
 
