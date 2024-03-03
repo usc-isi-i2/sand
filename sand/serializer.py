@@ -80,10 +80,7 @@ def serialize_graph(
                 {
                     "id": str(n.id),
                     "uri": n.abs_uri,
-                    "label": assert_not_null(n.readable_label),
-                    # "label": tmp.readable_label
-                    # if (tmp := ontclass_ar.get_by_uri(n.abs_uri)) is not None
-                    # else n.rel_uri,
+                    "label": n.label,
                     "approximation": n.approximation,
                     "type": "class_node",
                 }
@@ -121,7 +118,7 @@ def serialize_graph(
             "source": str(e.source),
             "target": str(e.target),
             "uri": e.abs_uri,
-            "label": assert_not_null(e.readable_label),
+            "label": e.label,
             # "label": e.readable_label
             # or (
             #     tmp.readable_label

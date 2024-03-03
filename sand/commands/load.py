@@ -67,16 +67,14 @@ def convert_linked_table(tbl: FullTable) -> Tuple[Table, List[TableRow]]:
     Note that the project of the table is not set, which is supposed to be set later.
     """
     context_values = [
-        Value("entityid", str(entityid)) for entityid in tbl.context.page_entities
+        Value("entityid", str(entityid)) for entityid in tbl.context.entities
     ]
 
     if tbl.context.page_url is not None:
         context_page = ContextPage(
             tbl.context.page_url,
             tbl.context.page_title or "",
-            str(tbl.context.page_entities[0])
-            if len(tbl.context.page_entities) > 0
-            else None,
+            (str(tbl.context.entities[0]) if len(tbl.context.entities) > 0 else None),
         )
     else:
         context_page = None

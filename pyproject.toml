@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "web-sand"
-version = "4.0.0"
+version = "4.0.1"
 description = "UI for browsing/editing semantic descriptions"
 authors = ["Binh Vu <binh@toan2.com>"]
 repository = "https://github.com/usc-isi-i2/sand"
@@ -16,7 +16,7 @@ sand = 'sand.__main__:cli'
 # restricting the upper bound python version to 3.12, due to RestrictedPython dependency.
 python = ">=3.9, <3.12"
 kgdata = "^6.0.0"
-sem-desc = "^6.0.0"
+sem-desc = "^6.8.0"
 peewee = "^3.15.2"
 Flask = "^2.2.2"
 python-dotenv = ">= 0.19.0, < 0.20.0"
@@ -25,7 +25,7 @@ gena = "^1.6.4"
 loguru = "^0.7.0"
 orjson = ">= 3.9.0, < 4.0.0"
 drepr = "^2.10.0"
-rsoup = "^3.0.2"
+rsoup = "^3.1.7"
 nh3 = "^0.2.13"
 RestrictedPython = "^6.1"
 
