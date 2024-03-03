@@ -30,7 +30,8 @@ OntPropertyDataType = Literal[
     "url",
     "entity",
     "datetime",
-    "number",
+    "integer-number",
+    "decimal-number",
     "string",
     "globe-coordinate",
     "unknown",  # don't know the type yet
@@ -53,9 +54,8 @@ class OntProperty:
         return self.label
 
 
-@inject
-def get_default_properties(cfg: AppConfig = Provide["appcfg"]):
-    mapping = {
+def semweb_default_props():
+    return {
         str(RDFS.label): OntProperty(
             id=str(RDFS.label),
             uri=str(RDFS.label),
@@ -75,14 +75,17 @@ def get_default_properties(cfg: AppConfig = Provide["appcfg"]):
             parents=[],
         ),
     }
-    mapping.update(import_func(cfg.property.default)())
+
+
+@inject
+def get_default_properties(cfg: AppConfig = Provide["appcfg"]):
+    mapping = import_func(cfg.property.default)()
     return mapping
 
 
 @inject
 def get_default_classes(cfg: AppConfig = Provide["appcfg"]):
-    mapping = {}
-    mapping.update(import_func(cfg.clazz.default)())
+    mapping = import_func(cfg.clazz.default)()
     return mapping
 
 

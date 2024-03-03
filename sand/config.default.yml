@@ -22,7 +22,7 @@ property:
   args:
     dbfile: /tmp/properties.db
     proxy: true
-  default: builtins.dict
+  default: sand.models.ontology.semweb_default_props
 semantic_model:
   identifiers:
     - http://www.w3.org/2000/01/rdf-schema#label
