@@ -112,7 +112,7 @@ export const MenuBar = observer(
       },
       exportLinkedEntities: () => {
         routes.tableExportLinkedEntities
-          .path({ tableId: table.id }, { attachment: false })
+          .path({ tableId: table.id }, { attachment: true })
           .mouseClickNavigationHandler(undefined, true);
       },
       exportFullModel: () => {
@@ -231,7 +231,7 @@ export const MenuBar = observer(
           </Menu.Item>
           <Menu.Item
             key="export-linked-entities"
-            icon={<ExportOutlined />}
+            icon={<FontAwesomeIcon icon={faDownload} />}
             onClick={funcs.exportLinkedEntities}
           >
             Export linked entities
