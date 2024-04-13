@@ -72,12 +72,12 @@ def start(
 
 @click.command()
 @click.option("-d", "--db", required=True, help="sand database file")
-@click.option("--description", required=True, help="Description of the project")
+@click.option("--description", help="Description of the project")
 @click.argument("name")
-def create(db, description: str, name: str):
+def create(db, description: Optional[str], name: str):
     """Create project if not exist"""
     init_db(db)
-    Project(name=name, description=description).save()
+    Project(name=name, description=description or name).save()
 
 
 @click.command(help="Remove a project")

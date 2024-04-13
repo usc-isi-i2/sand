@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "web-sand"
-version = "4.0.2"
+version = "4.1.0"
 description = "UI for browsing/editing semantic descriptions"
 authors = ["Binh Vu <binh@toan2.com>"]
 repository = "https://github.com/usc-isi-i2/sand"
 license = "MIT"
 packages = [{ include = "sand" }]
 readme = "README.md"
-include = ["sand/www/**/*"]
+# include = ["sand/www/**/*"]
 
 [tool.poetry.scripts]
 sand = 'sand.__main__:cli'

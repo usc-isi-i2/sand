@@ -3,6 +3,7 @@ from typing import List, Tuple
 
 import click
 from sm.dataset import Dataset, Example, FullTable
+from sm.misc.funcs import import_func
 from sm.outputs.semantic_model import DataNode
 from tqdm.auto import tqdm
 
@@ -22,7 +23,11 @@ from sand.models import init_db
 @click.command(name="load")
 @click.option("-d", "--db", required=True, help="smc database file")
 @click.option("-p", "--project", default="default", help="Project name")
-@click.option("--dataset", required=True, help="Path to tables")
+@click.option(
+    "--dataset",
+    required=True,
+    help="Path to tables or a python function that returns the dataset in the following format: <python_func>::<dataset_name>",
+)
 @click.option(
     "-n",
     "--n-tables",
@@ -34,7 +39,11 @@ def load_dataset(db: str, project: str, dataset: str, n_tables: int):
     """Load a dataset into a project"""
     init_db(db)
 
-    examples = Dataset(Path(dataset)).load()
+    if dataset.find("::") != -1:
+        func, dsquery = dataset.split("::")
+        examples = import_func(func)(dsquery).load()
+    else:
+        examples = Dataset(Path(dataset)).load()
 
     if n_tables > 0:
         examples = examples[:n_tables]
