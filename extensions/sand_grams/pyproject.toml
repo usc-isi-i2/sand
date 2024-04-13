@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "sand-grams"
+version = "1.0.0"
+description = "SAND & GRAMS Integration"
+authors = ["Binh Vu <bvu687@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

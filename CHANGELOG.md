@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- SAND Entity Editor UI, when users link new cell, it will automatically do an initial search using the cell as the query to save users time from re-entering the same information.
+
 ## [4.1.0] - 2024-04-13
 
 ### Added

@@ -1,22 +1,22 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import Optional
 
-from sand.models.table import Table, TableRow
 from sm.outputs.semantic_model import SemanticModel
 
-if TYPE_CHECKING:
-    from sand.app import App
+from sand.models.table import Link, Table, TableRow
 
 
-class IAssistant(ABC):
-    def __init__(self, app: App):
-        self.app = app
-
-    @abstractmethod
+class IAssistant:
     def predict(
-        self, table: Table, rows: List[TableRow]
-    ) -> Tuple[Optional[SemanticModel], Optional[List[TableRow]]]:
+        self, table: Table, rows: list[TableRow]
+    ) -> tuple[Optional[SemanticModel], Optional[list[TableRow]]]:
         """Predict semantic model and link entities"""
-        pass
+        raise NotImplementedError()
+
+    def predict_entities(
+        self, table: Table, rows: list[TableRow], row: int, col: int
+    ) -> list[Link]:
+        """Predict entities for a cell"""
+        raise NotImplementedError()

@@ -1,7 +1,7 @@
 import { WithStyles, withStyles } from "@material-ui/styles";
 import { Select, Spin } from "antd";
 import { observer } from "mobx-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useStores } from "../../models";
 import SearchOptionsComponent from "./SearchOptionsComponent";
 import { debounce } from "lodash";
@@ -17,6 +17,7 @@ const styles = {
 };
 
 type SearchProps = {
+  defaultSearchQuery?: string;
   value?: string | string[];
   onDeselect?: (value: string) => void;
   onSelect?: (value: string) => void;
@@ -53,6 +54,7 @@ function useSearchComponent(
     if (query === "") {
       return;
     }
+
     const loaderOption: SearchOptions = {
       id: "",
       label: <Spin style={{ width: "100%", marginTop: 3 }} size="large" />,
@@ -84,6 +86,15 @@ function useSearchComponent(
       setSearchOptions(searchResults);
     });
   };
+
+  // if default search query is provided, we should do an initial search to get the results so users
+  // can click immediately -- this is a work around to antd lack of setting a default query.
+  // however, the dropdown isn't triggered by default -- we can improve it so it save users one click
+  useEffect(() => {
+    if (props.defaultSearchQuery !== undefined) {
+      onSearch(props.defaultSearchQuery);
+    }
+  }, [props.defaultSearchQuery || ""]);
 
   return (
     <Select

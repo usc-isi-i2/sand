@@ -6,15 +6,17 @@ from typing import Dict, List, Tuple
 import serde.prelude as serde
 import sm.outputs.semantic_model as O
 from rdflib import RDFS
+from sm.namespaces.wikidata import WikidataNamespace
+
 from sand.controllers.assistant import IAssistant
 from sand.models.base import init_db
 from sand.models.table import CandidateEntity, Link, Table, TableRow
-from sm.namespaces.wikidata import WikidataNamespace
 
 
 class MTabAssistant(IAssistant):
-    def __init__(self, app):
-        super().__init__(app)
+    def __init__(
+        self,
+    ):
         self.cache_dir = Path(f"/tmp/mtab")
         self.cache_dir.mkdir(exist_ok=True)
         self.wdns = WikidataNamespace.create()

@@ -244,6 +244,7 @@ export const CandidateEntityListComponent = withStyles(styles)(
                       Modal.destroyAll();
                     });
                   }}
+                  defaultSearchQuery={record.row[index].toString()}
                 />
               );
 
