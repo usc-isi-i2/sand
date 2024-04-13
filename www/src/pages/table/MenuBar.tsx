@@ -110,6 +110,11 @@ export const MenuBar = observer(
           .path({ tableId: table.id }, { attachment: false })
           .mouseClickNavigationHandler(undefined, true);
       },
+      exportLinkedEntities: () => {
+        routes.tableExportLinkedEntities
+          .path({ tableId: table.id }, { attachment: false })
+          .mouseClickNavigationHandler(undefined, true);
+      },
       exportFullModel: () => {
         routes.tableExportFullModel
           .path({ tableId: table.id }, { sm: sm.name })
@@ -222,7 +227,14 @@ export const MenuBar = observer(
             icon={<FontAwesomeIcon icon={faRectangleList} />}
             onClick={uiSettings.table.toggleEntityLinkingEditor}
           >
-            Toggle Entity Linking Editor
+            Toggle entity linking editor
+          </Menu.Item>
+          <Menu.Item
+            key="export-linked-entities"
+            icon={<ExportOutlined />}
+            onClick={funcs.exportLinkedEntities}
+          >
+            Export linked entities
           </Menu.Item>
         </Menu.ItemGroup>
         <Menu.Divider />

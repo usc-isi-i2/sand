@@ -58,3 +58,9 @@ class NamespaceService:
         if id in self.id2resource:
             return self.id2resource[id].uri
         return self.kgns.id_to_uri(id)
+
+    def has_encrypted_name(self, uri: str):
+        """Check if the given uri of an entity/class/property in the KG has encrypted name such as QXXX so we need to add
+        label to make it readable.
+        """
+        return self.kgns.has_encrypted_name(uri)

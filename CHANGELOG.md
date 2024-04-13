@@ -6,6 +6,7 @@
 
 - SAND Entity Editor UI, when users link new cell, it will automatically do an initial search using the cell as the query to save users time from re-entering the same information.
 - SAND Entity Editor UI, we can apply search results to multiple cells at once.
+- Users can export the linked entities
 
 ## [4.1.0] - 2024-04-13
 

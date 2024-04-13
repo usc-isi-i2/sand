@@ -66,6 +66,12 @@ export const routes = {
     querySchema: { attachment: "optionalboolean" },
     pathDef: "/api/table/:tableId/export-semantic-models",
   }),
+  tableExportLinkedEntities: new PathDef({
+    component: None,
+    urlSchema: { tableId: "number" },
+    querySchema: { attachment: "optionalboolean" },
+    pathDef: "/api/table/:tableId/export-linked-entities",
+  }),
   tableExportFullModel: new PathDef({
     component: None,
     urlSchema: { tableId: "number" },

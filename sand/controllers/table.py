@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import csv
 import zipfile
 from dataclasses import dataclass
 from functools import lru_cache
-from io import BytesIO
+from io import BytesIO, StringIO
 from typing import List, Literal, Optional
 
 import sm.outputs.semantic_model as O
@@ -23,8 +24,10 @@ from werkzeug.exceptions import BadRequest, NotFound
 from sand.config import AppConfig
 from sand.deserializer import deser_context_tree
 from sand.extension_interface.export import IExport
+from sand.helpers.namespace import NamespaceService
 from sand.helpers.service_provider import MultiServiceProvider
 from sand.models import SemanticModel, Table, TableRow
+from sand.models.ontology import OntClassAR, OntPropertyAR
 from sand.models.table import Link
 
 table_bp = generate_api(
@@ -40,7 +43,12 @@ table_bp = generate_api(
     f"/{table_bp.name}/<id>/export-semantic-models",
     methods=["GET"],
 )
-def export_sms(id: int):
+@inject
+def export_sms(
+    id: int,
+    ontclass_ar: OntClassAR = Provide["classes"],
+    ontprop_ar: OntPropertyAR = Provide["properties"],
+):
     subquery = (
         SemanticModel.select(
             SemanticModel.id, fn.MAX(SemanticModel.version).alias("version")
@@ -60,27 +68,67 @@ def export_sms(id: int):
     for sm in sms:
         for n in sm.iter_nodes():
             if isinstance(n, O.ClassNode):
-                assert n.readable_label is not None
-                # if n.readable_label is None:
-                #     n.readable_label = (
-                #         tmp.readable_label
-                #         if (tmp := ontclass_ar.get_by_uri(n.abs_uri)) is not None
-                #         else n.rel_uri
-                #     )
+                if n.readable_label is None:
+                    n.readable_label = (
+                        tmp.readable_label
+                        if (tmp := ontclass_ar.get_by_uri(n.abs_uri)) is not None
+                        else None
+                    )
         for e in sm.iter_edges():
             if e.readable_label is None:
-                assert e.readable_label is not None
-                # e.readable_label = (
-                #     tmp.readable_label
-                #     if (tmp := ontprop_ar.get_by_uri(e.abs_uri)) is not None
-                #     else e.rel_uri
-                # )
+                if e.readable_label is None:
+                    e.readable_label = (
+                        tmp.readable_label
+                        if (tmp := ontprop_ar.get_by_uri(e.abs_uri)) is not None
+                        else None
+                    )
 
     resp = jsonify([sm.to_dict() for sm in sms])
     if request.args.get("attachment", "false") == "true":
-        resp.headers[
-            "Content-Disposition"
-        ] = f"attachment; filename=semantic-models.json"
+        resp.headers["Content-Disposition"] = (
+            f"attachment; filename=semantic-models.json"
+        )
+    return resp
+
+
+@table_bp.route(
+    f"/{table_bp.name}/<id>/export-linked-entities",
+    methods=["GET"],
+)
+@inject
+def export_linked_entities(
+    id: int, export: MultiServiceProvider[IExport] = Provide["export"]
+):
+    table: Table = Table.get_by_id(id)
+    rows: List[TableRow] = list(TableRow.select().where(TableRow.table == table))
+
+    output = []
+    for ri, row in enumerate(rows):
+        for ci, col in enumerate(row.row):
+            links = row.links.get(str(ci), [])
+            for link in links:
+                output.append(
+                    {
+                        "row": ri,
+                        "col": ci,
+                        "start": link.start,
+                        "end": link.end,
+                        "url": link.url,
+                        "entity": link.entity_id,
+                    }
+                )
+    f = StringIO()
+    writer = csv.writer(
+        f, delimiter=",", quoting=csv.QUOTE_MINIMAL, lineterminator="\n"
+    )
+    header = ["row", "col", "start", "end", "url", "entity"]
+    writer.writerow(header)
+    for record in output:
+        writer.writerow([record[h] for h in header])
+    resp = make_response(f.getvalue())
+    resp.headers["Content-Type"] = "text/csv; charset=utf-8"
+    if request.args.get("attachment", "false") == "true":
+        resp.headers["Content-Disposition"] = f"attachment; filename={table.name}.csv"
     return resp
 
 
