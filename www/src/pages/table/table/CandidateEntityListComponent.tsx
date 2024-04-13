@@ -3,13 +3,14 @@ import ProTable from "@ant-design/pro-table";
 import {
   faCheck,
   faCheckDouble,
-  faPlus,
+  faMagnifyingGlass,
+  faMagnifyingGlassPlus,
 } from "@fortawesome/free-solid-svg-icons";
 import { withStyles, WithStyles } from "@material-ui/styles";
 import { Button, Modal, Space, Typography } from "antd";
 import { observer } from "mobx-react";
 import React, { useState } from "react";
-import { CheckboxIcon, Number } from "../../../components/element";
+import { CheckboxIcon, NormalIcon, Number } from "../../../components/element";
 import {
   FetchEntityComponent,
   InlineEntityComponent,
@@ -233,37 +234,64 @@ export const CandidateEntityListComponent = withStyles(styles)(
       );
       candidateLst.push(
         <div className={classes.candidateEntity} key="new-entity">
-          <Space
-            size={4}
-            style={{ cursor: "pointer" }}
-            onClick={() => {
-              const content = (
-                <EntitySearchComponent
-                  onSelect={(entityId) => {
-                    singleUpdate(entityId)(true).then(() => {
-                      Modal.destroyAll();
-                    });
-                  }}
-                  defaultSearchQuery={record.row[index].toString()}
-                />
-              );
+          <Space size={4}>
+            <NormalIcon
+              icon={faMagnifyingGlass}
+              onClick={() => {
+                const content = (
+                  <EntitySearchComponent
+                    onSelect={(entityId) => {
+                      singleUpdate(entityId)(true).then(() => {
+                        Modal.destroyAll();
+                      });
+                    }}
+                    defaultSearchQuery={record.row[index].toString()}
+                  />
+                );
 
-              Modal.info({
-                title: (
-                  <span style={{ marginBottom: 16, display: "inline-block" }}>
-                    Search Entity
-                  </span>
-                ),
-                content,
-                bodyStyle: { margin: -8 },
-                okButtonProps: { style: { display: "none" } },
-                maskClosable: true,
-                mask: true,
-              });
-            }}
-          >
-            <CheckboxIcon icon={faPlus} />
-            Create
+                Modal.info({
+                  title: (
+                    <span style={{ marginBottom: 16, display: "inline-block" }}>
+                      Search Entity
+                    </span>
+                  ),
+                  content,
+                  bodyStyle: { margin: -8 },
+                  okButtonProps: { style: { display: "none" } },
+                  maskClosable: true,
+                  mask: true,
+                });
+              }}
+            />
+            <NormalIcon
+              icon={faMagnifyingGlassPlus}
+              onClick={() => {
+                const content = (
+                  <EntitySearchComponent
+                    onSelect={(entityId) => {
+                      selectMultiple(entityId)(true).then(() => {
+                        Modal.destroyAll();
+                      });
+                    }}
+                    defaultSearchQuery={record.row[index].toString()}
+                  />
+                );
+
+                Modal.info({
+                  title: (
+                    <span style={{ marginBottom: 16, display: "inline-block" }}>
+                      Search Entity
+                    </span>
+                  ),
+                  content,
+                  bodyStyle: { margin: -8 },
+                  okButtonProps: { style: { display: "none" } },
+                  maskClosable: true,
+                  mask: true,
+                });
+              }}
+            />
+            Search
           </Space>
         </div>
       );

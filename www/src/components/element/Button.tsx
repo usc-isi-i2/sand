@@ -11,6 +11,15 @@ const styles = {
     borderRadius: 2,
     fontSize: 12,
     marginBottom: -1,
+    cursor: "pointer",
+  },
+  normalIcon: {
+    padding: "1px 2px",
+    // border: "1px solid",
+    // borderRadius: 2,
+    fontSize: 12,
+    marginBottom: -1,
+    cursor: "pointer",
   },
 };
 
@@ -49,6 +58,25 @@ export const CheckboxIcon = withStyles(styles)(
         color={correctSelected ? colorSelected : colorUnselected}
         className={classes.checkboxIcon}
         onClick={toggle}
+      />
+    );
+  }
+);
+
+export const NormalIcon = withStyles(styles)(
+  ({
+    icon,
+    classes,
+    onClick,
+  }: {
+    icon: IconProp;
+    onClick?: () => void;
+  } & WithStyles<typeof styles>) => {
+    return (
+      <FontAwesomeIcon
+        icon={icon}
+        className={classes.normalIcon}
+        onClick={onClick}
       />
     );
   }
