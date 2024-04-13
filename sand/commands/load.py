@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import click
+from dependency_injector.wiring import Provide, inject
 from sm.dataset import Dataset, Example, FullTable
 from sm.misc.funcs import import_func
-from sm.outputs.semantic_model import DataNode
+from sm.outputs.semantic_model import ClassNode, DataNode
 from tqdm.auto import tqdm
 
+from sand.container import use_container
+from sand.helpers.dependency_injection import use_auto_inject
 from sand.models import (
     ContextPage,
     Link,
@@ -20,10 +23,16 @@ from sand.models import (
 )
 from sand.models import db as dbconn
 from sand.models import init_db
+from sand.models.ontology import OntClassAR, OntPropertyAR
 
 
 @click.command(name="load")
 @click.option("-d", "--db", required=True, help="smc database file")
+@click.option(
+    "-c",
+    "--config",
+    help="Path to the configuration file",
+)
 @click.option("-p", "--project", default="default", help="Project name")
 @click.option(
     "--dataset",
@@ -37,7 +46,19 @@ from sand.models import init_db
     type=int,
     help="Number of tables to load (negative number or zero to load all)",
 )
-def load_dataset(db: str, project: str, dataset: str, n_tables: int):
+@click.option(
+    "--add-missing-readable-label",
+    is_flag=True,
+    help="Attempt to add readable label for nodes and edges that don't have them",
+)
+def load_dataset(
+    db: str,
+    config: Optional[str],
+    project: str,
+    dataset: str,
+    n_tables: int,
+    add_missing_readable_label: bool,
+):
     """Load a dataset into a project"""
     init_db(db)
 
@@ -49,6 +70,44 @@ def load_dataset(db: str, project: str, dataset: str, n_tables: int):
 
     if n_tables > 0:
         examples = examples[:n_tables]
+
+    with use_container(config) as container:
+        with use_auto_inject(container):
+            import_examples(
+                project,
+                examples,
+                add_missing_readable_label,
+            )
+
+
+@inject
+def import_examples(
+    project: str,
+    examples: list[Example[FullTable]],
+    add_missing_readable_label: bool,
+    ontclass_ar: OntClassAR = Provide["classes"],
+    ontprop_ar: OntPropertyAR = Provide["properties"],
+):
+    if add_missing_readable_label:
+        for ex in tqdm(examples, "add missing readable labels"):
+            for sm in ex.sms:
+                for n in sm.iter_nodes():
+                    if isinstance(n, ClassNode):
+                        if n.readable_label is None:
+                            n.readable_label = (
+                                tmp.readable_label
+                                if (tmp := ontclass_ar.get_by_uri(n.abs_uri))
+                                is not None
+                                else None
+                            )
+                for e in sm.iter_edges():
+                    if e.readable_label is None:
+                        if e.readable_label is None:
+                            e.readable_label = (
+                                tmp.readable_label
+                                if (tmp := ontprop_ar.get_by_uri(e.abs_uri)) is not None
+                                else None
+                            )
 
     with dbconn:
         p = Project.get(name=project)

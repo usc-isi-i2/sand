@@ -67,6 +67,7 @@ def use_container(config_file: Optional[Path | str] = None):
                 "sand.serializer",
                 "sand.helpers",
                 "sand.app",
+                "sand.commands.load",
             ],
             modules=["sand.extensions.export.drepr.main"],
         )
