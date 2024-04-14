@@ -18,6 +18,7 @@ from gena.deserializer import (
     get_deserializer_from_type,
 )
 from peewee import DoesNotExist, fn
+from slugify import slugify
 from sm.misc.funcs import import_func
 from werkzeug.exceptions import BadRequest, NotFound
 
@@ -128,7 +129,9 @@ def export_linked_entities(
     resp = make_response(f.getvalue())
     resp.headers["Content-Type"] = "text/csv; charset=utf-8"
     if request.args.get("attachment", "false") == "true":
-        resp.headers["Content-Disposition"] = f"attachment; filename={table.name}.csv"
+        resp.headers["Content-Disposition"] = (
+            f"attachment; filename={get_friendly_fs_name(str(table.name))}.csv"
+        )
     return resp
 
 
@@ -193,7 +196,9 @@ def export_full_model(
                 f.write(res_content.encode())
     resp = make_response(output.getvalue())
     resp.headers["Content-Type"] = "application/zip; charset=utf-8"
-    resp.headers["Content-Disposition"] = f"attachment; filename={table.name}.zip"
+    resp.headers["Content-Disposition"] = (
+        f"attachment; filename={get_friendly_fs_name(str(table.name))}.zip"
+    )
     return resp
 
 
@@ -248,7 +253,9 @@ def export_table_data(
     resp = make_response(content)
     resp.headers["Content-Type"] = "text/ttl; charset=utf-8"
     if request.args.get("attachment", "false") == "true":
-        resp.headers["Content-Disposition"] = f"attachment; filename={table.name}.ttl"
+        resp.headers["Content-Disposition"] = (
+            f"attachment; filename={get_friendly_fs_name(str(table.name))}.ttl"
+        )
     return resp
 
 
@@ -369,3 +376,7 @@ def update_column_links():
 
         row.save()
     return jsonify({"success": True})
+
+
+def get_friendly_fs_name(name: str) -> str:
+    return slugify(name.replace("/", "_"), lowercase=False).replace("-", "_")

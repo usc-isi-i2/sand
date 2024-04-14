@@ -13,6 +13,7 @@
 
 - Fix getting entity/class/property by id that has special characters such as /
 - Handle querying external APIs returned unknown entities
+- Fix exporting data as attachment cannot handle special characters in the filename
 
 ## [4.1.0] - 2024-04-13
 
