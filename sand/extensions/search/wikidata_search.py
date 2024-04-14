@@ -11,7 +11,7 @@ from sand.extension_interface.search import IEntitySearch, IOntologySearch, Sear
 from sand.extensions.search.aggregated_search import AggregatedSearch
 from sand.extensions.search.default_search import DefaultSearch
 from sand.helpers.namespace import NamespaceService
-from sand.models.ontology import OntClassAR
+from sand.models.ontology import OntClassAR, OntPropertyAR
 
 
 def extended_wikidata_search() -> Union[IEntitySearch, IOntologySearch]:
@@ -28,6 +28,7 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         self,
         namespace: NamespaceService = Provide["namespace"],
         ontclass_ar: OntClassAR = Provide["classes"],
+        ontprop_ar: OntPropertyAR = Provide["properties"],
     ):
         self.wikidata_url = "https://www.wikidata.org/w/api.php"
         self.PARAMS = {
@@ -42,6 +43,7 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
         }
         self.namespace = namespace
         self.ont_class_ar = ontclass_ar
+        self.ont_prop_ar = ontprop_ar
 
     def get_class_search_params(self, search_text: str) -> Dict:
         """Updates class search parameters for wikidata API"""
@@ -81,12 +83,15 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
             raise ServiceUnavailable(description=api_data_json["error"]["info"])
 
         for search_result in search_results:
-            cls = self.ont_class_ar[search_result["title"]]
+            clsid = search_result["title"]
+            if clsid not in self.ont_class_ar:
+                continue
+            cls = self.ont_class_ar[clsid]
             item = SearchResult(
                 label=cls.label,
-                id=search_result["title"],
+                id=clsid,
                 description=cls.description,
-                uri=self.namespace.id_to_uri(search_result["title"]),
+                uri=self.namespace.id_to_uri(clsid),
             )
             payload_results.append(item)
         return payload_results
@@ -134,11 +139,14 @@ class WikidataSearch(IEntitySearch, IOntologySearch):
             raise ServiceUnavailable(description=api_data_json["error"]["info"])
 
         for search_result in search_results:
+            propid = search_result["title"].split(":")[1]
+            if propid not in self.ont_prop_ar:
+                continue
             item = SearchResult(
                 label=nh3.clean(search_result["titlesnippet"], tags=set()),
-                id=search_result["title"].split(":")[1],
+                id=propid,
                 description=nh3.clean(search_result["snippet"], tags=set()),
-                uri=self.namespace.id_to_uri(search_result["title"].split(":")[1]),
+                uri=self.namespace.id_to_uri(propid),
             )
             payload_results.append(item)
         return payload_results

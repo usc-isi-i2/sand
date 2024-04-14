@@ -12,6 +12,7 @@
 ### Fixed
 
 - Fix getting entity/class/property by id that has special characters such as /
+- Handle querying external APIs returned unknown entities
 
 ## [4.1.0] - 2024-04-13
 
