@@ -89,4 +89,12 @@ export class ClassStore extends RStore<string, Class> {
     record.ancestors = new Set(record.ancestors);
     return record;
   }
+
+  protected createFetchByIdRequest(id: string): Promise<any> {
+    return axios.get(`${this.remoteURL}/find_by_id`, {
+      params: {
+        id,
+      },
+    });
+  }
 }

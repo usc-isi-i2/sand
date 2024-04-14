@@ -56,8 +56,8 @@ class OntProperty:
 
 def semweb_default_props():
     return {
-        str(RDFS.label): OntProperty(
-            id=str(RDFS.label),
+        "rdfs:label": OntProperty(
+            id="rdfs:label",
             uri=str(RDFS.label),
             label="rdfs:label",
             aliases=[],
@@ -65,8 +65,8 @@ def semweb_default_props():
             description="Provides a human-readable version of a resource's name.",
             parents=[],
         ),
-        str(RDF.type): OntProperty(
-            id=str(RDF.type),
+        "rdf:type": OntProperty(
+            id="rdf:type",
             uri=str(RDF.type),
             label="rdf:type",
             aliases=[],

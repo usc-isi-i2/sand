@@ -48,4 +48,12 @@ export class EntityStore extends RStore<string, Entity> {
       record.properties
     );
   }
+
+  protected createFetchByIdRequest(id: string): Promise<any> {
+    return axios.get(`${this.remoteURL}/find_by_id`, {
+      params: {
+        id,
+      },
+    });
+  }
 }

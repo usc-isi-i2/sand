@@ -89,4 +89,12 @@ export class PropertyStore extends RStore<string, Property> {
       new Set(record.ancestors)
     );
   }
+
+  protected createFetchByIdRequest(id: string): Promise<any> {
+    return axios.get(`${this.remoteURL}/find_by_id`, {
+      params: {
+        id,
+      },
+    });
+  }
 }

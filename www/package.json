@@ -29,7 +29,7 @@
     "antd": "^4.19.5",
     "axios": "^0.21.4",
     "fuse.js": "^6.4.6",
-    "gena-app": "^3.0.1",
+    "gena-app": "^4.2.0",
     "hyphenation.en-us": "^0.2.1",
     "lodash": "^4.17.21",
     "memoize-one": "^5.2.1",

@@ -9,6 +9,10 @@
 - Users can export the linked entities
 - Importing a dataset, if the readable labels are not available for nodes/edges in the semantic descriptions, users can generate a default one via `add-missing-readable-label` flag.
 
+### Fixed
+
+- Fix getting entity/class/property by id that has special characters such as /
+
 ## [4.1.0] - 2024-04-13
 
 ### Added

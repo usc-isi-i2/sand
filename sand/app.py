@@ -3,6 +3,7 @@ import os
 from dependency_injector.wiring import Provide, inject
 from flask import jsonify
 from gena import generate_api, generate_app, generate_readonly_api_4dict
+from sm.misc.funcs import identity_func
 from werkzeug.exceptions import HTTPException
 
 import sand.deserializer as sand_deser
