@@ -14,7 +14,7 @@ sand = 'sand.__main__:cli'
 
 [tool.poetry.dependencies]
 python = ">= 3.10, < 3.14"
-kgdata = "^7.0.1"
+kgdata = "^7.0.2"
 sem-desc = "^6.11.1"
 peewee = "^3.15.2"
 Flask = "^2.2.2"
