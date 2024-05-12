@@ -1,0 +1,9 @@
+.git
+.venv
+.cache
+**/.pytest_cache
+**/.DS_Store
+
+dist
+data
+**/node_modules
