@@ -9,7 +9,6 @@ from typing import List, Literal, Optional
 
 import sm.outputs.semantic_model as O
 from dependency_injector.wiring import Provide, inject
-from drepr.engine import OutputFormat
 from flask import jsonify, make_response, request
 from gena import generate_api
 from gena.deserializer import (
@@ -24,7 +23,7 @@ from werkzeug.exceptions import BadRequest, NotFound
 
 from sand.config import AppConfig
 from sand.deserializer import deser_context_tree
-from sand.extension_interface.export import IExport
+from sand.extension_interface.export import IExport, OutputFormat
 from sand.helpers.namespace import NamespaceService
 from sand.helpers.service_provider import MultiServiceProvider
 from sand.models import SemanticModel, Table, TableRow
@@ -178,7 +177,6 @@ def export_full_model(
             )
     sm = sms[0]
     rows: List[TableRow] = list(TableRow.select().where(TableRow.table == table))
-    # export the data using drepr library
     export_obj = export.get_default()
     datamodel = export_obj.export_data_model(table, sm.data)
     resources = export_obj.export_extra_resources(table, rows, sm.data)
@@ -248,7 +246,6 @@ def export_table_data(
     # load rows
     rows: List[TableRow] = list(TableRow.select().where(TableRow.table == table))
 
-    # export the data using drepr library
     content = export.get_default().export_data(table, rows, sm.data, OutputFormat.TTL)
     resp = make_response(content)
     resp.headers["Content-Type"] = "text/ttl; charset=utf-8"

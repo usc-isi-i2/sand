@@ -7,8 +7,7 @@ from typing import List, Mapping, Set
 import orjson
 import sm.outputs.semantic_model as O
 from dependency_injector.wiring import Provide, inject
-from drepr.engine import MemoryOutput, OutputFormat, ResourceDataString, execute
-from drepr.models import (
+from drepr.models.prelude import (
     AlignedStep,
     Attr,
     CSVProp,
@@ -25,21 +24,15 @@ from drepr.models import (
 )
 from kgdata.misc.resource import RDFResource
 from rdflib import RDF, Graph, URIRef
+from sand_drepr.resources import get_entity_resource, get_table_resource
 from sand_drepr.semanticmodel import get_drepr_sm, get_entity_data_nodes
+from sand_drepr.transformation import get_transformation, has_transformation
 from slugify import slugify
 from sm.misc.funcs import assert_not_null
 from sm.namespaces.prelude import KnowledgeGraphNamespace
 
 from sand.config import AppConfig
 from sand.extension_interface.export import IExport
-from sand.extensions.export.drepr.resources import (
-    get_entity_resource,
-    get_table_resource,
-)
-from sand.extensions.export.drepr.transformation import (
-    get_transformation,
-    has_transformation,
-)
 from sand.helpers.namespace import NamespaceService
 from sand.models.ontology import OntProperty, OntPropertyAR, OntPropertyDataType
 from sand.models.table import Table, TableRow
@@ -49,10 +42,10 @@ def get_drepr_model(
     table_columns: list[str],
     table_size: int,
     sm: O.SemanticModel,
-    kgns: KnowledgeGraphNamespace,
+    kgns: NamespaceService,
     kgns_prefixes: dict[str, str],
     ontprop_ar: Mapping[str, OntProperty],
-    ident_props: list[str],
+    ident_props: set[str],
 ) -> DRepr:
     """Create a D-REPR model of the dataset.
 
@@ -60,7 +53,7 @@ def get_drepr_model(
         table_columns: list of column names
         table_size: number of rows in the table (exclude header)
         sm: the semantic model we want to convert
-        kgns: the knowledge graph namespace
+        ns: the graph namespace
         kgns_prefixes: the prefixes of the knowledge graph namespace
         ontprop_ar: mapping from the id to ontology property
         ident_props: list of properties that telling a data node contains entities (e.g., rdfs:label)

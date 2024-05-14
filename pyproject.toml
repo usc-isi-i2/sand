@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "web-sand"
-version = "4.1.2"
+version = "4.1.4"
 description = "UI for browsing/editing semantic descriptions"
 authors = ["Binh Vu <binh@toan2.com>"]
 repository = "https://github.com/usc-isi-i2/sand"
@@ -23,7 +23,6 @@ tornado = "^6.2"
 gena = "^1.7.0"
 loguru = "^0.7.0"
 orjson = ">= 3.9.0, < 4.0.0"
-drepr = "^2.10.0"
 rsoup = "^3.1.7"
 nh3 = "^0.2.13"
 

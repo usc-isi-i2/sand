@@ -33,7 +33,7 @@ search:
   ontology: sand.extensions.search.wikidata_search.extended_wikidata_search
 export:
   default: drepr
-  drepr: sand.extensions.export.drepr.main.DreprExport
+  drepr: sand_drepr.main.DreprExport
 assistant:
   default: mtab
   mtab: sand.extensions.assistants.mtab.MTabAssistant

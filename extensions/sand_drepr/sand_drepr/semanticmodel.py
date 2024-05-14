@@ -5,26 +5,31 @@ import sm.outputs.semantic_model as O
 from sm.misc.funcs import assert_not_null
 from sm.namespaces.prelude import KnowledgeGraphNamespace
 
+from sand.config import AppConfig
+from sand.helpers.namespace import NamespaceService
 from sand.models.ontology import OntProperty, OntPropertyDataType
 
 # mapping from predefined datatypes to D-REPR datatype
 datatype_mapping: Mapping[OntPropertyDataType, Optional[drepr_sm.DataType]] = {
-    "globe-coordinate": drepr_sm.DataType.geo_wktLiteral,
-    "url": drepr_sm.DataType.xsd_anyURI,
-    "entity": drepr_sm.DataType.xsd_anyURI,
-    "string": drepr_sm.DataType.xsd_string,
-    "integer-number": drepr_sm.DataType.xsd_int,
-    "decimal-number": drepr_sm.DataType.xsd_decimal,
-    "datetime": drepr_sm.DataType.xsd_dateTime,
+    "globe-coordinate": drepr_sm.DataType(
+        "http://www.opengis.net/ont/geosparql#wktLiteral",
+        {"geo": "http://www.opengis.net/ont/geosparql#"},
+    ),
+    "url": drepr_sm.PredefinedDataType.xsd_anyURI.value,
+    "entity": drepr_sm.PredefinedDataType.drepr_uri.value,
+    "string": drepr_sm.PredefinedDataType.xsd_string.value,
+    "integer-number": drepr_sm.PredefinedDataType.xsd_int.value,
+    "decimal-number": drepr_sm.PredefinedDataType.xsd_decimal.value,
+    "datetime": drepr_sm.PredefinedDataType.xsd_dateTime.value,
 }
 
 
 def get_drepr_sm(
     sm: O.SemanticModel,
-    kgns: KnowledgeGraphNamespace,
+    kgns: NamespaceService,
     kgns_prefixes: dict[str, str],
     ontprop_ar: Mapping[str, OntProperty],
-    ident_props: list[str],
+    ident_props: set[str],
     get_attr_id: Callable[[int], str],
     get_ent_attr_id: Callable[[int], str],
 ) -> drepr_sm.SemanticModel:
@@ -69,10 +74,10 @@ def get_drepr_sm(
             )
         elif isinstance(node, O.LiteralNode):
             if node.datatype == O.LiteralNodeDataType.Entity:
-                datatype = drepr_sm.DataType.xsd_anyURI
+                datatype = drepr_sm.PredefinedDataType.drepr_uri.value
             else:
                 assert node.datatype == O.LiteralNodeDataType.String
-                datatype = drepr_sm.DataType.xsd_string
+                datatype = drepr_sm.PredefinedDataType.xsd_string.value
 
             nodes[str(node.id)] = drepr_sm.LiteralNode(
                 node_id=str(node.id), value=node.value, data_type=datatype
@@ -98,7 +103,7 @@ def get_drepr_sm(
         nodes[new_node_id] = drepr_sm.DataNode(
             node_id=new_node_id,
             attr_id=get_ent_attr_id(node.col_index),
-            data_type=drepr_sm.DataType.xsd_anyURI,
+            data_type=drepr_sm.PredefinedDataType.drepr_uri.value,
         )
         inedges = [
             inedge for inedge in sm.in_edges(node.id) if inedge.abs_uri in ident_props
@@ -113,15 +118,17 @@ def get_drepr_sm(
             label="drepr:uri",
         )
 
+    prefixes = kgns_prefixes.copy()
+    prefixes.update(drepr_sm.SemanticModel.get_default_prefixes())
     return drepr_sm.SemanticModel(
         nodes=nodes,
         edges=edges,
-        prefixes=kgns_prefixes,
+        prefixes=prefixes,
     )
 
 
 def get_entity_data_nodes(
-    sm: O.SemanticModel, ident_props: list[str]
+    sm: O.SemanticModel, ident_props: set[str]
 ) -> List[O.DataNode]:
     ent_dnodes = []
     for node in sm.iter_nodes():

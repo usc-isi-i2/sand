@@ -3,7 +3,7 @@ from io import StringIO
 from typing import List, Set
 from uuid import uuid4
 
-from drepr.models import ResourceData, ResourceDataString
+from drepr.models.prelude import ResourceData, ResourceDataString
 
 from sand.config import AppConfig
 from sand.helpers.namespace import NamespaceService

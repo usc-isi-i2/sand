@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from enum import Enum
 
 import sm.outputs.semantic_model as O
-from drepr.engine import OutputFormat
 
 from sand.models.table import Table, TableRow
+
+
+class OutputFormat(str, Enum):
+    TTL = "ttl"
 
 
 class IExport(ABC):

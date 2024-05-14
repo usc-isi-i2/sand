@@ -1,19 +1,22 @@
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 from io import BytesIO, StringIO
-from typing import List, Set
+from typing import List, Sequence, Set, cast
 
 import orjson
 import sm.outputs.semantic_model as O
 from dependency_injector.wiring import Provide, inject
-from drepr.engine import MemoryOutput, OutputFormat, ResourceDataString, execute
-from drepr.models import (
+from drepr.main import convert
+from drepr.models.prelude import (
     AlignedStep,
+    Alignment,
     Attr,
     CSVProp,
     DRepr,
     IndexExpr,
+    OutputFormat,
     Path,
     PMap,
     Preprocessing,
@@ -21,27 +24,19 @@ from drepr.models import (
     RangeAlignment,
     RangeExpr,
     Resource,
+    ResourceDataString,
     ResourceType,
 )
 from kgdata.misc.resource import RDFResource
 from rdflib import RDF, Graph, URIRef
+from sand_drepr.resources import get_entity_resource, get_table_resource
+from sand_drepr.semanticmodel import get_drepr_sm, get_entity_data_nodes
+from sand_drepr.transformation import get_transformation, has_transformation
 from slugify import slugify
-from sm.misc.funcs import assert_not_null
+from sm.misc.funcs import assert_isinstance, assert_not_null
 
 from sand.config import AppConfig
 from sand.extension_interface.export import IExport
-from sand.extensions.export.drepr.resources import (
-    get_entity_resource,
-    get_table_resource,
-)
-from sand.extensions.export.drepr.semanticmodel import (
-    get_drepr_sm,
-    get_entity_data_nodes,
-)
-from sand.extensions.export.drepr.transformation import (
-    get_transformation,
-    has_transformation,
-)
 from sand.helpers.namespace import NamespaceService
 from sand.models.ontology import OntPropertyAR, OntPropertyDataType
 from sand.models.table import Table, TableRow
@@ -76,16 +71,21 @@ class DreprExport(IExport):
             return {}
 
         ent_columns = {
-            node.col_index for node in get_entity_data_nodes(self.appcfg, sm)
+            node.col_index
+            for node in get_entity_data_nodes(
+                sm, self.appcfg.semantic_model.identifiers_set
+            )
         }
         entresource = get_entity_resource(
             self.appcfg, self.namespace, table, rows, ent_columns
         )
         assert isinstance(entresource, ResourceDataString)
         return {
-            "entity": entresource.value.decode()
-            if isinstance(entresource.value, bytes)
-            else entresource.value
+            "entity": (
+                entresource.value.decode()
+                if isinstance(entresource.value, bytes)
+                else assert_isinstance(entresource.value, str)
+            )
         }
 
     def export_data(
@@ -101,7 +101,10 @@ class DreprExport(IExport):
             return ""
 
         ent_columns = {
-            node.col_index for node in get_entity_data_nodes(self.appcfg, sm)
+            node.col_index
+            for node in get_entity_data_nodes(
+                sm, self.appcfg.semantic_model.identifiers_set
+            )
         }
         resources = {
             "table": get_table_resource(table, rows),
@@ -110,20 +113,34 @@ class DreprExport(IExport):
             ),
         }
 
-        content = execute(
-            ds_model=self.export_drepr_model(table, sm),
+        content = convert(
+            repr=self.export_drepr_model(table, sm),
             resources=resources,
-            output=MemoryOutput(output_format),
-            debug=False,
+            format=output_format,
         )
         return self.post_processing(sm, content, output_format)
 
     def export_drepr_model(self, table: Table, sm: O.SemanticModel) -> DRepr:
         """Create a D-REPR model of the dataset."""
         columns = [slugify(c).replace("-", "_") for c in table.columns]
-        get_attr_id = lambda ci: f"{ci}__{columns[ci]}"
-        get_ent_attr_id = lambda ci: f"{ci}__ent__{columns[ci]}"
-        ent_dnodes = get_entity_data_nodes(self.appcfg, sm)
+
+        existing_attr_names = {}
+
+        def get_attr_id(ci):
+            cname = slugify(columns[ci]).replace("-", "_")
+            m = re.match(r"\d+([^\d].*)", cname)
+            if m is not None:
+                cname = m.group(1)
+            if existing_attr_names.get(cname, None) != ci:
+                return cname + "_" + str(ci)
+
+            existing_attr_names[cname] = ci
+            return cname
+
+        get_ent_attr_id = lambda ci: f"{get_attr_id(ci)}__ent"
+        ent_dnodes = get_entity_data_nodes(
+            sm, self.appcfg.semantic_model.identifiers_set
+        )
 
         attrs = [
             Attr(
@@ -155,12 +172,13 @@ class DreprExport(IExport):
         ]
 
         dsm = get_drepr_sm(
-            self.appcfg,
-            self.namespace,
-            sm,
-            self.ontprop_ar,
-            get_attr_id,
-            get_ent_attr_id,
+            sm=sm,
+            kgns=self.namespace,
+            kgns_prefixes=self.namespace.kgns_prefixes,
+            ontprop_ar=self.ontprop_ar,
+            ident_props=self.appcfg.semantic_model.identifiers_set,
+            get_attr_id=get_attr_id,
+            get_ent_attr_id=get_ent_attr_id,
         )
 
         datatype_transformations = []
@@ -192,6 +210,24 @@ class DreprExport(IExport):
                 )
             )
 
+        aligns: list[Alignment] = []
+        for ci in range(1, len(table.columns)):
+            aligns.append(
+                RangeAlignment(
+                    source=get_attr_id(0),
+                    target=get_attr_id(ci),
+                    aligned_steps=[AlignedStep(source_idx=0, target_idx=0)],
+                )
+            )
+        for node in ent_dnodes:
+            aligns.append(
+                RangeAlignment(
+                    source=get_attr_id(0),
+                    target=get_ent_attr_id(node.col_index),
+                    aligned_steps=[AlignedStep(source_idx=0, target_idx=0)],
+                )
+            )
+
         return DRepr(
             resources=[
                 Resource(id="table", type=ResourceType.CSV, prop=CSVProp()),
@@ -199,22 +235,7 @@ class DreprExport(IExport):
             ],
             preprocessing=datatype_transformations,
             attrs=attrs,
-            aligns=[
-                RangeAlignment(
-                    source=get_attr_id(0),
-                    target=get_attr_id(ci),
-                    aligned_steps=[AlignedStep(source_idx=0, target_idx=0)],
-                )
-                for ci in range(1, len(table.columns))
-            ]
-            + [
-                RangeAlignment(
-                    source=get_attr_id(0),
-                    target=get_ent_attr_id(node.col_index),
-                    aligned_steps=[AlignedStep(source_idx=0, target_idx=0)],
-                )
-                for node in ent_dnodes
-            ],
+            aligns=aligns,
             sm=dsm,
         )
 

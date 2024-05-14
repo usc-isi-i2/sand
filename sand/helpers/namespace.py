@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Mapping, Union, cast
 
-from dependency_injector.wiring import Provide
-from drepr.models.sm import SemanticModel
+from dependency_injector.wiring import Provide, inject
 from sm.misc.funcs import import_func
 from sm.namespaces.namespace import KnowledgeGraphNamespace
 
 from sand.config import AppConfig
+from sand.extension_interface.export import IExport
+from sand.helpers.service_provider import MultiServiceProvider
 
 if TYPE_CHECKING:
     from sand.models.entity import Entity
@@ -15,6 +16,7 @@ if TYPE_CHECKING:
 
 
 class NamespaceService:
+    @inject
     def __init__(
         self,
         appcfg: AppConfig = Provide["appcfg"],
@@ -26,7 +28,6 @@ class NamespaceService:
         self.kgns: KnowledgeGraphNamespace = import_func(appcfg.kgns)()
 
         self.kgns_prefixes = self.kgns.prefix2ns.copy()
-        self.kgns_prefixes.update(SemanticModel.get_default_prefixes())
 
         self.default_entities = default_entities
         self.default_classes = default_classes

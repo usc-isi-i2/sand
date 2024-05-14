@@ -56,6 +56,12 @@ def use_container(config_file: Optional[Path | str] = None):
             )
         }
     )
+
+    modules = []
+    export = container.export()
+    for func in export.cfg.funcs.values():
+        modules.append(func.rsplit(".", 1)[0])
+
     try:
         container.wire(
             packages=[
@@ -69,7 +75,7 @@ def use_container(config_file: Optional[Path | str] = None):
                 "sand.app",
                 "sand.commands.load",
             ],
-            modules=["sand.extensions.export.drepr.main"],
+            modules=modules,
         )
         yield container
     finally:

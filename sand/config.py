@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 from typing import Literal
 
@@ -134,3 +135,7 @@ class OntResourceConfig:
 class SemanticModelConfig:
     identifiers: list[str]
     statements: list[str]
+
+    @cached_property
+    def identifiers_set(self) -> set[str]:
+        return set(self.identifiers)
