@@ -137,6 +137,30 @@ def deserialize_graph(
                         f"expect `uri` to be a string but get {type(node['value']['uri'])}"
                     )
                 node_value = node["value"]["uri"]
+            elif datatype == LiteralNodeDataType.Integer:
+                if "value" not in node["value"]:
+                    raise ValueError(f"missing `value` in literal_node")
+                if not isinstance(node["value"]["value"], int):
+                    raise ValueError(
+                        f"expect `value` to be an integer but get {type(node['value']['value'])}"
+                    )
+                node_value = str(node["value"]["value"])
+            elif datatype == LiteralNodeDataType.Decimal:
+                if "value" not in node["value"]:
+                    raise ValueError(f"missing `value` in literal_node")
+                if not isinstance(node["value"]["value"], float):
+                    raise ValueError(
+                        f"expect `value` to be a decimal but get {type(node['value']['value'])}"
+                    )
+                node_value = str(node["value"]["value"])
+            elif datatype == LiteralNodeDataType.Boolean:
+                if "value" not in node["value"]:
+                    raise ValueError(f"missing `value` in literal_node")
+                if not isinstance(node["value"]["value"], bool):
+                    raise ValueError(
+                        f"expect `value` to be a bool but get {type(node['value']['value'])}"
+                    )
+                node_value = "true" if node["value"]["value"] else "false"
             else:
                 raise ValueError(f"unknown datatype {node['value']['type']}")
 

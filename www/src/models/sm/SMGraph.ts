@@ -20,7 +20,12 @@ export interface DataNode {
   readonly nodetype: "data_node";
 }
 
-export type LiteralDataType = "entity-id" | "string";
+export type LiteralDataType =
+  | "string"
+  | "entity-id"
+  | "integer"
+  | "decimal"
+  | "boolean";
 
 export interface LiteralNode {
   id: string;
@@ -31,6 +36,14 @@ export interface LiteralNode {
     | {
         type: "string";
         value: string;
+      }
+    | {
+        type: "integer" | "decimal";
+        value: number;
+      }
+    | {
+        type: "boolean";
+        value: boolean;
       }
     | {
         type: "entity-id";
@@ -170,13 +183,15 @@ export class SMGraph {
     );
   nodeByColumnIndex = (columnIndex: number): DataNode =>
     this.nodes[this.column2nodeIndex[columnIndex]] as DataNode;
-  nodeByEntityId = (id: string): LiteralNode =>
+  literalNodeByValue = (
+    value: string | number | boolean
+  ): LiteralNode | undefined =>
     this.nodes.filter(
       (node) =>
         node.nodetype === "literal_node" &&
-        node.value.type === "entity-id" &&
-        node.value.id === id
-    )[0] as LiteralNode;
+        ((node.value.type === "entity-id" && node.value.id === value) ||
+          (node.value.type !== "entity-id" && node.value.value === value))
+    )[0] as LiteralNode | undefined;
 
   edge = (source: string, target: string) =>
     this.edges.filter((e) => e.source === source && e.target === target)[0];

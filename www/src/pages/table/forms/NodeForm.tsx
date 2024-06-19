@@ -1,5 +1,14 @@
 import { WithStyles, withStyles } from "@material-ui/styles";
-import { Button, Form, Modal, Radio, Space, Switch, Typography } from "antd";
+import {
+  Button,
+  Form,
+  Modal,
+  Input,
+  Radio,
+  Space,
+  Switch,
+  Typography,
+} from "antd";
 import { observer } from "mobx-react";
 import React, { useEffect, useMemo, useState } from "react";
 import { useStores } from "../../../models";
@@ -11,6 +20,7 @@ import {
   SMEdge,
   SMNode,
   SMNodeType,
+  LiteralDataType,
 } from "../../../models/sm";
 import { NodeSearchComponent, SearchValue } from "../NodeSearchComponent";
 import {
@@ -138,60 +148,98 @@ export const ClassNodeSubForm = observer(
 export const LiteralNodeSubForm = observer(
   (props: { sm: SemanticModel; node?: LiteralNode; onDone: () => void }) => {
     const { entityStore } = useStores();
-    const [id, setId] = useState<string | undefined>(
-      props.node?.value?.type === "entity-id" ? props.node.value.id : undefined
+    const [datatype, setDatatype] = useState<LiteralDataType>(
+      props.node?.value?.type || "entity-id"
+    );
+    const [value, setValue] = useState<string | undefined>(
+      props.node?.value?.type === "entity-id"
+        ? props.node.value.id
+        : props.node?.value !== undefined
+        ? props.node.value.value.toString()
+        : undefined
     );
     const [isInContext, setIsInContext] = useState(
-      props.node !== undefined && props.node.nodetype === "literal_node"
-        ? props.node.isInContext
-        : false
+      props.node !== undefined ? props.node.isInContext : false
     );
 
-    const duplicatedId = useMemo(
+    const duplicatedValue = useMemo(
       () =>
-        id !== undefined &&
+        value !== undefined &&
         ((props.node === undefined &&
-          props.sm.graph.nodeByEntityId(id) !== undefined) ||
+          props.sm.graph.literalNodeByValue(value) !== undefined) ||
           (props.node !== undefined &&
-            props.sm.graph.nodeByEntityId(id)?.id !== props.node.id)),
-      [props.sm.graph.version, id]
+            props.sm.graph.literalNodeByValue(value)?.id !== props.node.id)),
+      [props.sm.graph.version, value]
     );
-
-    if (props.node !== undefined && props.node.value.type === "string") {
-      return <div>Not Implemented Yet</div>;
-    }
 
     const onSave = () => {
-      if (id === undefined) return;
-      if (duplicatedId) return;
+      if (value === undefined) return;
+      if (duplicatedValue) return;
 
-      const ent = entityStore.get(id)!;
+      if (datatype === "entity-id") {
+        const ent = entityStore.get(value)!;
 
-      if (props.node === undefined) {
-        // always create a new node
-        props.sm.graph.addLiteralNode({
-          id: props.sm.graph.nextNodeId(),
-          value: {
-            type: "entity-id",
-            id: id,
-            uri: ent.uri,
-          },
-          label: ent.readableLabel,
-          nodetype: "literal_node",
-          isInContext: isInContext,
-        });
+        if (props.node === undefined) {
+          // always create a new node
+          props.sm.graph.addLiteralNode({
+            id: props.sm.graph.nextNodeId(),
+            value: {
+              type: datatype,
+              id: value,
+              uri: ent.uri,
+            },
+            label: ent.readableLabel,
+            nodetype: "literal_node",
+            isInContext: isInContext,
+          });
+        } else {
+          // we update existing node, it can be
+          props.sm.graph.updateLiteralNode(props.node.id, {
+            value: {
+              type: "entity-id",
+              id: value,
+              uri: ent.uri,
+            },
+            label: ent.readableLabel,
+            nodetype: "literal_node",
+            isInContext: isInContext,
+          });
+        }
       } else {
-        // we update existing node, it can be
-        props.sm.graph.updateLiteralNode(props.node.id, {
-          value: {
-            type: "entity-id",
-            id: id,
-            uri: ent.uri,
-          },
-          label: ent.readableLabel,
-          nodetype: "literal_node",
-          isInContext: isInContext,
-        });
+        let normValue = undefined;
+
+        if (datatype === "boolean") {
+          normValue = { type: datatype, value: value === "true" };
+        } else if (datatype === "string") {
+          normValue = { type: datatype, value };
+        } else {
+          normValue =
+            datatype === "integer"
+              ? { type: datatype, value: parseInt(value) }
+              : { type: datatype, value: parseFloat(value) };
+          if (Number.isNaN(normValue.value)) {
+            return;
+          }
+        }
+
+        if (props.node === undefined) {
+          // always create a new node
+          props.sm.graph.addLiteralNode({
+            id: props.sm.graph.nextNodeId(),
+            value: normValue!,
+            label: value,
+            nodetype: "literal_node",
+            isInContext: isInContext,
+          });
+        } else {
+          // we update existing node, it can be
+          props.sm.graph.updateLiteralNode(props.node.id, {
+            value: normValue,
+            label: value,
+            nodetype: "literal_node",
+            isInContext: isInContext,
+          });
+        }
       }
 
       props.onDone();
@@ -206,28 +254,81 @@ export const LiteralNodeSubForm = observer(
       return (
         props.node === undefined ||
         props.node.isInContext !== isInContext ||
-        (props.node.value.type === "entity-id" && props.node.value.id !== id)
+        (props.node.value.type === "entity-id" &&
+          props.node.value.id !== value) ||
+        (props.node.value.type !== "entity-id" &&
+          props.node.value.value.toString() !== value)
       );
     };
+
+    let valueInputForm = undefined;
+
+    if (datatype === "entity-id") {
+      valueInputForm = (
+        <EntitySearchComponent
+          value={value}
+          onSelect={setValue}
+          onDeselect={() => setValue(undefined)}
+        />
+      );
+    } else if (
+      datatype === "string" ||
+      datatype === "integer" ||
+      datatype === "decimal"
+    ) {
+      valueInputForm = (
+        <Input
+          value={value}
+          type={datatype === "integer" ? "number" : "text"}
+          onChange={(event) =>
+            setValue(
+              event.target.value.length > 0 ? event.target.value : undefined
+            )
+          }
+        />
+      );
+    } else if (datatype === "boolean") {
+      valueInputForm = (
+        <Radio.Group
+          value={value}
+          onChange={(event) => setValue(event.target.value)}
+        >
+          <Radio value="true">True</Radio>
+          <Radio value="false">False</Radio>
+        </Radio.Group>
+      );
+    }
 
     return (
       <>
         <Form.Item
+          label="Data Type"
+          validateStatus={duplicatedValue ? "error" : undefined}
+          help={duplicatedValue ? "Entity's already in the graph" : undefined}
+        >
+          <Radio.Group
+            value={datatype}
+            onChange={(event) => setDatatype(event.target.value)}
+          >
+            <Radio value="entity-id">Entity Id</Radio>
+            <Radio value="string">String</Radio>
+            <Radio value="integer">Integer</Radio>
+            <Radio value="decimal">Decimal</Radio>
+            <Radio value="boolean">Boolean</Radio>
+          </Radio.Group>
+        </Form.Item>
+        <Form.Item
           label={
             <Typography.Text
-              copyable={id !== undefined ? { text: id } : undefined}
+              copyable={value !== undefined ? { text: value } : undefined}
             >
-              Entity
+              {datatype === "entity-id" ? "Entity" : "Value"}
             </Typography.Text>
           }
-          validateStatus={duplicatedId ? "error" : undefined}
-          help={duplicatedId ? "Entity's already in the graph" : undefined}
+          validateStatus={duplicatedValue ? "error" : undefined}
+          help={duplicatedValue ? "Entity's already in the graph" : undefined}
         >
-          <EntitySearchComponent
-            value={id}
-            onSelect={setId}
-            onDeselect={() => setId(undefined)}
-          />
+          {valueInputForm}
         </Form.Item>
         <Form.Item label="Is In Context?">
           <Switch
@@ -240,7 +341,7 @@ export const LiteralNodeSubForm = observer(
             <Button
               type="primary"
               onClick={onSave}
-              disabled={id === undefined || duplicatedId || !isModified()}
+              disabled={value === undefined || duplicatedValue || !isModified()}
             >
               Save
             </Button>
