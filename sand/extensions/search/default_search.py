@@ -4,7 +4,6 @@ import re
 from typing import List, Mapping, TypeVar
 
 from dependency_injector.wiring import Provide, inject
-
 from sand.extension_interface.search import IEntitySearch, IOntologySearch, SearchResult
 from sand.models.entity import Entity
 from sand.models.ontology import OntClass, OntProperty
@@ -44,6 +43,7 @@ class DefaultSearch(IEntitySearch, IOntologySearch):
             label = object.label.lower()
             if all(token in label for token in query_tokens):
                 search_results.append(object)
+
         return search_results
 
     def find_class_by_name(self, search_text: str) -> List[SearchResult]:

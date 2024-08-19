@@ -69,6 +69,7 @@ def use_container(config_file: Optional[Path | str] = None):
                 "sand.models",
                 "sand.extensions.assistants",
                 "sand.extensions.search",
+                "sand_drepr.main",
                 "sand.deserializer",
                 "sand.serializer",
                 "sand.helpers",
