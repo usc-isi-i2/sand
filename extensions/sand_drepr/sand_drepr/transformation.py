@@ -7,8 +7,8 @@ transdir = (Path(__file__).parent / "raw_transformations").absolute()
 
 datatype2transformation: Mapping[OntPropertyDataType, Path] = {
     "globe-coordinate": (transdir / "global_coordinate.py"),
-    "integer-number": (transdir / "integer-number.py"),
-    "decimal-number": (transdir / "decimal-number.py"),
+    "integer-number": (transdir / "integer_number.py"),
+    "decimal-number": (transdir / "decimal_number.py"),
 }
 
 loaded_transformations: Mapping[OntPropertyDataType, str] = {}
