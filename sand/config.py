@@ -4,7 +4,7 @@ import os
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from typing import Literal
+from typing import Literal, TypedDict
 
 import serde.yaml
 from sm.misc.funcs import import_attr
@@ -65,7 +65,7 @@ class AppConfig:
             ),
             assistant=FnConfig(
                 default=obj["assistant"].pop("default"),
-                funcs=obj["assistant"],
+                funcs=AppConfig._parse_args(obj["assistant"], cwd),
             ),
             export=FnConfig(default=obj["export"].pop("default"), funcs=obj["export"]),
         )
@@ -86,6 +86,8 @@ class AppConfig:
         for k, v in obj.items():
             if isinstance(v, str) and v.startswith(RELPATH_CONST):
                 out[k] = str(cwd / v[len(RELPATH_CONST) :])
+            elif isinstance(v, dict):
+                out[k] = AppConfig._parse_args(v, cwd)
             else:
                 out[k] = v
         return out
@@ -97,12 +99,17 @@ class SearchConfig:
     ontology: str
 
 
+class FnConstructor(TypedDict):
+    constructor: str
+    args: dict
+
+
 @dataclass
 class FnConfig:
     default: str
-    funcs: dict[str, str]
+    funcs: dict[str, str | FnConstructor]
 
-    def get_func(self, name: Literal["default"] | str) -> str:
+    def get_func(self, name: Literal["default"] | str) -> str | FnConstructor:
         if name == "default":
             return self.funcs[self.default]
         return self.funcs[name]

@@ -1,10 +1,16 @@
+import tempfile
 from dataclasses import asdict
+from pathlib import Path
 from typing import List
 
 import orjson
-from flask import jsonify, request
+from flask import jsonify, make_response, request
 from gena import generate_api
 from gena.deserializer import get_dataclass_deserializer
+from sm.dataset import Dataset, Example, FullTable
+from sm.prelude import I, M, O
+from werkzeug.exceptions import BadRequest
+
 from sand.controllers.helpers.upload import (
     ALLOWED_EXTENSIONS,
     CSVParserOpts,
@@ -14,8 +20,10 @@ from sand.controllers.helpers.upload import (
     parse_upload,
     save_upload,
 )
+from sand.controllers.table import get_friendly_fs_name
 from sand.models import Project
-from werkzeug.exceptions import BadRequest
+from sand.models.semantic_model import SemanticModel
+from sand.models.table import Table, TableRow
 
 project_bp = generate_api(Project)
 
@@ -127,3 +135,60 @@ def upload(id: int):
             ],
         }
     )
+
+
+@project_bp.route(f"/{project_bp.name}/<id>/export", methods=["GET"])
+def export(id: int):
+    """Export tables from the project"""
+    try:
+        project = Project.get_by_id(id)
+    except:
+        raise BadRequest("Project not found")
+
+    examples = []
+    for tbl in Table.select().where(Table.project == project):
+        tblrows = list(TableRow.select().where(TableRow.table == tbl))
+        basetbl = I.ColumnBasedTable.from_rows(
+            records=[row.row for row in tblrows],
+            table_id=tbl.name,
+            headers=tbl.columns,
+            strict=True,
+        )
+        table = FullTable(
+            table=basetbl,
+            context=(
+                I.Context(
+                    page_title=tbl.context_page.title,
+                    page_url=tbl.context_page.url,
+                    entities=(
+                        [I.EntityId(tbl.context_page.entity, "")]
+                        if tbl.context_page.entity is not None
+                        else []
+                    ),
+                )
+                if tbl.context_page is not None
+                else I.Context()
+            ),
+            links=M.Matrix.default(basetbl.shape(), list),
+        )
+        table.links = table.links.map_index(
+            lambda ri, ci: tblrows[ri].links.get(ci, [])
+        )
+
+        ex = Example(id=table.table.table_id, sms=[], table=table)
+
+        for sm in SemanticModel.select().where(SemanticModel.table == tbl):
+            ex.sms.append(sm.data)
+
+        examples.append(ex)
+
+    with tempfile.NamedTemporaryFile(suffix=".zip") as file:
+        Dataset(Path(file.name)).save(examples, table_fmt_indent=2)
+        dataset = Path(file.name).read_bytes()
+
+    resp = make_response(dataset)
+    resp.headers["Content-Type"] = "application/zip; charset=utf-8"
+    resp.headers["Content-Disposition"] = (
+        f"attachment; filename={get_friendly_fs_name(str(project.name))}.zip"
+    )
+    return resp
