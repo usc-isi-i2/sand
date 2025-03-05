@@ -66,7 +66,7 @@ def start(
             else:
                 logger.info("Start server in non-wsgi mode")
                 http_server = HTTPServer(WSGIContainer(app), ssl_options=ssl_options)
-                http_server.listen(port)
+                http_server.listen(address="0.0.0.0", port=port)
                 IOLoop.instance().start()
 
 
