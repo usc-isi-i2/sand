@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "sand-drepr"
-version = "1.0.0"
+version = "1.0.2"
 description = "SAND & DRepr Integration"
 authors = ["Binh Vu <binh@toan2.com>"]
 license = "MIT"

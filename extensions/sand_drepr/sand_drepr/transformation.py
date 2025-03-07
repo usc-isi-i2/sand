@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Mapping
+from typing import Mapping, MutableMapping
 
 from sand.models.ontology import OntPropertyDataType
 
@@ -11,7 +11,7 @@ datatype2transformation: Mapping[OntPropertyDataType, Path] = {
     "decimal-number": (transdir / "decimal_number.py"),
 }
 
-loaded_transformations: Mapping[OntPropertyDataType, str] = {}
+loaded_transformations: MutableMapping[OntPropertyDataType, str] = {}
 
 
 def get_transformation(datatype: OntPropertyDataType):

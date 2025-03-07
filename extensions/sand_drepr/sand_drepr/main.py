@@ -29,17 +29,17 @@ from drepr.models.prelude import (
 )
 from kgdata.misc.resource import RDFResource
 from rdflib import RDF, Graph, URIRef
-from sand_drepr.resources import get_entity_resource, get_table_resource
-from sand_drepr.semanticmodel import get_drepr_sm, get_entity_data_nodes
-from sand_drepr.transformation import get_transformation, has_transformation
-from slugify import slugify
-from sm.misc.funcs import assert_isinstance, assert_not_null
-
 from sand.config import AppConfig
 from sand.extension_interface.export import IExport
 from sand.helpers.namespace import NamespaceService
 from sand.models.ontology import OntPropertyAR, OntPropertyDataType
 from sand.models.table import Table, TableRow
+from slugify import slugify
+from sm.misc.funcs import assert_isinstance, assert_not_null
+
+from sand_drepr.resources import get_entity_resource, get_table_resource
+from sand_drepr.semanticmodel import get_drepr_sm, get_entity_data_nodes
+from sand_drepr.transformation import get_transformation, has_transformation
 
 
 class DreprExport(IExport):

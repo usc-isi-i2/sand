@@ -1,5 +1,5 @@
 try:
-    value = value.strip()
+    value = value.strip().replace(",", "")
     return float(value)
 except:
     return value
